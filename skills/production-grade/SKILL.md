@@ -19,6 +19,31 @@ Fully autonomous meta-skill orchestrator. The user gives a high-level vision ("B
 - Greenfield projects that need the full treatment
 - User says "build me a...", "production grade", "production ready"
 
+## Pipeline Kickoff Behavior
+
+When this skill is triggered, follow this EXACT sequence:
+
+1. **Print kickoff banner** immediately:
+```
+━━━ Production Grade Pipeline ━━━━━━━━━━━━━━━━━━━━━━
+Project: [extracted from user's message]
+⧖ Initializing workspace and analyzing request...
+```
+
+2. **Create workspace** (`mkdir -p Claude-Production-Grade-Suite/.orchestrator/`)
+
+3. **Research the domain** — use WebSearch to understand the product space, competitors, and relevant APIs. Do this BEFORE asking the user anything.
+
+4. **Write execution plan** to `.orchestrator/execution-plan.md`
+
+5. **Print the plan summary** (not the full file — just which phases are active and what's parallel)
+
+6. **Immediately start Phase 1** — do NOT ask "should I proceed?" or present the plan for approval. The plan is informational. Start working.
+
+7. **At each gate**, use the exact AskUserQuestion patterns defined in the UX Protocol below.
+
+**Key principle:** The user already told you what to build. Don't re-ask. Research, plan, and start building. Only pause at the 3 approval gates.
+
 ## User Experience Protocol
 
 **CRITICAL: This section defines HOW you interact with the user. Follow it exactly.**
@@ -402,6 +427,41 @@ Before starting the pipeline, generate and present:
 | SRE finds production readiness gaps | Create remediation tasks, fix autonomously if possible |
 | User says "skip testing" | Warn against it, proceed if user insists, mark in decisions-log |
 
+## How to Invoke Sub-Skills
+
+There are two ways to run each phase. Choose based on complexity:
+
+### Option A: Skill Tool (Simple, Sequential)
+```python
+Skill(skill="product-manager")
+Skill(skill="solution-architect")
+Skill(skill="software-engineer")
+```
+Use when: the phase is straightforward, you want to stay in the main conversation, or the skill needs direct user interaction (Gates 1-3).
+
+### Option B: Agent Tool (Complex, Parallel, Background)
+```python
+Agent(
+  prompt="You are the Software Engineer. Read architecture at Claude-Production-Grade-Suite/solution-architect/ and implement the full backend service...",
+  subagent_type="general-purpose",
+  mode="bypassPermissions",
+  run_in_background=True
+)
+```
+Use when: the phase is large (implementation, architecture design), can run in background, or you want to run multiple phases in parallel (e.g., Software Engineer + Frontend Engineer).
+
+### Parallelization Strategy
+- **Phases 3a + 3b** (Software + Frontend): Launch both as background Agents simultaneously
+- **Phases 5a + 5b** (Security + Code Review): Launch both as background Agents simultaneously
+- **All other phases**: Run sequentially (each depends on the previous)
+
+### Context Passing
+When dispatching an Agent, always include in the prompt:
+1. What workspace folders to read from (see Context Bridging Rules)
+2. What workspace folder to write to
+3. Key decisions from previous phases (copy from decisions-log.md)
+4. Specific requirements from the BRD relevant to this phase
+
 ## Execution Protocol
 
 ### Step 0: Initialize Workspace
@@ -430,26 +490,44 @@ Use `mkdir -p` to create the workspace. Initialize `pipeline-state.json` with ph
 
 ### Step 1: Product Manager (DEFINE)
 
-Invoke `Skill: product-manager`. This phase:
-- Conducts a brief CEO interview (3-5 questions max, use sensible defaults)
+```
+━━━ Phase 1: Product Manager ━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**How to invoke:** Use the `Skill` tool with `skill: "product-manager"`. Do NOT read the skill file — invoke it.
+
+This phase:
+- Conducts a brief CEO interview using **AskUserQuestion only** (3-5 questions max, batch them)
 - Researches the domain via web search
 - Writes BRD to `Claude-Production-Grade-Suite/product-manager/BRD/`
-- **GATE: User approves BRD**
+- **GATE 1:** Use the Gate 1 AskUserQuestion pattern from the UX Protocol above
 - Log approval to `decisions-log.md`
 
 ### Step 2: Solution Architect (DEFINE)
 
-Invoke `Skill: solution-architect`. This phase:
+```
+━━━ Phase 2: Solution Architect ━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**How to invoke:** Use the `Skill` tool with `skill: "solution-architect"`. Alternatively, dispatch a background `Agent` with the full architecture brief (preferred for large designs).
+
+This phase:
 - Reads the BRD — skips questions already answered
 - Designs full architecture, selects tech stack
 - Creates API contracts, data models, project scaffold
 - Writes to `Claude-Production-Grade-Suite/solution-architect/`
-- **GATE: User approves architecture**
+- **GATE 2:** Use the Gate 2 AskUserQuestion pattern from the UX Protocol above
 - Log approval to `decisions-log.md`
 
 ### Step 3: Software Engineer + Frontend Engineer (BUILD — Autonomous)
 
+```
+━━━ Phase 3: Build ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
 **No user approval needed.** The agents work autonomously.
+
+**How to invoke:** Dispatch as background `Agent` tasks. If frontend is needed, run both in parallel. Each agent gets a detailed prompt with workspace paths and architecture context.
 
 Invoke `Skill: software-engineer`. In parallel (if frontend needed), invoke `Skill: frontend-engineer`.
 
@@ -565,7 +643,20 @@ After all phases complete:
    - `Claude-Production-Grade-Suite/software-engineer/services/` → project `src/` or `services/`
    - `Claude-Production-Grade-Suite/frontend-engineer/app/` → project `frontend/` or `web/`
    - `Claude-Production-Grade-Suite/devops/` → project root (Dockerfiles, CI/CD, terraform/)
-   - Ask user before copying: "Ready to integrate the generated code into your project?"
+   - Use AskUserQuestion:
+   ```python
+   AskUserQuestion(questions=[{
+     "question": "Code is ready. Integrate into your project root?",
+     "header": "Assembly",
+     "options": [
+       {"label": "Integrate all code (Recommended)", "description": "Copy services, frontend, infra to project root"},
+       {"label": "Keep in workspace only", "description": "Leave everything in Claude-Production-Grade-Suite/"},
+       {"label": "Let me choose what to copy", "description": "Select which components to integrate"},
+       {"label": "Chat about this", "description": "Discuss integration strategy"}
+     ],
+     "multiSelect": false
+   }])
+   ```
 
 2. **Run final validation:**
    - `docker-compose up` — full stack starts
