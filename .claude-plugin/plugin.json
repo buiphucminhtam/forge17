@@ -1,7 +1,7 @@
 {
   "name": "production-grade",
   "description": "Fully autonomous production-grade SaaS pipeline: 14 bundled skills including Polymath co-pilot. One install, complete pipeline. User sits at CEO/CTO seat.",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "author": {
     "name": "nagisanzenin"
   },

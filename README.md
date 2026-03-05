@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/nagisanzenin/claude-code-production-grade-plugin?style=social)](https://github.com/nagisanzenin/claude-code-production-grade-plugin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-3.3.0-blue.svg)]()
 [![Skills](https://img.shields.io/badge/skills-14-green.svg)]()
 [![Parallel Points](https://img.shields.io/badge/parallel%20points-7-orange.svg)]()
 
@@ -10,7 +10,7 @@
 
 Most AI coding tools generate files. This one builds *systems* — architecture, tests, security audits, infrastructure, monitoring, documentation — with a co-pilot that thinks with you before a single line of code is written.
 
-> **v3.2** — 14 skills. Polymath co-pilot. 7 parallel execution points. Auto-update with consent. Pre-flight gap detection. Gate companion for non-technical users. Works on greenfield and existing projects.
+> **v3.3** — 14 skills. Polymath co-pilot. 7 parallel execution points. Brownfield-safe. Auto-update with consent. MECE intent routing. Works on greenfield and existing projects.
 
 ### Quick Start
 
@@ -313,6 +313,8 @@ Native Claude Code Teams/TaskList. No custom state files.
 ## Release Timeline
 
 ```
+    v3.3  ●━━━ Brownfield-safe — works on existing codebases
+          │
     v3.2  ●━━━ Auto-update, MECE intent routing, protocol crash fix
           │
     v3.1  ●━━━ Polymath co-pilot — the 14th skill
