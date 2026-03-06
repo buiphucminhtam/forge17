@@ -220,6 +220,44 @@ Generate configs for the selected strategy:
 - **Canary** — Gradual traffic shift (10% -> 25% -> 50% -> 100%) with automated rollback
 - **Rolling** — For stateful services with ordered updates
 
+### Branch Strategy & Git Workflow
+
+Generate git workflow configuration and documentation to `docs/contributing/` and `.github/`:
+
+#### Strategy Selection
+Choose based on team size and release cadence:
+
+| Strategy | Best For | How It Works |
+|----------|----------|-------------|
+| **Trunk-Based** (Recommended) | Teams with CI/CD, continuous delivery | Short-lived feature branches (< 1 day), merge to `main`, deploy from `main` |
+| **GitHub Flow** | Small teams, simple releases | Feature branches from `main`, PR review, merge to `main`, auto-deploy |
+| **Gitflow** | Scheduled releases, multiple version support | `develop` → `release/*` → `main`, hotfix branches, version tags |
+
+#### Branch Protection Rules
+Generate `.github/branch-protection.md` and recommend settings:
+- **`main`**: Require PR review (1+ approvals), require CI pass, require up-to-date branch, no force push, no deletion
+- **`develop`** (if Gitflow): Require CI pass, allow merge only via PR
+- **`release/*`**: Require 2+ approvals, require all CI stages (including performance tests)
+
+#### Merge Strategy
+- **Squash merge** for feature branches → clean history
+- **Merge commit** for release branches → preserve branch history
+- **Rebase** for keeping feature branches up-to-date with main
+
+#### Conventional Commits Enforcement
+Generate `.github/workflows/commit-lint.yml`:
+```yaml
+# Enforce Conventional Commits format: type(scope): description
+# Types: feat, fix, docs, chore, refactor, test, perf, ci, build, style
+# Example: feat(auth): add OAuth2 login flow
+```
+
+#### Release Tagging
+- Semantic versioning: `vMAJOR.MINOR.PATCH`
+- Auto-generate tags from Conventional Commits
+- Auto-generate GitHub Releases with release notes
+- Generate `scripts/release.sh` for manual release process
+
 ## Phase 4: Container Orchestration
 
 Generate container artifacts at project root and `infrastructure/`:

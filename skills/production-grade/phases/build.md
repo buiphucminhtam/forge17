@@ -1,13 +1,14 @@
 # BUILD Phase — Dispatcher
 
-This phase manages tasks T3a (Backend), T3b (Frontend), and T4 (DevOps Containerization). Sequential execution with progress tracking.
+This phase manages tasks T3a (Backend), T3b (Frontend), T3c (Mobile, conditional), and T4 (DevOps Containerization). T3a-T3c can run in parallel with progress tracking.
 
 ## Pre-Flight
 
 Read `.production-grade.yaml` to determine:
 - `features.frontend` → if false, skip T3b
+- `features.mobile` → if false, skip T3c (also skip if BRD has no mobile requirements)
 - `project.architecture` → monolith vs microservices (affects containerization)
-- `paths.services`, `paths.frontend`, `paths.shared_libs` → output locations
+- `paths.services`, `paths.frontend`, `paths.mobile`, `paths.shared_libs` → output locations
 
 ## T3a: Backend Engineering
 
@@ -39,12 +40,40 @@ Read skills/frontend-engineer/SKILL.md and follow its instructions.
 Context:
 - Read API contracts from: api/
 - Read BRD user stories from: Antigravity-Production-Grade-Suite/product-manager/BRD/
+- Read design specs from: Antigravity-Production-Grade-Suite/ui-designer/ (if T1.5 ran)
+- Read design tokens from: docs/design/design-tokens.json (if T1.5 ran)
 - Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
 - Read .production-grade.yaml for framework and styling preferences.
 - Write frontend to project root: frontend/
 - Write workspace artifacts to: Antigravity-Production-Grade-Suite/frontend-engineer/
 
 Update task.md: T3b status → completed
+```
+
+## T3c: Mobile Engineering (Conditional — skip if no mobile requirements)
+
+**Activation:** Runs only if:
+1. BRD explicitly mentions mobile app, iOS, Android, or mobile-first requirements
+2. `features.mobile` is true in `.production-grade.yaml`
+3. User explicitly requested mobile development
+
+Execute mobile implementation:
+
+```
+Update task.md: T3c status → in_progress
+
+Read skills/mobile-engineer/SKILL.md and follow its instructions.
+Context:
+- Read API contracts from: api/
+- Read BRD user stories from: Antigravity-Production-Grade-Suite/product-manager/BRD/
+- Read design specs from: Antigravity-Production-Grade-Suite/ui-designer/ (if T1.5 ran)
+- Read design tokens from: docs/design/design-tokens.json (if T1.5 ran)
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read .production-grade.yaml for mobile framework and preferences.
+- Write mobile to project root: mobile/
+- Write workspace artifacts to: Antigravity-Production-Grade-Suite/mobile-engineer/
+
+Update task.md: T3c status → completed
 ```
 
 ## T4: DevOps Containerization
@@ -71,11 +100,13 @@ Update task.md: T4 status → completed
 When all BUILD tasks complete:
 1. Verify all services compile and start
 2. Verify docker-compose brings up the full stack
-3. Log BUILD completion to workspace
-4. Read `phases/harden.md` and begin HARDEN phase
+3. If T3c ran, verify mobile project builds for both platforms
+4. Log BUILD completion to workspace
+5. Read `phases/harden.md` and begin HARDEN phase
 
 ## Failure Handling
 
 - Build failure after 3 retries → escalate to user via notify_user
 - Frontend fails but backend succeeds → continue backend-only pipeline
+- Mobile fails but web succeeds → continue web-only pipeline, flag mobile issues
 - Self-debug: read errors, fix, retry before escalating

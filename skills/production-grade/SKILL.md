@@ -17,9 +17,9 @@ description: >
 
 ## Overview
 
-Adaptive meta-skill orchestrator for all software engineering work. Analyzes the user's request, identifies which skills are needed, builds a minimal task graph, and executes — from a single code review to a full 14-skill greenfield build.
+Adaptive meta-skill orchestrator for all software engineering work. Analyzes the user's request, identifies which skills are needed, builds a minimal task graph, and executes — from a single code review to a full 17-skill greenfield build.
 
-**14 skills, one orchestrator.** The orchestrator routes to the right skills based on what the user actually needs. No forced full-pipeline execution for everyday tasks.
+**17 skills, one orchestrator.** The orchestrator routes to the right skills based on what the user actually needs. No forced full-pipeline execution for everyday tasks.
 
 **All skills are bundled in this plugin. Single install, everything included.**
 
@@ -47,7 +47,7 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 
 | Mode | Trigger Signals | Skills Involved |
 |------|----------------|-----------------|
-| **Full Build** | "build a SaaS", "production grade", "from scratch", "full stack", greenfield intent | All 14 skills, full DEFINE→BUILD→HARDEN→SHIP→SUSTAIN pipeline |
+| **Full Build** | "build a SaaS", "production grade", "from scratch", "full stack", greenfield intent | All 17 skills, full DEFINE→BUILD→HARDEN→SHIP→SUSTAIN pipeline |
 | **Feature** | "add [feature]", "implement [feature]", "new endpoint", "new page", "integrate [service]" | PM (scoped) → Architect (scoped) → BE/FE → QA |
 | **Harden** | "review", "audit", "secure", "harden", "before launch", "production ready" (on EXISTING code) | Security + QA + Code Review (sequential) → Remediation |
 | **Ship** | "deploy", "CI/CD", "containerize", "infrastructure", "terraform", "docker" | DevOps → SRE |
@@ -57,11 +57,13 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 | **Document** | "document", "write docs", "API docs", "README" | Technical Writer |
 | **Explore** | "explain", "understand", "help me think", "what should I", "I'm not sure" | Polymath |
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | SRE + Code Reviewer |
+| **Design** | "design UI", "wireframes", "design system", "color palette", "UX flow" | UI Designer |
+| **Mobile** | "mobile app", "React Native", "Flutter", "iOS", "Android" | Mobile Engineer (+ PM scoped, Architect scoped if needed) |
 | **Custom** | Doesn't fit above patterns | Present skill menu, let user pick |
 
 **Step 2 — Present or skip the plan:**
 
-**Single-skill modes** (Test, Review, Architect, Document, Explore): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
+**Single-skill modes** (Test, Review, Architect, Document, Explore, Design): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
 
 **Multi-skill modes** (Feature, Harden, Ship, Optimize, Custom): Present the plan for confirmation via notify_user:
 
@@ -73,7 +75,7 @@ Here's my plan:
 Scope: [light / moderate / heavy]
 
 1. **Looks good — start (Recommended)** — Execute this plan
-2. **I want the full production-grade pipeline** — Run all 14 skills, 5 phases, 3 gates
+2. **I want the full production-grade pipeline** — Run all 17 skills, 5 phases, 3 gates
 3. **Adjust the plan** — Add or remove skills from the plan
 4. **Chat about this** — Free-form input
 ```

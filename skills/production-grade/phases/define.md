@@ -1,6 +1,6 @@
 # DEFINE Phase — Dispatcher
 
-This phase manages tasks T1 (Product Manager) and T2 (Solution Architect). Sequential execution with Gate 1 and Gate 2.
+This phase manages tasks T1 (Product Manager), T1.5 (UI Designer, conditional), and T2 (Solution Architect). Sequential execution with Gate 1 and Gate 2.
 
 ## Pre-Flight
 
@@ -9,6 +9,7 @@ Read `.production-grade.yaml` for path overrides:
 - `paths.api_contracts` → API contract location (default: `api/openapi/*.yaml`)
 - `paths.adrs` → ADR location (default: `docs/architecture/architecture-decision-records/`)
 - `paths.architecture_docs` → Architecture docs (default: `docs/architecture/`)
+- `features.ui_design` → if false, skip T1.5 (default: true for full builds)
 
 ## T1: Product Manager — BRD
 
@@ -32,10 +33,30 @@ Update task.md: T1 status → completed
 
 ### Gate 1 — BRD Approval
 
-Present Gate 1 using the orchestrator's gate pattern. On approval, unblock T2.
+Present Gate 1 using the orchestrator's gate pattern. On approval, unblock T1.5 (or T2 if UI design is skipped).
 
 If user selects "I have changes" → iterate on BRD, re-present Gate 1.
 If user selects "Show BRD details" → display BRD, re-present Gate 1.
+
+## T1.5: UI Designer — Design System & Wireframes (Conditional)
+
+**Activation:** Runs if `features.ui_design` is true (default) OR if BRD contains UI/frontend requirements. Skip if project is backend-only (API, CLI, library).
+
+```
+Update task.md: T1.5 status → in_progress
+
+Read skills/ui-designer/SKILL.md and follow its instructions.
+Context:
+- Read BRD from: Antigravity-Production-Grade-Suite/product-manager/BRD/
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Write design specs to: Antigravity-Production-Grade-Suite/ui-designer/
+- Write design tokens to: docs/design/design-tokens.json
+- Outputs: design-brief.md, wireframes/, design-tokens.md, component-inventory.md, interaction-patterns.md
+
+Update task.md: T1.5 status → completed
+```
+
+The UI Designer provides design specifications that the Frontend Engineer and Mobile Engineer consume during the BUILD phase.
 
 ## T2: Solution Architect — Architecture
 
@@ -46,11 +67,12 @@ Read skills/solution-architect/SKILL.md and follow its instructions.
 
 The solution-architect skill will:
 1. Read BRD from `Antigravity-Production-Grade-Suite/product-manager/BRD/`
-2. Design architecture: ADRs, tech stack, system design
-3. Design API contracts (OpenAPI 3.1), data model (ERD), migrations
-4. Generate project scaffold
-5. Write deliverables to **project root**: `api/`, `schemas/`, `docs/architecture/`
-6. Write workspace artifacts to `Antigravity-Production-Grade-Suite/solution-architect/`
+2. Read design specs from `Antigravity-Production-Grade-Suite/ui-designer/` (if T1.5 ran)
+3. Design architecture: ADRs, tech stack, system design
+4. Design API contracts (OpenAPI 3.1), data model (ERD), migrations
+5. Generate project scaffold
+6. Write deliverables to **project root**: `api/`, `schemas/`, `docs/architecture/`
+7. Write workspace artifacts to `Antigravity-Production-Grade-Suite/solution-architect/`
 
 **On completion:**
 ```
@@ -65,11 +87,13 @@ Present Gate 2 using the orchestrator's gate pattern. On approval, proceed to BU
 
 After Gate 2 approval:
 1. Verify architecture outputs exist at project root (`api/`, `schemas/`, `docs/architecture/`)
-2. Log decisions to `Antigravity-Production-Grade-Suite/.orchestrator/decisions-log.md`
-3. Read `phases/build.md` and begin BUILD phase
+2. If T1.5 ran, verify design outputs exist (`docs/design/design-tokens.json`)
+3. Log decisions to `Antigravity-Production-Grade-Suite/.orchestrator/decisions-log.md`
+4. Read `phases/build.md` and begin BUILD phase
 
 ## Failure Handling
 
 - If PM cannot gather enough requirements → escalate to user
+- If UI Designer lacks sufficient BRD context → proceed with minimal design, flag gaps
 - If Architect finds contradictions in BRD → flag to user, do not silently resolve
 - Each skill self-debugs before escalating

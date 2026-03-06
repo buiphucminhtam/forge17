@@ -2,7 +2,8 @@
 name: qa-engineer
 description: >
   [production-grade internal] Writes and runs tests when you want to verify
-  code works — unit, integration, e2e, performance, contract testing.
+  code works — unit, integration, e2e, performance, contract testing,
+  and Playwright browser automation for visual regression and UI validation.
   Routed via the production-grade orchestrator.
 ---
 
@@ -315,6 +316,147 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
 
 ---
 
+### Phase 5b — Playwright Browser Automation (NEW)
+
+**Goal:** Run real browser-based E2E tests using Playwright to validate UI flows, visual regression, multi-viewport responsiveness, and accessibility — going beyond code-level E2E to actual browser interaction.
+
+**Prerequisite:** Only runs if `frontend/` exists. Skip entirely for API-only projects.
+
+**Inputs to read:**
+- E2E test specs written in Phase 5
+- `frontend/` pages and components
+- BRD critical user flows
+- Design system tokens (for visual regression baseline colors/spacing)
+
+**Rules:**
+1. **Install Playwright** — add `@playwright/test` to the project. Configure `tests/e2e/ui/playwright.config.ts` with:
+   - Browsers: Chromium + Firefox + WebKit (all three for cross-browser coverage)
+   - Viewports: Mobile (375×667), Tablet (768×1024), Desktop (1440×900)
+   - Base URL from environment variable `PLAYWRIGHT_BASE_URL`
+   - Screenshot on failure: enabled
+   - Video on failure: enabled (retain-on-failure)
+   - Trace on failure: enabled (retain-on-failure)
+   - Global timeout: 30 seconds per test
+   - Retries: 2 in CI, 0 locally
+
+2. **Page Object Model** — every page gets a POM class in `tests/e2e/ui/pages/`:
+   ```typescript
+   export class LoginPage {
+     constructor(private page: Page) {}
+     async goto() { await this.page.goto('/login'); }
+     async login(email: string, password: string) {
+       await this.page.getByLabel('Email').fill(email);
+       await this.page.getByLabel('Password').fill(password);
+       await this.page.getByRole('button', { name: 'Sign in' }).click();
+     }
+     async expectError(message: string) {
+       await expect(this.page.getByRole('alert')).toContainText(message);
+     }
+   }
+   ```
+
+3. **Accessibility-first selectors** — use ARIA roles (`getByRole`), labels (`getByLabel`), placeholder text (`getByPlaceholder`), and `data-testid` attributes. NEVER use CSS selectors or XPath.
+
+4. **Visual regression tests** — capture full-page and component screenshots, compare against baseline:
+   ```typescript
+   test('dashboard matches visual baseline', async ({ page }) => {
+     await page.goto('/dashboard');
+     await expect(page).toHaveScreenshot('dashboard.png', { maxDiffPixelRatio: 0.01 });
+   });
+   ```
+   - Store baselines in `tests/e2e/ui/visual/__screenshots__/`
+   - Configure threshold: maxDiffPixelRatio = 0.01 (1% pixel tolerance)
+   - Generate baselines per OS/browser combination
+
+5. **Multi-viewport testing** — every critical flow runs at 3 viewports:
+   ```typescript
+   const viewports = [
+     { name: 'mobile', width: 375, height: 667 },
+     { name: 'tablet', width: 768, height: 1024 },
+     { name: 'desktop', width: 1440, height: 900 },
+   ];
+   for (const vp of viewports) {
+     test(`${vp.name}: navigation menu works`, async ({ page }) => {
+       await page.setViewportSize(vp);
+       // test responsive behavior
+     });
+   }
+   ```
+
+6. **Accessibility scanning** — integrate `@axe-core/playwright` for automated WCAG 2.1 AA checks:
+   ```typescript
+   import AxeBuilder from '@axe-core/playwright';
+   test('page is accessible', async ({ page }) => {
+     await page.goto('/dashboard');
+     const results = await new AxeBuilder({ page }).analyze();
+     expect(results.violations).toEqual([]);
+   });
+   ```
+   - Run axe scan on every page
+   - Fail on any WCAG 2.1 AA violations
+   - Generate accessibility report to `Antigravity-Production-Grade-Suite/qa-engineer/a11y-report.md`
+
+7. **Network mocking** — for external API calls, use `page.route()` to mock responses:
+   ```typescript
+   await page.route('**/api/payments/**', route => route.fulfill({
+     status: 200, body: JSON.stringify({ success: true }),
+   }));
+   ```
+
+8. **Authentication fixture** — create a shared auth fixture that logs in once and reuses session:
+   ```typescript
+   // tests/e2e/ui/fixtures/auth.fixture.ts
+   export const test = base.extend<{ authenticatedPage: Page }>({
+     authenticatedPage: async ({ browser }, use) => {
+       const context = await browser.newContext({ storageState: 'auth.json' });
+       const page = await context.newPage();
+       await use(page);
+       await context.close();
+     },
+   });
+   ```
+
+9. **CI integration** — add Playwright to `.github/workflows/test.yml`:
+   - Cache browser binaries
+   - Run with `--shard` for parallel execution across CI runners
+   - Upload test results, screenshots, videos, and traces as artifacts
+   - Generate HTML report with `playwright show-report`
+
+10. **Performance assertions** — validate Core Web Vitals:
+    ```typescript
+    const metrics = await page.evaluate(() => JSON.stringify(performance.getEntriesByType('navigation')));
+    // Assert LCP < 2.5s, FID < 100ms, CLS < 0.1
+    ```
+
+**Output:**
+```
+tests/e2e/ui/
+├── playwright.config.ts           # Multi-browser, multi-viewport config
+├── pages/                          # Page Object Models
+│   ├── login.page.ts
+│   ├── dashboard.page.ts
+│   └── settings.page.ts
+├── flows/                          # User flow specs
+│   ├── auth.spec.ts               # Login, register, forgot password
+│   ├── onboarding.spec.ts         # First-time user experience
+│   └── core-workflow.spec.ts      # Main business flow
+├── visual/                         # Visual regression specs
+│   ├── pages.visual.ts            # Full-page screenshot comparisons
+│   ├── components.visual.ts       # Component-level visual tests
+│   └── __screenshots__/           # Baseline screenshots (git-tracked)
+├── a11y/                           # Accessibility specs
+│   ├── pages.a11y.ts              # Per-page WCAG 2.1 AA scans
+│   └── components.a11y.ts         # Component-level a11y checks
+├── responsive/                     # Multi-viewport specs
+│   └── viewport.spec.ts           # Mobile/tablet/desktop breakpoints
+├── fixtures/
+│   ├── auth.fixture.ts            # Shared authentication state
+│   └── test-data.fixture.ts       # Shared test data helpers
+└── global-setup.ts                 # Playwright global setup (auth, seed data)
+```
+
+---
+
 ### Phase 6 — Performance Tests
 
 **Goal:** Establish performance baselines and create load/stress test scripts for performance-sensitive endpoints.
@@ -345,7 +487,7 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
 **Goal:** Configure CI test execution, coverage enforcement, and test reliability tooling.
 
 **Inputs to read:**
-- All test files generated in Phases 2-6
+- All test files generated in Phases 2-6 (including Playwright from Phase 5b)
 - Coverage thresholds from the test plan
 - Project CI/CD system (GitHub Actions, GitLab CI, etc.)
 
@@ -364,11 +506,12 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
    - **Integration test stage** — starts docker-compose dependencies, runs integration suite, tears down.
    - **Contract test stage** — runs Pact tests, publishes results to broker.
    - **E2E test stage** — deploys to test environment, runs smoke + full E2E suite.
+   - **Playwright test stage** — installs browsers, runs visual regression + a11y + responsive tests, uploads screenshots/traces/videos as artifacts.
    - **Performance test stage** — runs load tests against staging, compares to baselines.
-   - Parallel execution: split unit and integration tests across multiple CI runners by service.
-   - Test result artifacts: JUnit XML reports, coverage HTML reports, k6 JSON results.
+   - Parallel execution: split unit and integration tests across multiple CI runners by service. Shard Playwright tests across runners.
+   - Test result artifacts: JUnit XML reports, coverage HTML reports, k6 JSON results, Playwright HTML report.
    - Flaky test detection: track test pass/fail history, quarantine tests with >5% flake rate.
-   - Retry policy: retry failed E2E tests up to 2 times before marking as failed.
+   - Retry policy: retry failed E2E/Playwright tests up to 2 times before marking as failed.
 3. Write seed data runner to `tests/fixtures/seed-data/seed-runner.ts`.
 4. Write external API mock configurations to `tests/fixtures/mocks/`.
 
@@ -395,6 +538,9 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
 | 13 | Contract tests that only check status codes | Schema changes, missing fields, and type mismatches go undetected | Validate full response body shape, field types, required fields, and enum values against the contract |
 | 14 | No seed data strategy — each test creates its own world from scratch | Integration and E2E suites become extremely slow; redundant setup logic everywhere | Build a shared seed-data layer with factories and a seed runner; tests add only their unique data on top |
 | 15 | Generating test files without reading the actual implementation first | Tests reference nonexistent functions, wrong parameter names, or incorrect module paths | Always read the source file before writing its test file; match imports, function signatures, and error types exactly |
+| 16 | Playwright tests using CSS selectors or XPath | Brittle selectors break on every UI refactor; maintenance nightmare | Use ARIA roles (getByRole), labels (getByLabel), data-testid — accessibility-first selectors only |
+| 17 | Visual regression tests without viewport pinning | Screenshots differ across OS/resolution, causing false positives | Always pin viewport size, disable animations, and use per-OS/browser baselines |
+| 18 | Skipping Playwright in CI because "browsers are heavy" | Visual regressions and a11y violations ship to production undetected | Cache browser binaries, shard tests across runners, run only critical visual checks on PR |
 
 ---
 
@@ -414,3 +560,9 @@ Before marking the skill as complete, verify:
 - [ ] All test factories are in `tests/fixtures/factories/` and reused across test types
 - [ ] No test file has hardcoded secrets, credentials, or environment-specific values
 - [ ] All tests can run independently and in any order
+- [ ] **(Playwright)** `tests/e2e/ui/playwright.config.ts` configures 3 browsers × 3 viewports
+- [ ] **(Playwright)** Page Object Models exist for every critical page
+- [ ] **(Playwright)** Visual regression baselines are generated and committed
+- [ ] **(Playwright)** Every page passes `@axe-core/playwright` WCAG 2.1 AA scan
+- [ ] **(Playwright)** Auth fixture reuses session state across tests
+- [ ] **(Playwright)** `Antigravity-Production-Grade-Suite/qa-engineer/a11y-report.md` is generated

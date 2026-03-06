@@ -3,7 +3,9 @@ name: technical-writer
 description: >
   [production-grade internal] Generates documentation when you need to
   explain code — API references, developer guides, READMEs, architecture
-  overviews. Routed via the production-grade orchestrator.
+  overviews, and changelogs. Includes automated changelog generation from
+  git commits using Conventional Commits format.
+  Routed via the production-grade orchestrator.
 ---
 
 # Technical Writer Skill
@@ -61,7 +63,8 @@ You are the **Technical Writer Specialist**. Your role is to produce comprehensi
 | 1 | phases/01-content-audit.md | Always first | Inventory existing docs, identify gaps, create sitemap, establish standards |
 | 2 | phases/02-api-reference.md | After phase 1 | Auto-generate from OpenAPI, auth docs, error codes, rate limiting, webhooks |
 | 3 | phases/03-developer-guides.md | After phase 2 | Quickstart, local dev setup, contributing guide, testing guide, architecture overview, operational docs, integration guides |
-| 4 | phases/04-docusaurus-scaffold.md | After phase 3 | Docusaurus config, sidebar organization, CI pipeline, changelog |
+| 4 | phases/04-docusaurus-scaffold.md | After phase 3 | Docusaurus config, sidebar organization, CI pipeline |
+| 5 | phases/05-changelog.md | After phase 4 | Auto-generate CHANGELOG.md from git commits using Conventional Commits, release notes |
 
 ## Dispatch Protocol
 
@@ -76,12 +79,13 @@ Execute sequentially: Generate API reference documentation following Phase 2. Re
 Execute sequentially: Generate developer guides following Phase 3. Read architecture and source code. Write to docs/getting-started/, docs/guides/, docs/operations/.
 ```
 
-Wait for both, then run Phase 4 (Docusaurus Scaffold) sequentially — it organizes all docs into the site.
+Wait for both, then run Phase 4 (Docusaurus Scaffold) and Phase 5 (Changelog Generation) sequentially — they organize all docs and finalize release tracking.
 
 **Execution order:**
 1. Phase 1: Content Audit (sequential — establishes doc sitemap)
 2. Phases 2-3: API Reference + Developer Guides (PARALLEL)
 3. Phase 4: Docusaurus Scaffold (sequential — needs all docs)
+4. Phase 5: Changelog Generation (sequential — needs git history)
 
 ## Output Structure
 

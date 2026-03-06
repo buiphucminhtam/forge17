@@ -1,19 +1,21 @@
 # Production Grade Plugin for Antigravity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)]()
-[![Skills](https://img.shields.io/badge/skills-14-green.svg)]()
-[![Modes](https://img.shields.io/badge/modes-10-purple.svg)]()
+[![Version](https://img.shields.io/badge/version-5.1.0-blue.svg)]()
+[![Skills](https://img.shields.io/badge/skills-17-green.svg)]()
+[![Modes](https://img.shields.io/badge/modes-12-purple.svg)]()
 
-**14 skills for all software engineering work. Not just greenfield builds.**
+**17 skills for all software engineering work. From idea to production-ready SaaS.**
 
-Build a complete SaaS from scratch, add a feature to existing code, harden before launch, set up CI/CD, write tests, review code quality — the orchestrator routes to the right skills automatically.
+Build a complete SaaS from scratch, design UI/UX systems, develop cross-platform mobile apps, add features to existing code, harden before launch, set up CI/CD, write tests, review code quality — the orchestrator routes to the right skills automatically.
 
-> **v5.0** — Migrated to Antigravity. Adaptive routing with 10 execution modes. Smart request classification. Full greenfield builds, feature additions, code hardening, deployment, testing, review, architecture, documentation, exploration, optimization. 4 engagement modes. Scale-driven architecture. Quality-first execution.
+> **v5.1** — 3 new skills (ui-designer, mobile-engineer, prompt engineering), 5 existing skill upgrades (Playwright testing, changelog generation, brainstorming frameworks, branch strategy). Pipeline preserved: `DEFINE→BUILD→HARDEN→SHIP→SUSTAIN`. Now 17 skills with 12 execution modes.
 
 ### Release Timeline
 
 ```
+2026-03-06  v5.1  ●━━━ +3 new skills, +5 upgrades, 14→17 skills, 12 execution modes
+                  │
 2026-03-06  v5.0  ●━━━ Migrated to Antigravity, sequential execution, updated tool APIs
                   │
 2026-03-06  v4.2  ●━━━ Adaptive routing, 10 execution modes, everyday SWE work
@@ -35,14 +37,16 @@ Build a complete SaaS from scratch, add a feature to existing code, harden befor
 2026-02-24  v1.0  ●━━━ Initial release — autonomous DEFINE>BUILD>HARDEN>SHIP>SUSTAIN
 ```
 
-### Quick Start
+---
+
+## Quick Start
 
 ```bash
 # Clone the plugin
 git clone https://github.com/antigravity-code/antigravity-code-production-grade-plugin.git
 
-# Load skills from the skills/ directory
-# Skills are automatically available when Antigravity reads the SKILL.md files
+# Skills are loaded automatically from the skills/ directory
+# No additional setup required
 ```
 
 Then say: *"Build a production-grade SaaS for [your idea]"* — or *"Help me think about [your idea]"* if you want the Polymath co-pilot first.
@@ -53,50 +57,66 @@ Then say: *"Build a production-grade SaaS for [your idea]"* — or *"Help me thi
 
 Software development with AI today is broken in a specific way: **AI is fast at generating code, but slow at understanding what to generate.** You prompt, you get code, it's wrong, you re-prompt, you get different wrong code. The bottleneck isn't generation — it's alignment.
 
-Traditional AI coding tools assume you arrive with perfect clarity: the right architecture, the right tech stack, the right requirements. Most users don't. They have a fuzzy idea, knowledge gaps, and no way to tell the AI what it needs to know.
-
 **Production Grade solves both sides:**
 1. A **Polymath co-pilot** that thinks with you — researches your domain, detects your knowledge gaps, helps you crystallize the idea before committing to code
-2. A **14-agent autonomous pipeline** that executes the full software development lifecycle — from requirements to deployment — without you managing the process
+2. A **17-agent autonomous pipeline** that executes the full software development lifecycle — from requirements to deployment — without you managing the process
 
-The result: you describe what you want in plain language. 14 specialized skills research, design, build, test, secure, deploy, and document a complete production system. You approve 3 times. That's it.
+The result: you describe what you want in plain language. 17 specialized skills research, design, build, test, secure, deploy, and document a complete production system. You approve 3 times. That's it.
 
 ### By the Numbers
 
 | Metric | Detail |
 |--------|--------|
-| **14 specialized skills** | Each with sole authority over its domain — no overlap, no contradiction |
+| **17 specialized skills** | Each with sole authority over its domain — no overlap, no contradiction |
+| **12 execution modes** | Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Optimize, Design, Mobile |
 | **3 approval gates** | Everything between gates is fully autonomous |
 | **4 shared protocols** | UX, input validation, tool efficiency, conflict resolution |
-| **6 Polymath modes** | Onboard, research, ideate, advise, translate, synthesize |
+| **6 Polymath modes** | Onboard, research, ideate (with structured brainstorming), advise, translate, synthesize |
 | **4 engagement modes** | Express, Standard, Thorough, Meticulous — choose your interaction depth |
 | **0 open-ended questions** | Every user interaction is structured with numbered options |
 
-### What Makes This Unique
-
-**A co-pilot that thinks with you, not just for you.** The Polymath researches your domain via live web search before you answer a single question. It detects knowledge gaps in your request and fills them. No other skill system has a dedicated thinking partner that bridges the gap between "I have an idea" and "I know exactly what to build."
-
-**Full-lifecycle coverage in a single install.** Requirements, architecture, backend, frontend, testing, security audit, code review, infrastructure, CI/CD, SRE readiness, documentation, and custom skill generation — all coordinated through a dependency graph. Most tools cover one or two of these steps.
-
-**Non-technical users can drive the entire pipeline.** Every interaction uses numbered options. At every approval gate, "Chat about this" invokes the Polymath to explain technical decisions in plain language.
-
-**Architecture derived from YOUR constraints, not a template.** The Solution Architect conducts a scale and fitness interview — users, CCU, budget, team size, compliance, data patterns — and derives the right architecture pattern, infrastructure sizing, and data strategy.
-
-**Authority hierarchy eliminates conflicts.** When 14 skills work on the same codebase, overlapping outputs create chaos. Production Grade solves this with sole-authority domains: security-engineer owns OWASP (code-reviewer must not do security review), SRE owns SLOs (devops must not define them).
-
-**Adjustable interaction depth — from hands-off to full control.** Choose your engagement mode: Express (minimal interaction), Standard (balanced), Thorough (deep capacity planning), or Meticulous (approve each decision individually).
-
 ---
 
-## The Polymath — Your Co-Pilot
+## Skill Strengths & Capabilities
 
-The 14th skill, and the one that changes everything. Every other skill executes. The Polymath *thinks with you*.
+### 17 Bundled Skills
 
-**Before the pipeline:** Researches your domain, analyzes competitors, helps you crystallize a fuzzy idea into a clear vision.
+| # | Skill | Strengths | Key Capabilities |
+|---|-------|-----------|-----------------|
+| 0 | **polymath** | Creative partner, not just executor | Research, ideate (SCAMPER, Six Hats, HMW, Crazy 8s), advise, onboard, translate, synthesize |
+| 1 | **production-grade** | Smart routing, minimal overhead | 12 execution modes, auto-classifies request, dependency-based task graph |
+| 2 | **product-manager** | Deep requirement discovery | CEO interview, domain research via web search, BRD with user stories |
+| 3 | **solution-architect** | Scale-driven decisions | ADRs, API contracts (OpenAPI 3.1), data models, fitness interview, scaffold generation |
+| 4 | **software-engineer** | TDD-first, clean architecture | Handlers → services → repositories, strict TDD cycle, cross-cutting concerns |
+| 5 | **frontend-engineer** | Design system + a11y | Component library, pages, API integration, WCAG compliance, responsive design |
+| 6 | **qa-engineer** | Full testing pyramid + browser automation | Unit, integration, E2E, **Playwright** (visual regression, multi-viewport, a11y scanning), performance (k6) |
+| 7 | **security-engineer** | Sole OWASP/STRIDE authority | Threat modeling, code audit, auth/authz, PII detection, dependency scanning |
+| 8 | **code-reviewer** | Architecture conformance | Quality analysis, performance review, read-only (no code changes) |
+| 9 | **devops** | End-to-end infrastructure | Docker, Terraform, CI/CD, monitoring, **branch strategy** (trunk-based/gitflow), Conventional Commits |
+| 10 | **sre** | Sole SLO authority | SLOs, error budgets, chaos engineering, runbooks, capacity planning |
+| 11 | **data-scientist** | AI/ML lifecycle management | LLM optimization, A/B testing, data pipelines, cost modeling, **prompt engineering** (eval harness, guardrails) |
+| 12 | **technical-writer** | Automated doc generation | API reference, developer guides, Docusaurus scaffold, **changelog generation** (Conventional Commits) |
+| 13 | **skill-maker** | Self-extending system | Generates 3-5 project-specific custom skills based on domain needs |
+| 14 | **ui-designer** ⭐ NEW | Design-first approach | Design brief, color palettes, typography scale, wireframes, component inventory, interaction patterns, a11y guidelines |
+| 15 | **mobile-engineer** ⭐ NEW | Cross-platform native feel | React Native (Expo) / Flutter, navigation, native integrations (push, biometric, camera), app store prep |
 
-**During the pipeline:** When you hit an approval gate and see "modular monolith with row-level multi-tenancy" — select "Chat about this" and the Polymath explains in plain language.
+> **⭐ v5.1 Highlights:** `ui-designer` produces design tokens that `frontend-engineer` and `mobile-engineer` consume. `mobile-engineer` is conditional — only activates when BRD mentions mobile requirements.
 
-**Outside the pipeline:** Onboard on an unfamiliar codebase. Compare tech stacks. Analyze build-vs-buy decisions. Prepare a technical proposal.
+### Token-Efficient Architecture
+
+Large skills use a router + on-demand phase pattern. Only the relevant phase loads.
+
+| Skill | Phases |
+|-------|--------|
+| `polymath` | 6 modes: onboard, research, ideate (+ SCAMPER, Six Hats, HMW, Crazy 8s), advise, translate, synthesize |
+| `software-engineer` | 5 phases: context, implementation, cross-cutting, integration, local dev |
+| `frontend-engineer` | 5 phases: analysis, design system, components, pages, testing/a11y |
+| `security-engineer` | 6 phases: threat model, code audit, auth, data, supply chain, remediation |
+| `sre` | 5 phases: readiness, SLOs, chaos, incidents, capacity |
+| `data-scientist` | 7 phases: audit, LLM optimization, experiments, pipeline, ML infra, cost, **prompt engineering** |
+| `technical-writer` | 5 phases: audit, API reference, dev guides, Docusaurus, **changelog** |
+| `ui-designer` ⭐ | 4 phases: UX research, design tokens, wireframes, component inventory |
+| `mobile-engineer` ⭐ | 5 phases: platform analysis, navigation, screens (parallel), native integration, build/store prep |
 
 ---
 
@@ -106,85 +126,43 @@ The 14th skill, and the one that changes everything. Every other skill executes.
 DEFINE → BUILD → HARDEN → SHIP → SUSTAIN
 ```
 
-You give a high-level vision. 14 specialized skills handle everything else.
+You give a high-level vision. 17 specialized skills handle everything else.
 
 ### The Pipeline
 
 ```
 Polymath (pre-flight: research, gap detection, context building)
     ↓
-T1: Product Manager (BRD) ──────────────── GATE 1: approve requirements
-T2: Solution Architect ─────────────────── GATE 2: approve architecture
+T1:   Product Manager (BRD) ─────────────── GATE 1: approve requirements
+T1.5: UI Designer (design tokens, wireframes) ← NEW conditional
+T2:   Solution Architect ────────────────── GATE 2: approve architecture
     ↓
-T3a: Backend Engineer ──── implements services
-T3b: Frontend Engineer ─── implements pages
-T4a: DevOps ────────────── Dockerfiles + CI skeleton
+T3a: Backend Engineer ──── implements services      ┐
+T3b: Frontend Engineer ─── implements pages         ├ parallel
+T3c: Mobile Engineer ───── mobile app (conditional) ┘ ← NEW
+T4:  DevOps ────────────── Dockerfiles + CI skeleton
     ↓ (code written)
-T5: QA Engineer ─────────── tests (unit/e2e/perf)
+T5:  QA Engineer ─────────── tests (unit/e2e/perf/Playwright)
 T6a: Security Engineer ──── STRIDE + code audit
 T6b: Code Reviewer ──────── arch conformance review
     ↓
-T7: DevOps (IaC + CI/CD)
-T8: Remediation
-T9: SRE (SLOs + chaos)
-T10: Data Scientist (conditional)
+T7:  DevOps (IaC + CI/CD + branch strategy)
+T8:  Remediation
+T9:  SRE (SLOs + chaos)
+T10: Data Scientist (conditional — LLM/ML/AI projects)
     ↓ ─────────────────────────── GATE 3: approve production readiness
-T11: Technical Writer
+T11: Technical Writer (+ changelog generation)
 T12: Skill Maker
 T13: Compound Learning
 ```
 
 **3 approval gates. Sequential execution. Maximum quality.**
 
-### Interaction Model
-
-You choose from numbered options for every decision.
-
-```
-1. Approve — start building (Recommended)
-2. Show architecture details
-3. I have concerns
-4. Chat about this              ← Polymath explains in plain language
-```
-
 ---
 
-## 14 Bundled Skills
+## Integration Guide
 
-| # | Skill | Role |
-|---|-------|------|
-| 0 | **polymath** | Your co-pilot: research, advice, codebase onboarding, pipeline companion |
-| 1 | **production-grade** | Orchestrator: coordinates entire pipeline |
-| 2 | **product-manager** | CEO interview, domain research, BRD with user stories |
-| 3 | **solution-architect** | ADRs, tech stack, API contracts, data models, scaffold |
-| 4 | **software-engineer** | Clean architecture backend: handlers, services, repositories |
-| 5 | **frontend-engineer** | Design system, components, pages, API clients, a11y |
-| 6 | **qa-engineer** | Integration, e2e, performance tests, self-healing protocol |
-| 7 | **security-engineer** | STRIDE + OWASP (sole authority), PII, dependency scan |
-| 8 | **code-reviewer** | Architecture conformance, quality, performance (read-only) |
-| 9 | **devops** | Docker, Terraform, CI/CD, monitoring |
-| 10 | **sre** | SLOs (sole authority), chaos engineering, runbooks, capacity |
-| 11 | **data-scientist** | LLM optimization, A/B testing, data pipelines, cost modeling |
-| 12 | **technical-writer** | API reference, dev guides, Docusaurus scaffold |
-| 13 | **skill-maker** | 3-5 project-specific custom skills |
-
-### Token-Efficient Architecture
-
-Large skills use a router + on-demand phase pattern. Only the relevant phase loads.
-
-| Skill | Phases |
-|-------|--------|
-| `polymath` | 6 modes: onboard, research, ideate, advise, translate, synthesize |
-| `software-engineer` | 5 phases: context, implementation, cross-cutting, integration, local dev |
-| `frontend-engineer` | 5 phases: analysis, design system, components, pages, testing/a11y |
-| `security-engineer` | 6 phases: threat model, code audit, auth, data, supply chain, remediation |
-| `sre` | 5 phases: readiness, SLOs, chaos, incidents, capacity |
-| `data-scientist` | 6 phases: audit, LLM optimization, experiments, pipeline, ML infra, cost |
-| `technical-writer` | 4 phases: audit, API reference, dev guides, Docusaurus |
-
----
-
-## Installation
+### Installation
 
 ```bash
 # Clone and use directly
@@ -195,10 +173,6 @@ git clone https://github.com/antigravity-code/antigravity-code-production-grade-
 
 **Requirements:** Antigravity, Docker & Docker Compose, Git.
 
----
-
-## Configuration
-
 ### Zero Config
 
 Works out of the box. The orchestrator auto-detects your project structure and makes sensible defaults.
@@ -208,7 +182,7 @@ Works out of the box. The orchestrator auto-detects your project structure and m
 For existing projects or specific preferences:
 
 ```yaml
-version: "5.0"
+version: "5.1"
 
 project:
   name: "my-project"
@@ -220,6 +194,7 @@ project:
 paths:
   services: "services/"
   frontend: "frontend/"
+  mobile: "mobile/"             # NEW — mobile app directory
   tests: "tests/"
   terraform: "infrastructure/terraform/"
   ci_cd: ".github/workflows/"
@@ -230,30 +205,77 @@ preferences:
   orm: "prisma"
   package_manager: "npm"
   frontend_framework: "nextjs"
+  mobile_framework: "react-native"  # NEW — react-native | flutter
 
 features:
   frontend: true
+  mobile: false                 # NEW — auto-detected from BRD or set explicitly
+  ui_design: true               # NEW — set to false for backend-only projects
   ai_ml: false                  # auto-detected from imports
   multi_tenancy: true
   documentation_site: true
 ```
 
----
-
-## Partial Execution
+### Partial Execution
 
 Don't need the full pipeline? Run what you need:
 
 | Command | What Runs |
 |---------|-----------|
-| `"Just define"` | PM + Architect only |
-| `"Just build"` | Backend + Frontend + Containers |
+| `"Just define"` | PM + UI Designer + Architect only |
+| `"Just build"` | Backend + Frontend + Mobile + Containers |
 | `"Just harden"` | QA + Security + Code Review |
 | `"Just ship"` | IaC + CI/CD + SRE |
-| `"Just document"` | Technical Writer only |
+| `"Just document"` | Technical Writer + Changelog |
 | `"Help me think about..."` | Polymath only (exploration, research, advice) |
 | `"Onboard me on this repo"` | Polymath onboard mode |
+| `"Design UI for..."` | UI Designer only |
+| `"Build mobile app for..."` | Mobile Engineer (+ PM, Architect if needed) |
 | `"Skip frontend"` | Full pipeline minus frontend |
+| `"Skip mobile"` | Full pipeline minus mobile |
+
+### Brownfield Workflow (Existing Projects)
+
+1. Create `.production-grade.yaml` to map your existing paths
+2. Skills detect existing code and **extend, don't replace**
+3. Run specific modes: `"harden"`, `"add feature"`, `"write tests"`, `"document"`
+4. Workspace artifacts go to `Antigravity-Production-Grade-Suite/` — your code stays untouched
+
+---
+
+## Known Limitations & Important Notes
+
+### ⚠️ Limitations
+
+| Area | Limitation | Workaround |
+|------|-----------|------------|
+| **Mobile testing** | No automated mobile device testing (physical/emulator) in CI | Manual testing on real devices required; CI covers unit/integration only |
+| **Visual design** | UI Designer produces text-based specs, not Figma/Sketch files | Use specs to build in your preferred design tool, or feed directly to frontend-engineer |
+| **Playwright** | Playwright tests require browsers installed in CI environment | Use Playwright's Docker image or CI browser caching (documented in qa-engineer Phase 5b) |
+| **Prompt engineering** | LLM-as-judge eval requires additional API calls and cost | Budget for eval API calls; use exact-match/schema-valid metrics where possible |
+| **Changelog** | Requires Conventional Commits format in git history | Retrofit with `git rebase -i` or start fresh with commit-lint enforcement |
+| **App stores** | Plugin generates submission docs, not actual submissions | Manual App Store Connect / Play Console submission required |
+| **Flutter support** | Mobile engineer covers both RN and Flutter, but examples lean React Native | Explicitly set `mobile_framework: "flutter"` in config for Flutter-first output |
+| **Token budget** | Full 17-skill pipeline on large projects may hit context limits | Use engagement mode "Express" for autonomous execution; phases load on demand |
+| **No database migration runner** | Schema designs are generated but migrations aren't executed | Run generated SQL/migration files manually or integrate with your ORM's migration tool |
+
+### 📋 Important Notes
+
+1. **Conditional skills save tokens** — `mobile-engineer`, `data-scientist`, and `ui-designer` only activate when needed. Backend-only APIs skip all three automatically.
+
+2. **Design tokens flow downstream** — The `ui-designer` generates `docs/design/design-tokens.json` which `frontend-engineer` and `mobile-engineer` consume. If you skip UI design, these skills use sensible defaults.
+
+3. **Branch strategy depends on DevOps phase** — The new branch strategy section in `devops` recommends Trunk-Based Development by default. Override in config if your team uses Gitflow.
+
+4. **Changelog requires git history** — The new changelog phase reads `git log`. On fresh repos with no history, it generates a template instead.
+
+5. **Prompt engineering is deep** — Phase 7 of `data-scientist` includes eval harness, A/B testing, and guardrails. For simple LLM usage, Phase 2 (LLM Optimization) may be sufficient.
+
+6. **Engagement modes apply per-skill** — Express mode runs ALL skills autonomously. Standard surfaces 1-2 decisions per skill. For new users, start with Standard.
+
+7. **Authority hierarchy is strict** — Security engineer owns OWASP (code reviewer must not do security review). SRE owns SLOs (devops must not define them). UI Designer owns design tokens (frontend must consume, not replace).
+
+8. **Workspace artifacts are separate from your code** — All skill workspace outputs go to `Antigravity-Production-Grade-Suite/`. Your source code directories (`services/`, `frontend/`, `mobile/`) contain only production code.
 
 ---
 
@@ -269,21 +291,31 @@ Each domain has one authority. No overlap, no contradictions.
 | Infrastructure, CI/CD | **devops** | sre reviews but doesn't provision |
 | Requirements | **product-manager** | architect flags gaps, doesn't change requirements |
 | Architecture | **solution-architect** | implementation follows, doesn't redesign |
+| Design tokens, UX patterns | **ui-designer** | frontend/mobile consumes, doesn't replace |
+| Prompt quality, LLM guardrails | **data-scientist** | other skills don't modify prompts directly |
 
 ---
 
 ## Examples
 
 ```
-# Greenfield SaaS
+# Greenfield SaaS (all 17 skills)
 "Build a production-grade SaaS for multi-vendor e-commerce
  with seller dashboards, buyer marketplace, and payment processing."
 
-# AI/ML platform (data-scientist auto-activates)
+# AI/ML platform (data-scientist + prompt engineering auto-activate)
 "Full production pipeline for an AI content generation platform
  with prompt management, usage metering, and team workspaces."
 
-# API-only backend (frontend auto-skipped)
+# Mobile-first app (mobile-engineer auto-activates)
+"Build a fitness tracking app with iOS and Android support,
+ workout logging, social features, and push notifications."
+
+# Design system first
+"Design a UI system for a fintech dashboard —
+ color palette, components, wireframes, dark mode."
+
+# API-only backend (frontend, mobile, ui-design auto-skipped)
 "Build a production-grade REST API for a fintech lending platform.
  No frontend. Focus on security and compliance."
 
@@ -294,6 +326,11 @@ Each domain has one authority. No overlap, no contradictions.
 # Existing project
 "Onboard me on this codebase, then harden it —
  run security audit and code review."
+
+# Specific skill invocations
+"Write a changelog from my git history."
+"Generate Playwright tests for my login flow."
+"Set up a branch strategy for my team of 5."
 ```
 
 ---
@@ -310,10 +347,19 @@ Yes. The Polymath co-pilot translates everything into plain language. Every inte
 Yes. Create `.production-grade.yaml` to map your paths, then run specific phases or the full pipeline.
 
 **What languages are supported?**
-TypeScript/Node.js, Go, Python, Rust, Java/Kotlin.
+TypeScript/Node.js, Go, Python, Rust, Java/Kotlin. Mobile: React Native (Expo) or Flutter.
 
 **Will it overwrite my existing code?**
 No. Deliverables go to defined directories. Workspace artifacts stay in `Antigravity-Production-Grade-Suite/`.
+
+**Do I need all 17 skills?**
+No. The orchestrator only activates the skills you need. A backend API project may use only 8-10 skills. A full-stack mobile app might use all 17.
+
+**How does the UI Designer work without Figma?**
+It produces detailed text-based design specs: color palettes with exact hex/HSL values, typography scales, spacing systems, component inventories with state matrices, and wireframe descriptions with responsive breakpoints. The frontend/mobile engineer consumes these specs directly.
+
+**Is Playwright required for testing?**
+No. Playwright is an optional addition to the QA engineer (Phase 5b). Traditional unit, integration, and API tests run without it. Add Playwright when you need browser automation, visual regression, or accessibility scanning.
 
 **How is state managed?**
 Via `task.md` tracking files in the workspace. No custom state management needed.
@@ -324,10 +370,10 @@ Via `task.md` tracking files in the workspace. No custom state management needed
 
 1. Fork the repo
 2. Create a branch: `git checkout -b feature/your-feature`
-3. Commit changes
+3. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/): `feat(skill): add new capability`
 4. Open a Pull Request
 
-**Adding a skill:** Create `skills/your-skill-name/SKILL.md` with `---` frontmatter. For large skills, use the router + phases pattern.
+**Adding a skill:** Create `skills/your-skill-name/SKILL.md` with `---` frontmatter. For large skills, use the router + phases pattern. See any existing skill as a reference.
 
 ---
 
@@ -338,5 +384,5 @@ MIT
 ---
 
 <p align="center">
-  <strong>From idea to production-ready SaaS. One prompt. 14 expert AI skills. Your co-pilot included.</strong>
+  <strong>From idea to production-ready SaaS. One prompt. 17 expert AI skills. Your co-pilot included.</strong>
 </p>

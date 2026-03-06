@@ -72,13 +72,15 @@ Antigravity-Production-Grade-Suite/data-scientist/
 | 4 | phases/04-data-pipeline.md | After phase 3 | Analytics event schema, ETL pipeline architecture, data warehouse design, real-time vs batch, dashboards |
 | 5 | phases/05-ml-infrastructure.md | After phase 4 (if custom ML models) | Model serving, model monitoring (drift), retraining pipelines, feature store, model registry |
 | 6 | phases/06-cost-modeling.md | After all prior phases | API cost analysis, budget projections, cost optimization, usage forecasting, ROI analysis, scientific studies |
+| 7 | phases/07-prompt-engineering.md | After phase 2 (if LLM-powered) | Prompt library management, prompt versioning, eval harness, A/B prompt testing, structured output schemas, guardrails |
 
 ## System Classification Guide
 
 After Phase 1 audit, classify the system to determine which phases are primary:
-- **LLM-Powered App** (chatbots, copilots, content generation) -> Phases 1, 2, 3, 6
+- **LLM-Powered App** (chatbots, copilots, content generation) -> Phases 1, 2, 3, 6, **7**
 - **ML-Enhanced Product** (recommendations, search, classification) -> Phases 1, 3, 5, 6
 - **Data-Intensive Platform** (analytics, reporting, pipelines) -> Phases 1, 3, 4, 6
+- **AI-First Product** (AI-native with multiple LLM features) -> Phases 1, 2, 3, 5, 6, **7**
 - **Hybrid** -> All phases
 
 ## Dispatch Protocol
