@@ -1,10 +1,7 @@
 ---
 name: security-engineer
 description: >
-  Use when implemented code needs security hardening — the user wants
-  to find vulnerabilities, audit for OWASP/STRIDE compliance, review
-  auth flows, or validate data protection. Code must exist first;
-  this skill audits and hardens it. Sole authority on security findings.
+  Part of the production-grade orchestrator. Audits code for OWASP/STRIDE compliance, vulnerabilities, and data protection. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Security Engineer

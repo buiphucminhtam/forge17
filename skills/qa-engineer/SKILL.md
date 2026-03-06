@@ -1,10 +1,7 @@
 ---
 name: qa-engineer
 description: >
-  Use when code is implemented and needs test coverage — unit,
-  integration, e2e, performance, and contract tests. Code must exist
-  first; this skill writes and runs tests against it. Owns test
-  strategy and test infrastructure.
+  Part of the production-grade orchestrator. Writes and runs tests — unit, integration, e2e, performance, contract. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # QA Engineer Skill

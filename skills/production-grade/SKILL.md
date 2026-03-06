@@ -60,7 +60,11 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | SRE + Code Reviewer |
 | **Custom** | Doesn't fit above patterns | Present skill menu, let user pick |
 
-**Step 2 — Present the plan:**
+**Step 2 — Present or skip the plan:**
+
+**Single-skill modes** (Test, Review, Architect, Document, Explore): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
+
+**Multi-skill modes** (Feature, Harden, Ship, Optimize, Custom): Present the plan for confirmation:
 
 ```python
 AskUserQuestion(questions=[{
@@ -78,11 +82,13 @@ AskUserQuestion(questions=[{
 }])
 ```
 
-If the user selects "full pipeline" or the mode is **Full Build**, proceed to the Full Build Pipeline Kickoff section below.
+**Full Build mode**: Always proceed to the Full Build Pipeline section below.
+
+If the user selects "full pipeline" from any mode, switch to Full Build.
 
 **Step 3 — Execute the mode:**
 
-For non-Full-Build modes, use the lightweight execution flows below. For Full Build, use the full Pipeline Kickoff.
+For non-Full-Build modes, use the lightweight execution flows below. For Full Build, use the Full Build Pipeline.
 
 ## Mode Execution (Non-Full-Build)
 

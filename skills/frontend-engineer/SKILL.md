@@ -1,10 +1,7 @@
 ---
 name: frontend-engineer
 description: >
-  Use when the user needs a web frontend built — UI components, pages,
-  design system, or client-side application. Architecture and API
-  contracts should already exist; this skill implements the user-facing
-  layer from BRD user stories and API specs.
+  Part of the production-grade orchestrator. Builds production-ready web frontends from BRD user stories and API specs. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Frontend Engineer

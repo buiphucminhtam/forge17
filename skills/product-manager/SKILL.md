@@ -1,11 +1,7 @@
 ---
 name: product-manager
 description: >
-  Use when the user has a CLEAR idea and needs it formalized into
-  business requirements. The user knows what they want to build and
-  for whom — they need structured BRD, user stories, and acceptance
-  criteria. NOT for users who are still exploring or uncertain — use
-  polymath first if the user lacks clarity about what to build.
+  Part of the production-grade orchestrator. Formalizes ideas into BRD, user stories, and acceptance criteria. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Product Manager

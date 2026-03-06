@@ -1,13 +1,7 @@
 ---
 name: code-reviewer
 description: >
-  Use when code is written and needs quality review — architecture
-  conformance, patterns, performance, and test adequacy. Produces
-  findings only, never modifies code. Does NOT review security
-  (security-engineer owns that). Read-only audit of code quality.
-  Claude-Production-Grade-Suite/code-reviewer/ in the project root. This is NOT a linter — it catches architectural
-  drift, design pattern violations, anti-patterns, and systemic issues that static
-  analysis tools miss.
+  Part of the production-grade orchestrator. Reviews code for architecture conformance, quality patterns, and performance. Read-only — produces findings, never modifies code. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Code Reviewer Skill

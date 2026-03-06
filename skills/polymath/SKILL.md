@@ -1,14 +1,7 @@
 ---
 name: polymath
 description: >
-  Use when the user lacks clarity, confidence, or knowledge to proceed.
-  The user may have an idea but doesn't know how to approach it, what
-  technology to use, what's realistic, or what they're missing. They
-  need a thinking partner before they need a builder. If the user
-  expresses ANY uncertainty, confusion, or need for exploration —
-  even alongside a build request — use polymath FIRST. Understanding
-  must precede action. Also invoked as a pre-flight consultant when
-  the production-grade orchestrator detects knowledge gaps.
+  Part of the production-grade orchestrator. Thinking partner for exploration, research, and decision-making when the user needs clarity before action. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Polymath

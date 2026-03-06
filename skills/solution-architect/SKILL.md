@@ -1,10 +1,7 @@
 ---
 name: solution-architect
 description: >
-  Use when requirements are defined and the user needs system
-  architecture — tech stack selection, API design, data models, ADRs,
-  infrastructure patterns. BRD or clear requirements must exist; this
-  skill designs how to build it, not what to build.
+  Part of the production-grade orchestrator. Designs system architecture — tech stack, API contracts, data models, ADRs — derived from project constraints. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Solution Architect

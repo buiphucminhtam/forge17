@@ -1,10 +1,7 @@
 ---
 name: technical-writer
 description: >
-  Use when the system is built, tested, and deployed — now it needs
-  documentation. API references, dev guides, architecture overviews,
-  onboarding materials. Everything else must be done first; this skill
-  documents what exists.
+  Part of the production-grade orchestrator. Generates documentation — API references, dev guides, architecture overviews. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Technical Writer Skill

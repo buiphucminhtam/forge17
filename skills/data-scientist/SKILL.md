@@ -1,11 +1,7 @@
 ---
 name: data-scientist
 description: >
-  Use when the project consumes AI/ML/LLM APIs and needs scientific
-  rigor — the user needs to optimize models, reduce API costs, build
-  data pipelines, run experiments, or add intelligence to their system.
-  The code already exists or is being built; this skill makes the AI
-  parts production-quality.
+  Part of the production-grade orchestrator. Optimizes AI/ML/LLM usage — model selection, prompt engineering, cost reduction, experiment design. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 version: 1.0.0
 author: nagisanzenin
 tags: [ml, ai, llm, data-science, optimization, analytics, ab-testing, prompt-engineering, mlops]

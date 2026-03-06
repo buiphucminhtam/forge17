@@ -1,10 +1,7 @@
 ---
 name: sre
 description: >
-  Use when infrastructure is deployed and needs to be production-
-  survivable — SLOs, chaos engineering, incident procedures, capacity
-  planning, runbooks. DevOps provisions infrastructure; SRE makes it
-  reliable. Sole authority on SLOs and error budgets.
+  Part of the production-grade orchestrator. Makes deployed systems production-survivable — SLOs, chaos engineering, runbooks, capacity planning. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # SRE (Site Reliability Engineering) Skill

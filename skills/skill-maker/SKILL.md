@@ -1,10 +1,7 @@
 ---
 name: skill-maker
 description: >
-  Use when the user wants to create a reusable Claude Code skill or
-  plugin — packaging a workflow, pattern, or capability into a
-  SKILL.md that can be invoked repeatedly. The user has a repeatable
-  process they want to codify.
+  Part of the production-grade orchestrator. Creates reusable Claude Code skills and plugins from repeatable workflows. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Skill Maker

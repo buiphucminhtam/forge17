@@ -1,10 +1,7 @@
 ---
 name: devops
 description: >
-  Use when working code needs to be containerized, deployed, or given
-  CI/CD infrastructure. The user has built something and needs it
-  running in production — Docker, Terraform, pipelines, monitoring.
-  Code must exist first; this skill packages and ships it.
+  Part of the production-grade orchestrator. Containerizes, deploys, and builds CI/CD infrastructure for existing code. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # DevOps

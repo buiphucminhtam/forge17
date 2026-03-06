@@ -1,10 +1,7 @@
 ---
 name: software-engineer
 description: >
-  Use when architecture is defined and the user needs working backend
-  code — service handlers, business logic, data access layers, API
-  implementation. Architecture outputs (API contracts, schemas, ADRs)
-  must exist; this skill turns designs into running code.
+  Part of the production-grade orchestrator. Implements backend services from architecture specs and API contracts. Invoke /production-grade to auto-route, or use directly within an existing pipeline.
 ---
 
 # Software Engineer
