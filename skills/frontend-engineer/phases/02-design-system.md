@@ -68,7 +68,7 @@ Before moving to Phase 3:
 - Tailwind config (if applicable) extends with custom tokens
 - CSS custom properties bridge tokens to components
 
-**Present design system to user via AskUserQuestion for approval before proceeding.**
+**Present design system to user via notify_user for approval before proceeding.**
 
 ## Quality Bar
 

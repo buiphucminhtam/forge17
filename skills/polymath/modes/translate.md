@@ -15,7 +15,7 @@ When invoked at a gate or during pipeline execution:
 
 ### BRD Translation (Gate 1)
 
-Read `Claude-Production-Grade-Suite/product-manager/BRD/brd.md`, then:
+Read `Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md`, then:
 
 - Translate each user story into plain "what this means" language
 - Group features by what the user will see/experience
@@ -24,7 +24,7 @@ Read `Claude-Production-Grade-Suite/product-manager/BRD/brd.md`, then:
 
 Present:
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "[Plain-language BRD summary]",
   "header": "BRD Explained",
   "options": [
@@ -55,7 +55,7 @@ Use analogies that match the user's domain:
 
 ### Security Findings Translation
 
-Read `Claude-Production-Grade-Suite/security-engineer/`, then:
+Read `Antigravity-Production-Grade-Suite/security-engineer/`, then:
 
 - Translate severity levels: Critical = "this can cause real damage now", High = "must fix before going live"
 - Explain each finding in terms of business impact, not technical details

@@ -8,17 +8,17 @@ description: >
 
 # Frontend Engineer
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
-**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — use AskUserQuestion with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
+**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — Use notify_user with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt decision surfacing:
 
@@ -33,7 +33,7 @@ Read engagement mode and adapt decision surfacing:
 
 ## Brownfield Awareness
 
-If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing frontend first** — understand the framework, component patterns, styling approach, state management
 - **MATCH existing stack** — if they use Vue, don't create React. If they use Tailwind, use Tailwind
 - **NEVER overwrite** — add new components alongside existing ones
@@ -45,7 +45,7 @@ If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and 
 | Category | Inputs | Behavior if Missing |
 |----------|--------|-------------------|
 | Critical | `api/openapi/*.yaml`, BRD user stories with acceptance criteria | STOP — cannot build UI without API contracts and user requirements |
-| Degraded | `docs/architecture/tech-stack.md`, `docs/architecture/architecture-decision-records/` | WARN — ask user for framework/auth choices via AskUserQuestion |
+| Degraded | `docs/architecture/tech-stack.md`, `docs/architecture/architecture-decision-records/` | WARN — ask user for framework/auth choices via notify_user |
 | Optional | `docs/architecture/system-diagrams/`, `schemas/erd.md`, branding guidelines | Continue — use sensible defaults |
 
 ## Pipeline Position
@@ -89,32 +89,27 @@ When the BRD defines multiple page groups, components and pages use targeted par
 
 4. Phase 3b (Layout + Feature Components) runs in parallel — both read from completed primitives:
 
-```python
-Agent(
-  prompt="Build layout components (Sidebar, Header, PageLayout, etc.) following phases/03-components.md. "
-    "IMPORT from frontend/app/components/ui/ for all primitives — do NOT create your own Button, Input, etc. "
-    "Write to frontend/app/components/layout/.",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
-Agent(
-  prompt="Build feature components (DataTable, FileUpload, RichEditor, etc.) following phases/03-components.md. "
-    "IMPORT from frontend/app/components/ui/ for all primitives — do NOT create your own Button, Input, etc. "
-    "Write to frontend/app/components/features/.",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+```
+# Execute layout and feature components sequentially:
+
+# Step 1: Build layout components (Sidebar, Header, PageLayout, etc.)
+# following phases/03-components.md.
+# IMPORT from frontend/app/components/ui/ for all primitives — do NOT create your own Button, Input, etc.
+# Write to frontend/app/components/layout/.
+
+# Step 2: Build feature components (DataTable, FileUpload, RichEditor, etc.)
+# following phases/03-components.md.
+# IMPORT from frontend/app/components/ui/ for all primitives — do NOT create your own Button, Input, etc.
+# Write to frontend/app/components/features/.
 ```
 
 5. Phase 4 (Pages) runs in parallel by route group — all components are available:
 
 ```python
 # Example: BRD defines auth pages, dashboard, settings, onboarding
-Agent(prompt="Build auth pages (login, register, forgot-password). Use components from frontend/app/components/. Write to frontend/app/pages/auth/.", ...)
-Agent(prompt="Build dashboard pages (overview, analytics, activity). Use components from frontend/app/components/. Write to frontend/app/pages/dashboard/.", ...)
-Agent(prompt="Build settings pages (profile, billing, team, integrations). Use components from frontend/app/components/. Write to frontend/app/pages/settings/.", ...)
+Execute sequentially: Build auth pages (login, register, forgot-password). Use components from frontend/app/components/. Write to frontend/app/pages/auth/.
+Execute sequentially: Build dashboard pages (overview, analytics, activity). Use components from frontend/app/components/. Write to frontend/app/pages/dashboard/.
+Execute sequentially: Build settings pages (profile, billing, team, integrations). Use components from frontend/app/components/. Write to frontend/app/pages/settings/.
 ```
 
 6. Phase 5 (Testing + A11y) runs sequentially — needs all components and pages
@@ -146,7 +141,7 @@ Triggered -> Phase 1: UI/UX Analysis -> Phase 2: Design System
 | Tests | `frontend/tests/` | Component, page, hook, e2e, a11y tests |
 | Storybook | `frontend/storybook/` | Component documentation and visual testing |
 | Config | `frontend/` root | package.json, tsconfig, tailwind, eslint, playwright, lighthouse |
-| Workspace | `Claude-Production-Grade-Suite/frontend-engineer/` | Analysis docs, performance budget, progress notes |
+| Workspace | `Antigravity-Production-Grade-Suite/frontend-engineer/` | Analysis docs, performance budget, progress notes |
 
 ## Common Mistakes
 

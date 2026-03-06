@@ -230,7 +230,7 @@ Before moving to Phase 5:
 - State management stores are wired and functional
 - All pages implement loading/error/empty states
 
-**Present key pages to user via AskUserQuestion for approval before proceeding.**
+**Present key pages to user via notify_user for approval before proceeding.**
 
 ## Quality Bar
 

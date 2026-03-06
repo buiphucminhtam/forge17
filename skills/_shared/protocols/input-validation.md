@@ -13,15 +13,15 @@ If `.production-grade.yaml` exists, use its `paths.*` values for all file lookup
 
 ## Step 2: Probe Inputs in Parallel
 
-Issue parallel Glob/Read calls for all expected inputs. Do NOT read inputs one by one sequentially.
+Issue parallel find_by_name/view_file calls for all expected inputs. Do NOT read inputs one by one sequentially.
 
 ```
 # Example: probe all inputs at once
-Glob("docs/architecture/**/*.md")
-Glob("api/openapi/*.yaml")
-Glob("schemas/**/*")
-Glob("services/**/*")
-Read(".production-grade.yaml")
+find_by_name("*.md", "docs/architecture/")
+find_by_name("*.yaml", "api/openapi/")
+find_by_name("*", "schemas/")
+find_by_name("*", "services/")
+view_file(".production-grade.yaml")
 ```
 
 ## Step 3: Classify Missing Inputs
@@ -30,7 +30,7 @@ For each expected input, classify into one of three categories:
 
 | Classification | Criteria | Action |
 |---------------|----------|--------|
-| **Critical** | Skill cannot produce meaningful output without this input | Stop. Use AskUserQuestion to ask user where the input is or whether to skip this skill. |
+| **Critical** | Skill cannot produce meaningful output without this input | Stop. Use notify_user to ask user where the input is or whether to skip this skill. |
 | **Degraded** | Skill can produce partial output but some sections will be incomplete | Log the gap. Print a warning. Continue with partial scope. Mark affected sections as `[DEGRADED: <input> not found]`. |
 | **Optional** | Nice-to-have input that enriches output but is not necessary | Skip silently. Do not mention to user. |
 

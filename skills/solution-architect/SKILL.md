@@ -10,17 +10,17 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Brownfield Awareness
 
-If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing architecture first** — understand current patterns, tech stack, API structure
 - **Design around existing code** — new architecture extends the system, doesn't replace it
 - **Document existing patterns in ADRs** — capture what's already decided
@@ -29,9 +29,9 @@ If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and 
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
-Read `Claude-Production-Grade-Suite/.orchestrator/settings.md` at startup. Adapt discovery depth:
+Read `Antigravity-Production-Grade-Suite/.orchestrator/settings.md` at startup. Adapt discovery depth:
 
 | Mode | Discovery Approach |
 |------|-------------------|
@@ -44,7 +44,7 @@ Read `Claude-Production-Grade-Suite/.orchestrator/settings.md` at startup. Adapt
 
 Full architecture pipeline: from business requirements to a scaffolded, production-ready codebase. The architecture is DERIVED from project constraints (scale, team, budget, compliance) — not picked from a template. There is no one-size-fits-all architecture.
 
-Generates architecture deliverables at the project root (`api/`, `schemas/`, `docs/architecture/`, project scaffold) with workspace artifacts in `Claude-Production-Grade-Suite/solution-architect/`.
+Generates architecture deliverables at the project root (`api/`, `schemas/`, `docs/architecture/`, project scaffold) with workspace artifacts in `Antigravity-Production-Grade-Suite/solution-architect/`.
 
 ## Config Paths
 
@@ -56,7 +56,7 @@ Read `.production-grade.yaml` at startup. Use these overrides if defined:
 - `paths.migrations` — default: `schemas/migrations/`
 - `paths.tech_stack` — default: `docs/architecture/tech-stack.md`
 
-Deliverables go to the **project root** (`api/`, `schemas/`, `docs/architecture/`). Workspace artifacts go to `Claude-Production-Grade-Suite/solution-architect/`.
+Deliverables go to the **project root** (`api/`, `schemas/`, `docs/architecture/`). Workspace artifacts go to `Antigravity-Production-Grade-Suite/solution-architect/`.
 
 ## When to Use
 
@@ -101,15 +101,15 @@ The architecture must fit the project's actual constraints. This phase gathers t
 ### Step 1: Read Existing Context
 
 Before asking ANY questions, read in parallel:
-1. `Claude-Production-Grade-Suite/polymath/handoff/context-package.md` — may contain scale, constraints, decisions
-2. `Claude-Production-Grade-Suite/product-manager/BRD/brd.md` — user stories, acceptance criteria, business rules
-3. `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` — brownfield context
+1. `Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md` — may contain scale, constraints, decisions
+2. `Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md` — user stories, acceptance criteria, business rules
+3. `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` — brownfield context
 
 **Reduce questions to cover ONLY gaps not addressed in existing context.** If polymath or PM already established scale targets, do not re-ask.
 
 ### Step 2: Scale & Fitness Interview
 
-Adapt depth to engagement mode. Use AskUserQuestion with structured options (never open-ended).
+Adapt depth to engagement mode. Use notify_user with structured options (never open-ended).
 
 #### Express Mode
 
@@ -126,7 +126,7 @@ If a critical constraint is completely missing (e.g., BRD mentions "enterprise c
 **Round 1 — Scale & Users:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "I need to understand your scale to design the right architecture.\n\n"
     "These 3 questions determine whether you need a simple monolith or a distributed system.",
   "header": "Scale & Users",
@@ -144,7 +144,7 @@ AskUserQuestion(questions=[{
 Follow up with:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "What's the primary data pattern?",
   "header": "Data Characteristics",
   "options": [
@@ -161,7 +161,7 @@ AskUserQuestion(questions=[{
 **Round 2 — Constraints:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Who will build and maintain this system?",
   "header": "Team & Budget",
   "options": [
@@ -176,7 +176,7 @@ AskUserQuestion(questions=[{
 ```
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Any hard constraints?",
   "header": "Compliance & Deployment",
   "options": [
@@ -199,7 +199,7 @@ Everything in Standard, PLUS two additional rounds:
 **Round 3 — Technical Requirements:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Let's get precise about performance and availability requirements.",
   "header": "Performance & Availability",
   "options": [
@@ -214,7 +214,7 @@ AskUserQuestion(questions=[{
 ```
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Where are your users?",
   "header": "Geographic Distribution",
   "options": [
@@ -229,7 +229,7 @@ AskUserQuestion(questions=[{
 ```
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Expected peak concurrent users (CCU)?",
   "header": "Peak Load",
   "options": [
@@ -247,7 +247,7 @@ AskUserQuestion(questions=[{
 **Round 4 — Strategic:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "How do you see this system evolving?",
   "header": "Growth & Extensibility",
   "options": [
@@ -262,7 +262,7 @@ AskUserQuestion(questions=[{
 ```
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Monthly infrastructure budget ceiling?",
   "header": "Budget",
   "options": [
@@ -277,7 +277,7 @@ AskUserQuestion(questions=[{
 ```
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Cloud strategy?",
   "header": "Vendor & Portability",
   "options": [
@@ -403,7 +403,7 @@ Apply and document these production patterns:
 - Eventual consistency where appropriate
 - Zero-trust networking
 
-**Present architecture to user via AskUserQuestion for approval before proceeding.**
+**Present architecture to user via notify_user for approval before proceeding.**
 
 ## Phase 3: Tech Stack Selection
 
@@ -524,10 +524,10 @@ Makefile
 README.md
 ```
 
-### Workspace Output (`Claude-Production-Grade-Suite/solution-architect/`)
+### Workspace Output (`Antigravity-Production-Grade-Suite/solution-architect/`)
 
 ```
-Claude-Production-Grade-Suite/solution-architect/
+Antigravity-Production-Grade-Suite/solution-architect/
 ├── working-notes.md
 └── analysis/
     └── *.md

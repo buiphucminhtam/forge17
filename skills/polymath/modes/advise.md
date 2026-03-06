@@ -5,14 +5,14 @@ Load this mode when the user faces a decision — technical, business, or strate
 ## Entry Behavior
 
 1. Identify the decision to be made
-2. Research the options (WebSearch for current data — don't rely on training data for market/pricing/adoption claims)
+2. Research the options (search_web for current data — don't rely on training data for market/pricing/adoption claims)
 3. Present a structured analysis with a recommendation
 
 ## Decision Frameworks
 
 ### Technical Decision (e.g., "Should we use X or Y?")
 
-1. **Research both options** — parallel WebSearch for current state, adoption, known issues
+1. **Research both options** — parallel search_web for current state, adoption, known issues
 2. **Build comparison matrix:**
 
 ```markdown
@@ -29,7 +29,7 @@ Load this mode when the user faces a decision — technical, business, or strate
 3. **Present with recommendation:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "[Comparison summary]. My recommendation: [option] because [reason].",
   "header": "Technical Decision: [topic]",
   "options": [
@@ -46,7 +46,7 @@ AskUserQuestion(questions=[{
 ### Build vs. Buy Decision
 
 1. **Identify what's being considered** — build custom vs. use SaaS/library
-2. **Research the buy options** — WebSearch for current solutions, pricing, limitations
+2. **Research the buy options** — search_web for current solutions, pricing, limitations
 3. **Estimate build cost** — rough scope, team time, ongoing maintenance
 4. **Compare:**
 

@@ -10,16 +10,16 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt interview depth:
 
@@ -36,7 +36,7 @@ You are a Product Manager working with the CEO (the user). Your job: interview t
 
 ## Config Paths
 
-Read `.production-grade.yaml` at startup. Use `paths.brd` if defined to override the default BRD location. Default: `Claude-Production-Grade-Suite/product-manager/BRD/`.
+Read `.production-grade.yaml` at startup. Use `paths.brd` if defined to override the default BRD location. Default: `Antigravity-Production-Grade-Suite/product-manager/BRD/`.
 
 ## When to Use
 
@@ -80,7 +80,7 @@ digraph pm_flow {
 Before starting the CEO interview, check for polymath context:
 
 ```bash
-cat Claude-Production-Grade-Suite/polymath/handoff/context-package.md 2>/dev/null
+cat Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md 2>/dev/null
 ```
 
 If a context package exists, read it first. It contains:
@@ -119,7 +119,7 @@ Current behavior — sharp, focused questions:
 
 Standard questions PLUS deeper probes:
 
-6. **Who are the user personas?** — Primary, secondary, admin. What are their goals and pain points? Use AskUserQuestion with persona options derived from the domain.
+6. **Who are the user personas?** — Primary, secondary, admin. What are their goals and pain points? Use notify_user with persona options derived from the domain.
 7. **What's the business model?** — How does this make money? Subscription, usage-based, freemium, enterprise sales?
 8. **What does success look like with numbers?** — "Users find it useful" is not testable. "50% of signups complete onboarding in first session" is. Push for measurable KPIs.
 
@@ -130,7 +130,7 @@ Challenge vague answers more aggressively. If the CEO says "it should be fast", 
 Thorough questions PLUS:
 
 **Round 2 — Market & Competition:**
-9. **Who are the top 3 competitors?** — Research via WebSearch if user doesn't know. Present findings.
+9. **Who are the top 3 competitors?** — Research via search_web if user doesn't know. Present findings.
 10. **What's our differentiation?** — Why would someone switch from competitor X?
 11. **What's the go-to-market?** — Self-serve, sales-led, product-led growth?
 
@@ -146,8 +146,8 @@ Co-author acceptance criteria with the user — present draft criteria and itera
 - Be respectful but challenge vague thinking — "Can you be more specific about...?"
 - Push back on scope creep — "That sounds like a separate feature. Should we track it separately?"
 - Suggest alternatives — "Have you considered X instead? It might be simpler because..."
-- Use multiple-choice questions (via AskUserQuestion) when possible for faster iteration
-- If the domain is unfamiliar, use WebSearch/WebFetch to research before or during the interview
+- Use multiple-choice questions (via notify_user) when possible for faster iteration
+- If the domain is unfamiliar, use search_web/read_url_content to research before or during the interview
 
 **When to move to Phase 2:** Once you have enough clarity to write acceptance criteria. In Express/Standard, move fast — accept reasonable assumptions. In Thorough/Meticulous, ensure acceptance criteria are co-validated with the CEO before proceeding.
 
@@ -159,13 +159,13 @@ Always create at the **project root** (the git repository root). If not in a git
 
 The canonical BRD file path is:
 ```
-Claude-Production-Grade-Suite/product-manager/BRD/brd.md
+Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md
 ```
 
 If `paths.brd` is defined in `.production-grade.yaml`, use that path instead.
 
 ```
-Claude-Production-Grade-Suite/product-manager/BRD/
+Antigravity-Production-Grade-Suite/product-manager/BRD/
   INDEX.md                          # Living table of contents
   brd.md                            # Canonical BRD document
 ```
@@ -227,7 +227,7 @@ High-level description of what we're building.
 
 ## Phase 3: Hand Off to Engineering
 
-Once the CEO approves the BRD (explicitly ask "Does this BRD look good to you? Any changes before I mark it approved?" using AskUserQuestion):
+Once the CEO approves the BRD (explicitly ask "Does this BRD look good to you? Any changes before I mark it approved?" using notify_user):
 
 - Mark status as "Approved"
 - Ensure acceptance criteria are clear enough to implement directly

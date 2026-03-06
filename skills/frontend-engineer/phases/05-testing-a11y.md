@@ -6,7 +6,7 @@ Establish comprehensive testing coverage and accessibility compliance — compon
 
 ## Context Bridge
 
-Read Phase 3 component inventory from `Claude-Production-Grade-Suite/frontend-engineer/docs/component-inventory.md`. Read Phase 4 pages from `frontend/app/pages/` for route coverage.
+Read Phase 3 component inventory from `Antigravity-Production-Grade-Suite/frontend-engineer/docs/component-inventory.md`. Read Phase 4 pages from `frontend/app/pages/` for route coverage.
 
 ## Workflow
 
@@ -46,7 +46,7 @@ Produce E2E tests in `frontend/tests/e2e/` and `frontend/playwright.config.ts`.
 - Color contrast: 4.5:1 normal text, 3:1 large text
 - Motion: `prefers-reduced-motion` respected
 
-Produce `Claude-Production-Grade-Suite/frontend-engineer/docs/a11y-audit.md`.
+Produce `Antigravity-Production-Grade-Suite/frontend-engineer/docs/a11y-audit.md`.
 
 ### Step 4: Performance Budget (Core Web Vitals)
 
@@ -63,7 +63,7 @@ Define and enforce via Lighthouse CI:
 
 Configure `lighthouserc.json` with minScore assertions (performance 0.9, accessibility 0.95, best-practices 0.9) and numeric thresholds for LCP, TTI, CLS.
 
-Produce `frontend/lighthouserc.json` and `Claude-Production-Grade-Suite/frontend-engineer/docs/performance-budget.md`.
+Produce `frontend/lighthouserc.json` and `Antigravity-Production-Grade-Suite/frontend-engineer/docs/performance-budget.md`.
 
 ### Step 5: Visual Regression Testing
 
@@ -82,7 +82,7 @@ Produce visual regression configs in `frontend/tests/visual/`.
 | Mobile Chrome | Latest | Playwright emulation | P0 |
 | Mobile Safari | Latest | Playwright emulation | P0 |
 
-Produce `Claude-Production-Grade-Suite/frontend-engineer/docs/browser-support.md`.
+Produce `Antigravity-Production-Grade-Suite/frontend-engineer/docs/browser-support.md`.
 
 ## Output Files
 
@@ -91,9 +91,9 @@ Produce `Claude-Production-Grade-Suite/frontend-engineer/docs/browser-support.md
 - `frontend/tests/visual/` (visual regression)
 - `frontend/playwright.config.ts`
 - `frontend/lighthouserc.json`
-- `Claude-Production-Grade-Suite/frontend-engineer/docs/a11y-audit.md`
-- `Claude-Production-Grade-Suite/frontend-engineer/docs/performance-budget.md`
-- `Claude-Production-Grade-Suite/frontend-engineer/docs/browser-support.md`
+- `Antigravity-Production-Grade-Suite/frontend-engineer/docs/a11y-audit.md`
+- `Antigravity-Production-Grade-Suite/frontend-engineer/docs/performance-budget.md`
+- `Antigravity-Production-Grade-Suite/frontend-engineer/docs/browser-support.md`
 
 ## Validation Loop
 

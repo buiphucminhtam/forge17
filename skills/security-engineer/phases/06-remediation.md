@@ -2,16 +2,16 @@
 
 ## Objective
 
-Aggregate all findings from Phases 1-5 into a single prioritized remediation plan with executable fix instructions. Every Critical and High finding gets before/after code, a verification test, and an owner assignment. Medium and Low findings get a timeline. Also generate a structured penetration test plan. Generate all outputs in `Claude-Production-Grade-Suite/security-engineer/remediation/` and `Claude-Production-Grade-Suite/security-engineer/pen-test/`.
+Aggregate all findings from Phases 1-5 into a single prioritized remediation plan with executable fix instructions. Every Critical and High finding gets before/after code, a verification test, and an owner assignment. Medium and Low findings get a timeline. Also generate a structured penetration test plan. Generate all outputs in `Antigravity-Production-Grade-Suite/security-engineer/remediation/` and `Antigravity-Production-Grade-Suite/security-engineer/pen-test/`.
 
 ## Context Bridge
 
 Read ALL prior phase outputs:
-- `Claude-Production-Grade-Suite/security-engineer/threat-model/` (Phase 1)
-- `Claude-Production-Grade-Suite/security-engineer/code-audit/` (Phase 2)
-- `Claude-Production-Grade-Suite/security-engineer/auth-review/` (Phase 3)
-- `Claude-Production-Grade-Suite/security-engineer/data-security/` (Phase 4)
-- `Claude-Production-Grade-Suite/security-engineer/supply-chain/` (Phase 5)
+- `Antigravity-Production-Grade-Suite/security-engineer/threat-model/` (Phase 1)
+- `Antigravity-Production-Grade-Suite/security-engineer/code-audit/` (Phase 2)
+- `Antigravity-Production-Grade-Suite/security-engineer/auth-review/` (Phase 3)
+- `Antigravity-Production-Grade-Suite/security-engineer/data-security/` (Phase 4)
+- `Antigravity-Production-Grade-Suite/security-engineer/supply-chain/` (Phase 5)
 
 Every finding from every phase feeds into this plan. Do not re-analyze -- aggregate, deduplicate, and prioritize.
 
@@ -79,7 +79,7 @@ Requirements for code fixes:
 
 ### Step 4: Generate Penetration Test Plan
 
-Create a structured pen test plan in `Claude-Production-Grade-Suite/security-engineer/pen-test/`:
+Create a structured pen test plan in `Antigravity-Production-Grade-Suite/security-engineer/pen-test/`:
 
 **Authentication Tests:**
 - Brute force login (test lockout threshold and timing)
@@ -218,7 +218,7 @@ Produce a summary suitable for stakeholders:
 
 ## Output Deliverables
 
-Write all outputs to `Claude-Production-Grade-Suite/security-engineer/remediation/` and `Claude-Production-Grade-Suite/security-engineer/pen-test/`:
+Write all outputs to `Antigravity-Production-Grade-Suite/security-engineer/remediation/` and `Antigravity-Production-Grade-Suite/security-engineer/pen-test/`:
 
 | File | Contents |
 |------|----------|

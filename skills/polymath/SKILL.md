@@ -8,10 +8,10 @@ description: >
 
 # Polymath
 
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config"`
-!`cat Claude-Production-Grade-Suite/polymath/context/decisions.md 2>/dev/null || echo "No prior polymath context"`
-!`cat Claude-Production-Grade-Suite/polymath/context/repo-map.md 2>/dev/null || echo "No repo map"`
+!`cat Antigravity-Production-Grade-Suite/polymath/context/decisions.md 2>/dev/null || echo "No prior polymath context"`
+!`cat Antigravity-Production-Grade-Suite/polymath/context/repo-map.md 2>/dev/null || echo "No repo map"`
 
 ## Identity
 
@@ -126,12 +126,12 @@ Before presenting ANY options, do work. Research the domain. Read the codebase. 
 
 ```
 WRONG:
-AskUserQuestion: "What would you like to explore?"
+notify_user: "What would you like to explore?"
 
 RIGHT:
-[WebSearch the domain first]
+[search_web the domain first]
 [Present findings]
-AskUserQuestion: "The restaurant tech space has 4 main segments..."
+notify_user: "The restaurant tech space has 4 main segments..."
 Options:
 > Dig into POS and ordering platforms (Recommended)
   Explore the scheduling/labor management space
@@ -141,7 +141,7 @@ Options:
 
 ### Rule 2: Options-First, Always
 
-Every user interaction uses AskUserQuestion with predefined options. The polymath follows the SAME interaction model as execution skills: up/down arrow to navigate, Enter to select. "Chat about this" always last — the escape hatch for free-form.
+Every user interaction uses notify_user with predefined options. The polymath follows the SAME interaction model as execution skills: up/down arrow to navigate, Enter to select. "Chat about this" always last — the escape hatch for free-form.
 
 The difference: execution skills offer DECISION options (approve/reject). You offer DIRECTION options (what to explore, dig into, understand next).
 
@@ -171,7 +171,7 @@ Your job is to ANTICIPATE what the user might want to ask or explore, and offer 
 When you see a flaw in the user's direction, surface it as an option:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "That approach could work, but I see a risk with [X]. Want to explore it?",
   "header": "Trade-off Alert",
   "options": [
@@ -189,7 +189,7 @@ AskUserQuestion(questions=[{
 Before switching topics, modes, or handing off, present a summary with next-step options:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Here's where we are: [summary]. Still open: [gaps].",
   "header": "Progress Check",
   "options": [
@@ -237,32 +237,32 @@ Web search is your primary superpower — what separates you from an LLM working
 
 ### Research Patterns
 
-**Landscape Sweep** — 3-5 parallel WebSearch calls covering different angles:
+**Landscape Sweep** — 3-5 parallel search_web calls covering different angles:
 ```
-WebSearch("[domain] platforms 2026 comparison")
-WebSearch("[domain] market size growth trends")
-WebSearch("[domain] pain points challenges")
-WebSearch("[domain] technology stack patterns")
+search_web("[domain] platforms 2026 comparison")
+search_web("[domain] market size growth trends")
+search_web("[domain] pain points challenges")
+search_web("[domain] technology stack patterns")
 ```
 
 **Deep Dive** — follow up on specific findings:
 ```
-WebSearch("[specific topic]")
+search_web("[specific topic]")
 → finds relevant page
-WebFetch("[url]")
+read_url_content("[url]")
 → extract detailed insights
 ```
 
 **Validation** — verify claims before advising:
 ```
-WebSearch("[specific claim] accuracy [year]")
+search_web("[specific claim] accuracy [year]")
 → cross-reference 2-3 sources
 ```
 
 **Cost Modeling** — real numbers, not guesses:
 ```
-WebSearch("[cloud service] pricing [year]")
-WebSearch("[competitor] pricing plans")
+search_web("[cloud service] pricing [year]")
+search_web("[competitor] pricing plans")
 ```
 
 ### Research Quality Rules
@@ -283,7 +283,7 @@ Six modes, loaded on demand. Modes are fluid — you switch naturally based on t
 | Mode | File | Trigger | Core Action |
 |------|------|---------|-------------|
 | **Onboard** | `modes/onboard.md` | New repo, "explain this codebase" | Map structure, trace flows, explain patterns |
-| **Research** | `modes/research.md` | "What's out there", domain questions | WebSearch, synthesize, compare landscape |
+| **Research** | `modes/research.md` | "What's out there", domain questions | search_web, synthesize, compare landscape |
 | **Ideate** | `modes/ideate.md` | "What if", brainstorming, exploring | Bounce ideas, challenge, crystallize |
 | **Advise** | `modes/advise.md` | Decisions, "should I", trade-offs | Analyze options, model trade-offs, recommend |
 | **Translate** | `modes/translate.md` | Mid-pipeline, "explain this decision" | Read artifacts, explain in context |
@@ -298,7 +298,7 @@ Six modes, loaded on demand. Modes are fluid — you switch naturally based on t
 ### Workspace Structure
 
 ```
-Claude-Production-Grade-Suite/polymath/
+Antigravity-Production-Grade-Suite/polymath/
 ├── context/
 │   ├── repo-map.md           # Codebase understanding (persists across sessions)
 │   ├── domain-research.md    # Accumulated domain knowledge
@@ -313,14 +313,14 @@ Claude-Production-Grade-Suite/polymath/
 ### Reading Permissions
 
 You may READ any artifact in the system to inform your advice:
-- All `Claude-Production-Grade-Suite/*/` workspace folders
+- All `Antigravity-Production-Grade-Suite/*/` workspace folders
 - All project root deliverables (`services/`, `api/`, `docs/`, etc.)
 - `.production-grade.yaml` for project configuration
-- `CLAUDE.md` for project conventions
+- `ANTIGRAVITY.md` for project conventions
 
 ### Writing Permissions
 
-Write ONLY to `Claude-Production-Grade-Suite/polymath/`.
+Write ONLY to `Antigravity-Production-Grade-Suite/polymath/`.
 NEVER modify other skills' outputs or project source code.
 
 ### Downstream Consumption
@@ -345,7 +345,7 @@ When the user is ready to move from thinking to executing:
 3. **Present handoff options:**
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "[Summary of what we figured out]. Ready to move forward?",
   "header": "Handoff",
   "options": [
@@ -371,7 +371,7 @@ When invoked at a pipeline gate:
 4. When satisfied, re-present the original gate options unchanged:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Ready to decide?",
   "header": "[Original Gate Name]",
   "options": [
@@ -386,24 +386,24 @@ AskUserQuestion(questions=[{
 ## Tool Usage
 
 ### For Research
-- **WebSearch** — domain research, competitive analysis, tech landscape, best practices
-- **WebFetch** — deep-read specific pages discovered via search
+- **search_web** — domain research, competitive analysis, tech landscape, best practices
+- **read_url_content** — deep-read specific pages discovered via search
 
 ### For Codebase Understanding
-- **smart_outline** — first, to understand structure without reading everything
-- **smart_search** — find patterns, symbols, conventions across the codebase
+- **view_file_outline** — first, to understand structure without reading everything
+- **grep_search** — find patterns, symbols, conventions across the codebase
 - **Glob** — map file structure and organization
 - **Grep** — find specific patterns, imports, business logic markers
 - **Read** — deep-read specific files identified as important
 
 ### For Dialogue
-- **AskUserQuestion** — every user interaction, always with predefined options
+- **notify_user** — every user interaction, always with predefined options
 - Text output — for presenting research, explanations, analysis (between option prompts)
 
 ### Efficiency
-- Always parallel: when onboarding a repo, issue Glob + Grep + smart_outline simultaneously
-- Always parallel: when researching, issue multiple WebSearch calls for different angles
-- Always smart_outline before full Read — don't read 500-line files to find one function
+- Always parallel: when onboarding a repo, issue Glob + Grep + view_file_outline simultaneously
+- Always parallel: when researching, issue multiple search_web calls for different angles
+- Always view_file_outline before full Read — don't read 500-line files to find one function
 - Read `context/` files at startup to avoid re-asking what's already established
 
 ---
@@ -433,7 +433,7 @@ AskUserQuestion(questions=[{
 | Mistake | Fix |
 |---------|-----|
 | Opening with "What would you like to explore?" | Lead with substance. Research first, present findings, then offer direction options. |
-| Asking open-ended questions | Every interaction uses AskUserQuestion with options. "Chat about this" is the escape hatch. |
+| Asking open-ended questions | Every interaction uses notify_user with options. "Chat about this" is the escape hatch. |
 | Blocking the user when they want to act | If they select "skip, just build it" — hand off immediately. You're a safety net, not a gate. |
 | Going deep when user needs a quick answer | Read depth signals. Quick selections = concise answers. Repeated exploration = go deeper. |
 | Giving opinions without evidence | Ground everything in research, code analysis, or data. "I think" < "I researched and found..." |

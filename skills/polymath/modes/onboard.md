@@ -15,8 +15,8 @@ Glob("**/*.proto")                     # Detect gRPC
 Glob("**/docker-compose*.yml")         # Detect containerization
 Glob("**/*.yaml", path="api/")         # Detect API specs
 Read("README.md")                      # Project description
-Read("CLAUDE.md")                      # Project conventions
-smart_outline(<main entry files>)      # Architecture skeleton
+Read("ANTIGRAVITY.md")                      # Project conventions
+view_file_outline(<main entry files>)      # Architecture skeleton
 ```
 
 Issue ALL of these in parallel. Then synthesize into a repo map.
@@ -34,7 +34,7 @@ Size: ~[N]K lines, [N] files.
 
 Then offer direction options:
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "[bird's eye summary]",
   "header": "Codebase Overview",
   "options": [
@@ -49,14 +49,14 @@ AskUserQuestion(questions=[{
 ```
 
 **Layer 2: Domain Flows (on request)**
-Trace a user action end-to-end: HTTP request -> handler -> service -> repository -> database. Use smart_outline to show the call chain without reading every file.
+Trace a user action end-to-end: HTTP request -> handler -> service -> repository -> database. Use view_file_outline to show the call chain without reading every file.
 
 **Layer 3: Deep Dive (on request)**
 Read specific files the user wants to understand. Explain the code, the patterns, and the "why" behind implementation choices.
 
 ## Output
 
-Write to `Claude-Production-Grade-Suite/polymath/context/repo-map.md`:
+Write to `Antigravity-Production-Grade-Suite/polymath/context/repo-map.md`:
 
 ```markdown
 # Repo Map — [project name]

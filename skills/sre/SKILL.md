@@ -10,11 +10,11 @@ description: >
 
 ## Preprocessing
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
 ## Brownfield Awareness
 
@@ -25,7 +25,7 @@ If codebase context indicates `brownfield` mode:
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -36,7 +36,7 @@ If codebase context indicates `brownfield` mode:
 
 ## Fallback Protocol Summary
 
-If protocols above fail to load: (1) Never ask open-ended questions — use AskUserQuestion with predefined options, "Chat about this" always last, recommended option first. (2) Work continuously, print real-time progress, default to sensible choices. (3) Validate inputs exist before starting; degrade gracefully if optional inputs missing.
+If protocols above fail to load: (1) Never ask open-ended questions — Use notify_user with predefined options, "Chat about this" always last, recommended option first. (2) Work continuously, print real-time progress, default to sensible choices. (3) Validate inputs exist before starting; degrade gracefully if optional inputs missing.
 
 ## Identity
 
@@ -85,9 +85,9 @@ Read the relevant phase file before starting that phase. Never read all phases a
 After Phase 1 (Readiness Review) and Phase 2 (SLO Definition), Phases 3-5 run in parallel:
 
 ```python
-Agent(prompt="Design chaos engineering scenarios following Phase 3. Write to sre/chaos/.", ...)
-Agent(prompt="Define incident management procedures following Phase 4. Write to sre/incidents/ and docs/runbooks/.", ...)
-Agent(prompt="Create capacity planning models following Phase 5. Write to sre/capacity/.", ...)
+Execute sequentially: Design chaos engineering scenarios following Phase 3. Write to sre/chaos/.
+Execute sequentially: Define incident management procedures following Phase 4. Write to sre/incidents/ and docs/runbooks/.
+Execute sequentially: Create capacity planning models following Phase 5. Write to sre/capacity/.
 ```
 
 **Execution order:**
@@ -105,7 +105,7 @@ docs/runbooks/<service-name>/
 
 ### Workspace (Assessment & Analysis)
 ```
-Claude-Production-Grade-Suite/sre/
+Antigravity-Production-Grade-Suite/sre/
     production-readiness/  (checklist.md, findings.md, remediation.md)
     slo/                   (sli-definitions.yaml, slo-dashboard.json, error-budget-policy.md, burn-rate-alerts.yaml)
     chaos/                 (scenarios/*.yaml, game-day-playbook.md, steady-state-hypothesis.md)

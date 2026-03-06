@@ -11,16 +11,16 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -35,7 +35,7 @@ Read `.production-grade.yaml` at startup. Use path overrides if defined for `pat
 
 ## Read-Only Policy
 
-Produces findings and patch suggestions only. Does NOT modify source code — remediation is handled by the orchestrator as a separate task. All output is written exclusively to `Claude-Production-Grade-Suite/code-reviewer/`.
+Produces findings and patch suggestions only. Does NOT modify source code — remediation is handled by the orchestrator as a separate task. All output is written exclusively to `Antigravity-Production-Grade-Suite/code-reviewer/`.
 
 ## Security Scope
 
@@ -49,17 +49,17 @@ This skill runs as a **quality gate** AFTER implementation (`services/`, `libs/`
 - **`docs/architecture/`**, **`api/`** — ADRs, API contracts (OpenAPI/AsyncAPI), data models, sequence diagrams, architectural decisions, technology choices
 - **`services/`**, **`libs/`** — Backend services, handlers, repositories, domain models, middleware, infrastructure code
 - **`frontend/`** — UI components, pages, hooks, state management, API clients, routing
-- **`tests/`**, **`Claude-Production-Grade-Suite/qa-engineer/test-plan.md`** — Test suites, coverage thresholds, test plan, fixtures
+- **`tests/`**, **`Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md`** — Test suites, coverage thresholds, test plan, fixtures
 - **BRD / PRD** — Business requirements, acceptance criteria, NFRs
 
 ---
 
 ## Output Structure
 
-All artifacts are written to `Claude-Production-Grade-Suite/code-reviewer/` in the project root.
+All artifacts are written to `Antigravity-Production-Grade-Suite/code-reviewer/` in the project root.
 
 ```
-Claude-Production-Grade-Suite/code-reviewer/
+Antigravity-Production-Grade-Suite/code-reviewer/
 ├── review-report.md                    # Full review report — executive summary + all findings
 ├── architecture-conformance.md         # ADR compliance check — decision-by-decision audit
 ├── findings/
@@ -102,10 +102,10 @@ Execute each phase sequentially. Every phase produces specific output files. Do 
 Phases 1-4 can run in parallel — each reviews a different dimension of the same codebase:
 
 ```python
-Agent(prompt="Review architecture conformance following Phase 1 checklist. Compare implementation against ADRs. Write to code-reviewer/architecture-conformance.md.", ...)
-Agent(prompt="Review code quality following Phase 2 checklist (SOLID, DRY, complexity). Write findings to code-reviewer/findings/.", ...)
-Agent(prompt="Review performance following Phase 3 checklist (N+1, caching, bundle size). Write findings to code-reviewer/findings/.", ...)
-Agent(prompt="Review test quality following Phase 4 checklist. Cross-reference test plan. Write to code-reviewer/metrics/.", ...)
+Execute sequentially: Review architecture conformance following Phase 1 checklist. Compare implementation against ADRs. Write to code-reviewer/architecture-conformance.md.
+Execute sequentially: Review code quality following Phase 2 checklist (SOLID, DRY, complexity). Write findings to code-reviewer/findings/.
+Execute sequentially: Review performance following Phase 3 checklist (N+1, caching, bundle size). Write findings to code-reviewer/findings/.
+Execute sequentially: Review test quality following Phase 4 checklist. Cross-reference test plan. Write to code-reviewer/metrics/.
 ```
 
 Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it compiles all findings.
@@ -136,7 +136,7 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 7. **Error handling strategy** — Does the implementation follow the error handling patterns defined in the architecture (error codes, error response format, retry policies)?
 8. **Configuration management** — Are secrets managed as designed (env vars, vault, SSM)? Are there hardcoded values that should be configurable?
 
-**Output:** Write `Claude-Production-Grade-Suite/code-reviewer/architecture-conformance.md` with:
+**Output:** Write `Antigravity-Production-Grade-Suite/code-reviewer/architecture-conformance.md` with:
 - A table listing every ADR from `docs/architecture/` and its conformance status (Conformant / Partial / Violated)
 - For each violation: the ADR reference, what was specified, what was implemented, severity, and recommended fix
 - For partial conformance: what is correct and what deviates
@@ -173,7 +173,7 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 13. **Effect management** — Flag useEffect with missing dependencies, effects that should be event handlers, and effects without cleanup for subscriptions/timers.
 14. **Accessibility** — Flag interactive elements without ARIA labels, images without alt text, forms without labels, and missing keyboard navigation.
 
-**Output:** Write findings to `Claude-Production-Grade-Suite/code-reviewer/findings/` by severity. Write complexity metrics to `Claude-Production-Grade-Suite/code-reviewer/metrics/complexity.json`.
+**Output:** Write findings to `Antigravity-Production-Grade-Suite/code-reviewer/findings/` by severity. Write complexity metrics to `Antigravity-Production-Grade-Suite/code-reviewer/metrics/complexity.json`.
 
 ---
 
@@ -205,7 +205,7 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 12. **Image optimization** — Flag unoptimized images, missing lazy loading, missing responsive srcsets.
 13. **Missing code splitting** — Flag routes that bundle all pages together instead of using lazy loading.
 
-**Output:** Write performance findings to `Claude-Production-Grade-Suite/code-reviewer/findings/` by severity. Write dependency analysis to `Claude-Production-Grade-Suite/code-reviewer/metrics/dependency-analysis.json`.
+**Output:** Write performance findings to `Antigravity-Production-Grade-Suite/code-reviewer/findings/` by severity. Write dependency analysis to `Antigravity-Production-Grade-Suite/code-reviewer/metrics/dependency-analysis.json`.
 
 ---
 
@@ -215,8 +215,8 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 
 **Inputs to read:**
 - `tests/` all test files
-- `Claude-Production-Grade-Suite/qa-engineer/test-plan.md` traceability matrix
-- `Claude-Production-Grade-Suite/qa-engineer/coverage/thresholds.json`
+- `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` traceability matrix
+- `Antigravity-Production-Grade-Suite/qa-engineer/coverage/thresholds.json`
 - `services/`, `libs/` source files (to identify untested paths)
 
 **Review checklist:**
@@ -231,7 +231,7 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 9. **Missing test types** — Cross-reference the test plan traceability matrix. Flag acceptance criteria with no corresponding test.
 10. **Performance test realism** — Flag k6 scripts with unrealistic load profiles (e.g., 10,000 VUs for an internal tool). Flag scripts with missing thresholds.
 
-**Output:** Write test quality findings to `Claude-Production-Grade-Suite/code-reviewer/findings/` by severity. Write coverage gap analysis to `Claude-Production-Grade-Suite/code-reviewer/metrics/coverage-gaps.json`.
+**Output:** Write test quality findings to `Antigravity-Production-Grade-Suite/code-reviewer/findings/` by severity. Write coverage gap analysis to `Antigravity-Production-Grade-Suite/code-reviewer/metrics/coverage-gaps.json`.
 
 ---
 
@@ -245,14 +245,14 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 
 **Actions:**
 
-1. Write `Claude-Production-Grade-Suite/code-reviewer/review-report.md` with the following sections:
+1. Write `Antigravity-Production-Grade-Suite/code-reviewer/review-report.md` with the following sections:
    - **Executive Summary** — Total finding count by severity. Overall assessment (Pass / Pass with Conditions / Fail). Top 3 most critical issues.
    - **Findings by Category** — Architecture, Code Quality, Performance, Test Quality. Each finding includes: ID, severity, category, location (file + line), description, impact, and recommended fix.
    - **Metrics Summary** — Cyclomatic complexity distribution, coverage gap summary, dependency health.
    - **Recommendations** — Prioritized list of actions. What to fix now, what to fix next sprint, what to add to tech debt backlog.
    - **Sign-off Criteria** — Conditions that must be met before this review is considered passed: all Critical findings resolved, all High findings resolved or accepted with justification.
 
-2. Write individual findings files to `Claude-Production-Grade-Suite/code-reviewer/findings/`:
+2. Write individual findings files to `Antigravity-Production-Grade-Suite/code-reviewer/findings/`:
    - `critical.md` — Findings that block deployment
    - `high.md` — Findings that must be fixed before production
    - `medium.md` — Findings that should be fixed soon
@@ -289,18 +289,18 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
    - Unused imports
    - Missing index definitions
 
-   Write each auto-fix to `Claude-Production-Grade-Suite/code-reviewer/auto-fixes/<service>/<file>.patch.md` with:
+   Write each auto-fix to `Antigravity-Production-Grade-Suite/code-reviewer/auto-fixes/<service>/<file>.patch.md` with:
    - Finding ID reference
    - Before code block
    - After code block
    - Explanation of the change
 
 4. Compile metrics:
-   - `Claude-Production-Grade-Suite/code-reviewer/metrics/complexity.json` — Cyclomatic complexity per function, flagged functions with complexity > 10
-   - `Claude-Production-Grade-Suite/code-reviewer/metrics/coverage-gaps.json` — List of untested files, untested functions, untested branches
-   - `Claude-Production-Grade-Suite/code-reviewer/metrics/dependency-analysis.json` — Service dependency graph, coupling score per service, circular dependency detection
+   - `Antigravity-Production-Grade-Suite/code-reviewer/metrics/complexity.json` — Cyclomatic complexity per function, flagged functions with complexity > 10
+   - `Antigravity-Production-Grade-Suite/code-reviewer/metrics/coverage-gaps.json` — List of untested files, untested functions, untested branches
+   - `Antigravity-Production-Grade-Suite/code-reviewer/metrics/dependency-analysis.json` — Service dependency graph, coupling score per service, circular dependency detection
 
-**Output:** Write all report files, findings, metrics, and auto-fixes to `Claude-Production-Grade-Suite/code-reviewer/`.
+**Output:** Write all report files, findings, metrics, and auto-fixes to `Antigravity-Production-Grade-Suite/code-reviewer/`.
 
 ---
 
@@ -317,7 +317,7 @@ Wait for all 4 agents, then run Phase 5 (Review Report) sequentially — it comp
 | 7 | Ignoring `frontend/` entirely or applying only backend review criteria | Frontend has its own class of issues (render performance, accessibility, bundle size) that backend checklists miss | Apply frontend-specific review criteria from Phase 2 and Phase 3 to all `frontend/` code |
 | 8 | Not reading the test files before reviewing test quality | Cannot identify coverage gaps, assertion quality issues, or missing edge cases without reading the actual tests | Read both the source file and its corresponding test file together to identify gaps |
 | 9 | Producing a review report longer than 50 pages | No one reads it. Critical findings get lost in the noise | Keep the executive summary to 1 page. Use the findings files for detail. Prioritize ruthlessly |
-| 10 | Modifying files in `services/`, `frontend/`, or `tests/` | The reviewer must not change source code — only document findings and suggest fixes | Write all output exclusively to Claude-Production-Grade-Suite/code-reviewer/. Suggested code changes go in auto-fixes/ as patch files |
+| 10 | Modifying files in `services/`, `frontend/`, or `tests/` | The reviewer must not change source code — only document findings and suggest fixes | Write all output exclusively to Antigravity-Production-Grade-Suite/code-reviewer/. Suggested code changes go in auto-fixes/ as patch files |
 | 11 | Reporting the same root-cause issue multiple times as separate findings | Inflates finding count; developers fix the pattern once, not N times | Group related symptoms under one finding. Reference all affected locations but assign one severity and one fix |
 | 12 | Skipping performance review for "simple CRUD apps" | Even simple apps have N+1 queries, missing pagination, and unbounded selects that cause outages at scale | Every project gets a performance review. Adjust depth based on traffic expectations, but never skip it |
 | 13 | Not providing impact statements for findings | Developers cannot prioritize fixes without understanding consequences | Every finding must explain what happens if the issue is not fixed: data loss, outage, slow degradation |
@@ -333,13 +333,13 @@ Before marking the skill as complete, verify:
 - [ ] `architecture-conformance.md` audits every ADR in `docs/architecture/` with a conformance status
 - [ ] Every finding has: ID, severity, category, file location, description, impact, and recommendation
 - [ ] Performance review checks for N+1 queries, missing indexes, unbounded queries, and caching gaps
-- [ ] Test quality review cross-references the `Claude-Production-Grade-Suite/qa-engineer/test-plan.md` traceability matrix for coverage gaps
+- [ ] Test quality review cross-references the `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` traceability matrix for coverage gaps
 - [ ] `review-report.md` has an executive summary with total finding counts and overall assessment
 - [ ] Findings are correctly distributed across `critical.md`, `high.md`, `medium.md`, and `low.md`
 - [ ] `metrics/complexity.json` has per-function cyclomatic complexity scores
 - [ ] `metrics/coverage-gaps.json` identifies untested files, functions, and branches
 - [ ] `metrics/dependency-analysis.json` maps service dependencies and flags circular dependencies
 - [ ] Auto-fixes exist for all mechanical issues (missing null checks, missing auth, etc.)
-- [ ] No files were created or modified outside of Claude-Production-Grade-Suite/code-reviewer/
+- [ ] No files were created or modified outside of Antigravity-Production-Grade-Suite/code-reviewer/
 - [ ] The report is actionable — a developer can read a finding and know exactly what to fix and where
 - [ ] No OWASP or security review was performed — security analysis is deferred to security-engineer

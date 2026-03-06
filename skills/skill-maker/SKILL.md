@@ -1,7 +1,7 @@
 ---
 name: skill-maker
 description: >
-  [production-grade internal] Creates reusable Claude Code skills and plugins
+  [production-grade internal] Creates reusable Antigravity skills and plugins
   when you want to automate repeatable workflows into shareable tools.
   Routed via the production-grade orchestrator.
 ---
@@ -10,16 +10,16 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Overview
 
-End-to-end skill and plugin creation pipeline. Interviews the user on what the skill should do, writes the SKILL.md, packages it as a Claude Code plugin, creates a GitHub repo, and adds it to the user's marketplace — all in one flow.
+End-to-end skill and plugin creation pipeline. Interviews the user on what the skill should do, writes the SKILL.md, packages it as a Antigravity plugin, creates a GitHub repo, and adds it to the user's marketplace — all in one flow.
 
 ## Config Paths
 
@@ -60,7 +60,7 @@ digraph skill_maker {
 
 ## Phase 1: Interview (Quick)
 
-Ask 3-4 questions using AskUserQuestion, one at a time:
+Ask 3-4 questions using notify_user, one at a time:
 
 1. **What does this skill do?** — Core purpose in one sentence
 2. **When should it trigger?** — Specific words, patterns, or situations
@@ -107,92 +107,34 @@ Table of mistake -> fix pairs.
 - Use active voice, verb-first naming
 - Include keywords for discoverability (error messages, symptoms, tool names)
 
-**Present the SKILL.md to the user and ask for approval** using AskUserQuestion before proceeding.
+**Present the SKILL.md to the user and ask for approval** using notify_user before proceeding.
 
-## Phase 3: Package as Plugin
+## Phase 3: Install Skill
 
-Create the plugin directory structure:
+Place the generated SKILL.md directly in the project's skills directory:
 
 ```
-<skill-name>-plugin/
-├── .claude-plugin/
-│   └── plugin.json
-├── skills/
-│   └── <skill-name>/
-│       └── SKILL.md
-└── README.md
+skills/
+└── <skill-name>/
+    └── SKILL.md
 ```
 
-**plugin.json template:**
-```json
-{
-  "name": "<skill-name>",
-  "description": "<one-line description>",
-  "version": "1.0.0",
-  "author": {
-    "name": "<from git config or ask>"
-  },
-  "license": "MIT",
-  "keywords": ["<relevant>", "<tags>"]
-}
-```
+The skill is immediately available for use — Antigravity loads skills directly from the `skills/` directory. No packaging or marketplace registration needed.
 
-**README.md template:**
-```markdown
-# <Skill Name> Plugin for Claude Code
+1. Create the skill directory: `mkdir -p skills/<skill-name>/`
+2. Write the SKILL.md to `skills/<skill-name>/SKILL.md`
+3. For complex skills with phases, create sub-files: `skills/<skill-name>/phases/*.md`
+4. Report to user: `✓ Skill "<skill-name>" installed to skills/<skill-name>/SKILL.md`
 
-<description>
+## Phase 4: Create Repo & Push (Optional)
 
-## Installation
+If the user wants to share the skill publicly:
 
-### Via Marketplace
-/plugin marketplace add nagisanzenin/claude-code-plugins
-/plugin install <skill-name>@nagisanzenin
-
-### Load Directly
-claude --plugin-dir /path/to/<skill-name>-plugin
-
-## Usage
-<trigger description and examples>
-
-## License
-MIT
-```
-
-## Phase 4: Create Repo & Push
-
-1. `git init` in the plugin directory
-2. `git add -A && git commit -m "Initial release: <skill-name> plugin v1.0.0"`
-3. `gh repo create <skill-name>-plugin --public --source . --push`
-4. If `gh` auth fails, guide user through `gh auth login`
-
-## Phase 5: Add to Marketplace
-
-1. Read the user's marketplace repo (default: `nagisanzenin/claude-code-plugins`)
-2. Clone or locate the marketplace locally
-3. Add new plugin entry to `.claude-plugin/marketplace.json`:
-   ```json
-   {
-     "name": "<skill-name>",
-     "source": {
-       "source": "github",
-       "repo": "nagisanzenin/<skill-name>-plugin"
-     },
-     "description": "<description>",
-     "version": "1.0.0"
-   }
-   ```
-4. Update README.md plugin table
-5. Commit and push marketplace repo
-6. Report final install command: `/plugin install <skill-name>@nagisanzenin`
-
-## Marketplace Config
-
-**Default marketplace repo:** `nagisanzenin/claude-code-plugins`
-**Default marketplace local path:** `~/nagisanzenin-plugins`
-**Default plugin location:** `~/<skill-name>-plugin`
-
-If the user has a different marketplace, ask which one to use.
+1. Create a standalone directory for the skill
+2. `git init` in the skill directory
+3. `git add -A && git commit -m "Initial release: <skill-name> skill v1.0.0"`
+4. `gh repo create <skill-name>-skill --public --source . --push`
+5. If `gh` auth fails, guide user through `gh auth login`
 
 ## Common Mistakes
 
@@ -202,5 +144,4 @@ If the user has a different marketplace, ask which one to use.
 | Special chars in name | Letters, numbers, hyphens only. No parentheses. |
 | Skill too verbose (500+ words) | Cut ruthlessly. One example, not five. |
 | Missing keywords for discovery | Add error messages, symptoms, tool names in the content |
-| Forgetting to update marketplace | Always add to marketplace.json AND push |
-| Plugin files inside .claude-plugin/ | Only plugin.json goes in .claude-plugin/. Skills at root level. |
+| Not placing in skills/ directory | Skills go in `skills/<name>/SKILL.md` for auto-loading |

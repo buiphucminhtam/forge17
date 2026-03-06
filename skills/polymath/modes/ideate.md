@@ -7,7 +7,7 @@ Load this mode when the user is exploring ideas, brainstorming possibilities, or
 When entering ideation, first understand what already exists:
 1. Read `context/decisions.md` for prior conclusions
 2. Read `context/domain-research.md` for relevant research
-3. If the idea touches a domain, do a quick WebSearch to ground the brainstorm in reality
+3. If the idea touches a domain, do a quick search_web to ground the brainstorm in reality
 
 Then present the user's idea back to them, refined, with exploration directions.
 
@@ -18,7 +18,7 @@ Then present the user's idea back to them, refined, with exploration directions.
 Take the user's fuzzy idea and present it back in 2-3 concrete interpretations:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "I hear [user's idea]. That could go several directions...\n\n"
     "**Interpretation A:** [concrete version 1]\n"
     "**Interpretation B:** [concrete version 2]\n"
@@ -40,7 +40,7 @@ AskUserQuestion(questions=[{
 Once a direction is selected, challenge it constructively:
 
 - **"Who specifically needs this?"** — push for concrete user profiles, not abstract personas
-- **"What exists today?"** — quick WebSearch to avoid reinventing existing solutions
+- **"What exists today?"** — quick search_web to avoid reinventing existing solutions
 - **"What's the simplest version that delivers value?"** — fight scope creep
 - **"What makes this different?"** — identify the differentiator
 
@@ -51,7 +51,7 @@ Present each challenge as an option the user can explore or skip.
 When the idea has enough shape, present a crystallized version:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Here's what I think we've landed on:\n\n"
     "**Product:** [one-line description]\n"
     "**For:** [target user]\n"
@@ -75,7 +75,7 @@ AskUserQuestion(questions=[{
 When you see potential problems, surface them proactively but constructively:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "I want to flag something: [potential issue]. This doesn't kill the idea, but it changes the approach.",
   "header": "Consideration",
   "options": [

@@ -4,14 +4,23 @@
 
 ## RULE 1: NEVER Ask Open-Ended Questions
 
-**NEVER output text expecting the user to type.** Every user interaction MUST use `AskUserQuestion` with predefined options. Users navigate with arrow keys (up/down) and press Enter.
+**NEVER output text expecting the user to type.** Every user interaction MUST use `notify_user` with numbered predefined options in markdown format. Users read the options and respond with their choice.
 
 **WRONG:** "What do you think?" / "Do you approve?" / "Any feedback?"
-**RIGHT:** Use AskUserQuestion with 2-4 options + "Chat about this" as last option.
+**RIGHT:** Use notify_user with 2-4 numbered options + "Chat about this" as last option.
+
+**Format:**
+```
+Please choose an option:
+
+1. **Option A (Recommended)** — Description
+2. **Option B** — Description
+3. **Chat about this** — Free-form input
+```
 
 ## RULE 2: "Chat about this" Always Last
 
-Every `AskUserQuestion` MUST have `"Chat about this"` as the last option — the user's escape hatch for free-form typing.
+Every interaction MUST have `"Chat about this"` as the last option — the user's escape hatch for free-form typing.
 
 ## RULE 3: Recommended Option First
 
@@ -19,11 +28,11 @@ First option = recommended default with `(Recommended)` suffix.
 
 ## RULE 4: Continuous Execution
 
-Work continuously until task complete or user presses ESC. Never ask "should I continue?" — just keep going.
+Work continuously until task complete or user intervenes. Never ask "should I continue?" — just keep going.
 
-## RULE 5: Real-Time Terminal Updates
+## RULE 5: Real-Time Progress Updates
 
-Constantly print progress. Never go silent.
+Constantly communicate progress via `task_boundary` status updates. Never go silent.
 ```
 ━━━ [Phase/Task Name] ━━━━━━━━━━━━━━━━━━━━━━
 
@@ -40,4 +49,4 @@ Summary: [what was produced]
 1. Default to sensible choices — minimize questions
 2. Self-resolve issues — debug and fix before asking user
 3. Report decisions made, don't ask for permission on minor choices
-4. Only use AskUserQuestion for major decisions or approval gates
+4. Only use notify_user for major decisions or approval gates

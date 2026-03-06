@@ -11,7 +11,7 @@ Set up a production-ready Docusaurus documentation site that organizes all docs 
 | All documentation | `docs/` | Pages to organize into sidebar categories |
 | Project metadata | `package.json` or `README.md` | Project name, description, repository URL |
 | Branding assets | `frontend/public/` or project root | Favicon, logo, brand colors (use defaults if absent) |
-| Content inventory | `Claude-Production-Grade-Suite/technical-writer/content-inventory.md` | Sitemap from Phase 1 |
+| Content inventory | `Antigravity-Production-Grade-Suite/technical-writer/content-inventory.md` | Sitemap from Phase 1 |
 
 ## 4.2 — Docusaurus Project Setup
 
@@ -105,7 +105,7 @@ Configure search in one of two modes:
    - Add `@cmfcmf/docusaurus-search-local` as alternative
    - Configure language, index blog (false), index docs (true)
 
-Document the chosen approach in `Claude-Production-Grade-Suite/technical-writer/writing-notes.md`.
+Document the chosen approach in `Antigravity-Production-Grade-Suite/technical-writer/writing-notes.md`.
 
 ## 4.6 — Deployment Configuration
 
@@ -137,14 +137,14 @@ Generate deployment config for the documentation site:
      NODE_VERSION = "20"
    ```
 
-Present deployment options via AskUserQuestion. Default to GitHub Pages.
+Present deployment options via notify_user. Default to GitHub Pages.
 
 ## 4.7 — Versioning Setup
 
 Configure documentation versioning for API-versioned projects:
 
 1. Set `current` version label in `docusaurus.config.js` as "Next" (development)
-2. Document the versioning workflow in `Claude-Production-Grade-Suite/technical-writer/writing-notes.md`:
+2. Document the versioning workflow in `Antigravity-Production-Grade-Suite/technical-writer/writing-notes.md`:
    - Run `npm run docusaurus docs:version X.Y` to cut a version
    - Cut a docs version for each major API version
    - Default to latest stable, keep previous versions accessible
@@ -172,7 +172,7 @@ Generate `CHANGELOG.md` at the project root:
 | CI pipeline | `.github/workflows/docs-build.yml` |
 | Changelog template | `CHANGELOG.md` |
 | Deployment config | `docs/docusaurus/vercel.json` or `netlify.toml` (per user choice) |
-| Writing notes (updated) | `Claude-Production-Grade-Suite/technical-writer/writing-notes.md` |
+| Writing notes (updated) | `Antigravity-Production-Grade-Suite/technical-writer/writing-notes.md` |
 
 ## Validation Loop
 

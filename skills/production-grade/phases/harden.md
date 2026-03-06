@@ -1,6 +1,6 @@
 # HARDEN Phase — Dispatcher
 
-This phase manages tasks T5 (QA), T6a (Security), T6b (Code Review). All three run in parallel (PARALLEL #3 and #4).
+This phase manages tasks T5 (QA), T6a (Security), T6b (Code Review). Sequential execution with authority boundaries.
 
 ## Authority Boundaries — CRITICAL
 
@@ -8,64 +8,63 @@ Enforce these boundaries strictly:
 - **security-engineer** is SOLE authority on OWASP Top 10, STRIDE, PII, encryption
 - **code-reviewer** does architecture conformance, code quality, performance — does NOT perform security review
 - **code-reviewer** is READ-ONLY — produces findings and patch files, does NOT modify source code
-- See `Claude-Production-Grade-Suite/.protocols/conflict-resolution.md` for full authority table
+- See `Antigravity-Production-Grade-Suite/.protocols/conflict-resolution.md` for full authority table
 
-## PARALLEL #3 + #4: T5 + T6a + T6b
+## T5: QA Testing
 
-All three start together:
+```
+Update task.md: T5 status → in_progress
 
-```python
-# T5: QA Testing
-TaskUpdate(taskId=t5_id, status="in_progress")
-Agent(
-  prompt="""You are the QA Engineer.
-Read implementation: services/, frontend/ (if exists), api/
-Read protocols from: Claude-Production-Grade-Suite/.protocols/
-Read .production-grade.yaml for paths.tests and paths.services.
-Write tests to project root: tests/
-Write workspace artifacts to: Claude-Production-Grade-Suite/qa-engineer/
-Run integration, e2e, and performance tests.
-Distinguish test bugs (fix immediately) from implementation bugs (log as findings).
-When complete, mark your task as completed.""",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+Read skills/qa-engineer/SKILL.md and follow its instructions.
+Context:
+- Read implementation: services/, frontend/ (if exists), api/
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read .production-grade.yaml for paths.tests and paths.services.
+- Write tests to project root: tests/
+- Write workspace artifacts to: Antigravity-Production-Grade-Suite/qa-engineer/
+- Run integration, e2e, and performance tests.
+- Distinguish test bugs (fix immediately) from implementation bugs (log as findings).
 
-# T6a: Security Audit (SOLE OWASP AUTHORITY)
-TaskUpdate(taskId=t6a_id, status="in_progress")
-Agent(
-  prompt="""You are the Security Engineer — SOLE authority on OWASP, STRIDE, PII, encryption.
-No other skill performs security review. This is YOUR exclusive domain.
-Read all implementation code: services/, frontend/, infrastructure/
-Read protocols from: Claude-Production-Grade-Suite/.protocols/
-Perform STRIDE threat modeling + OWASP Top 10 audit + dependency scan.
-Write findings to: Claude-Production-Grade-Suite/security-engineer/
-Auto-fix Critical/High issues with regression tests.
-Document Medium/Low for remediation plan.
-When complete, mark your task as completed.""",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+Update task.md: T5 status → completed
+```
 
-# T6b: Code Review (NO OWASP — architecture + quality only)
-TaskUpdate(taskId=t6b_id, status="in_progress")
-Agent(
-  prompt="""You are the Code Reviewer — architecture conformance and code quality ONLY.
-DO NOT perform OWASP, STRIDE, or any security review — security-engineer is sole authority.
-Cross-reference: "See security-engineer findings for security context."
-Read architecture: docs/architecture/, api/
-Read implementation: services/, frontend/
-Read protocols from: Claude-Production-Grade-Suite/.protocols/
-Review: SOLID/DRY/KISS, performance, N+1 queries, resource leaks, test quality.
-Write findings to: Claude-Production-Grade-Suite/code-reviewer/
-READ-ONLY: produce findings only, do NOT modify source code.
-When complete, mark your task as completed.""",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+## T6a: Security Audit (SOLE OWASP AUTHORITY)
+
+```
+Update task.md: T6a status → in_progress
+
+Read skills/security-engineer/SKILL.md and follow its instructions.
+Context:
+- SOLE authority on OWASP, STRIDE, PII, encryption.
+- No other skill performs security review. This is YOUR exclusive domain.
+- Read all implementation code: services/, frontend/, infrastructure/
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Perform STRIDE threat modeling + OWASP Top 10 audit + dependency scan.
+- Write findings to: Antigravity-Production-Grade-Suite/security-engineer/
+- Auto-fix Critical/High issues with regression tests.
+- Document Medium/Low for remediation plan.
+
+Update task.md: T6a status → completed
+```
+
+## T6b: Code Review (NO OWASP — architecture + quality only)
+
+```
+Update task.md: T6b status → in_progress
+
+Read skills/code-reviewer/SKILL.md and follow its instructions.
+Context:
+- Architecture conformance and code quality ONLY.
+- DO NOT perform OWASP, STRIDE, or any security review — security-engineer is sole authority.
+- Cross-reference: "See security-engineer findings for security context."
+- Read architecture: docs/architecture/, api/
+- Read implementation: services/, frontend/
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Review: SOLID/DRY/KISS, performance, N+1 queries, resource leaks, test quality.
+- Write findings to: Antigravity-Production-Grade-Suite/code-reviewer/
+- READ-ONLY: produce findings only, do NOT modify source code.
+
+Update task.md: T6b status → completed
 ```
 
 ## Post-HARDEN: Remediation Preparation

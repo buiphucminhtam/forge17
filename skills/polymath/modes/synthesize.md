@@ -7,12 +7,12 @@ Load this mode when the user wants to understand the big picture of what was bui
 Read broadly before presenting — parallel reads across the entire workspace:
 
 ```
-Read("Claude-Production-Grade-Suite/product-manager/BRD/brd.md")
-Read("Claude-Production-Grade-Suite/solution-architect/working-notes.md")
-Read("Claude-Production-Grade-Suite/qa-engineer/test-plan.md")
-Read("Claude-Production-Grade-Suite/security-engineer/...")
-Read("Claude-Production-Grade-Suite/code-reviewer/review-report.md")
-Read("Claude-Production-Grade-Suite/sre/...")
+Read("Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md")
+Read("Antigravity-Production-Grade-Suite/solution-architect/working-notes.md")
+Read("Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md")
+Read("Antigravity-Production-Grade-Suite/security-engineer/...")
+Read("Antigravity-Production-Grade-Suite/code-reviewer/review-report.md")
+Read("Antigravity-Production-Grade-Suite/sre/...")
 Glob("services/**/*")
 Glob("frontend/**/*")
 Glob("docs/**/*")
@@ -20,8 +20,8 @@ Glob("docs/**/*")
 
 Also read polymath's own context:
 ```
-Read("Claude-Production-Grade-Suite/polymath/context/decisions.md")
-Read("Claude-Production-Grade-Suite/polymath/context/domain-research.md")
+Read("Antigravity-Production-Grade-Suite/polymath/context/decisions.md")
+Read("Antigravity-Production-Grade-Suite/polymath/context/domain-research.md")
 ```
 
 ## Synthesis Frameworks
@@ -31,7 +31,7 @@ Read("Claude-Production-Grade-Suite/polymath/context/domain-research.md")
 For when the user wants a holistic view of the completed project:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Here's the full picture:\n\n"
     "**Product:** [name — one-line description]\n"
     "**Architecture:** [pattern, tech stack, key decisions]\n"
@@ -58,7 +58,7 @@ For when the user wants to plan what's next:
 
 1. **Review original scope** — what was planned vs. what was delivered
 2. **Collect signals** — code review findings, security findings, PM open questions, SRE concerns
-3. **Research current market** — WebSearch for recent developments since project started
+3. **Research current market** — search_web for recent developments since project started
 4. **Prioritize** — group into: quick wins, strategic investments, technical debt, new features
 5. **Present as prioritized roadmap with options**
 

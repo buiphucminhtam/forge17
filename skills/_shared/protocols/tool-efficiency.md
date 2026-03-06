@@ -4,50 +4,52 @@
 
 ## Rule 1: Parallel Tool Calls
 
-When multiple inputs are independent, issue ALL reads/globs/greps in a single message. Never read files one by one when they can be read simultaneously.
+When multiple inputs are independent, issue ALL reads/searches in a single message. Never read files one by one when they can be read simultaneously.
 
 **WRONG:**
 ```
-Read("file1.md")
+view_file("file1.md")
 # wait for result
-Read("file2.md")
+view_file("file2.md")
 # wait for result
-Read("file3.md")
+view_file("file3.md")
 ```
 
 **RIGHT:**
 ```
 # All three in one message:
-Read("file1.md")
-Read("file2.md")
-Read("file3.md")
+view_file("file1.md")
+view_file("file2.md")
+view_file("file3.md")
 ```
 
 ## Rule 2: Use Structural Tools Before Full Reads
 
-For code analysis, use `smart_outline` to get a file's structure before reading the full file. Only use `smart_unfold` or full `Read` for specific functions you need to inspect.
+For code analysis, use `view_file_outline` to get a file's structure before reading the full file. Only use `view_code_item` or full `view_file` for specific functions you need to inspect.
 
 | Need | Tool | Token Cost |
 |------|------|-----------|
-| File structure overview | `smart_outline(file)` | Low (~200-500 tokens) |
-| Specific function code | `smart_unfold(file, symbol)` | Medium (~200-1000 tokens) |
-| Full file content | `Read(file)` | High (~500-5000 tokens) |
-| Find symbols across codebase | `smart_search(query)` | Low (~300-800 tokens) |
+| File structure overview | `view_file_outline(file)` | Low (~200-500 tokens) |
+| Specific function code | `view_code_item(file, symbol)` | Medium (~200-1000 tokens) |
+| Full file content | `view_file(file)` | High (~500-5000 tokens) |
+| Find symbols across codebase | `grep_search(query, project_root)` | Low (~300-800 tokens) |
 
 ## Rule 3: Use the Right Tool for the Job
 
 | Task | Use This | NOT This |
 |------|----------|----------|
-| Find files by name/pattern | `Glob` | `find` via Bash |
-| Search file contents | `Grep` | `grep`/`rg` via Bash |
-| Read a file | `Read` | `cat`/`head`/`tail` via Bash |
-| Modify existing file | `Edit` | `sed`/`awk` via Bash |
-| Create new file | `Write` | `echo`/heredoc via Bash |
-| Run system commands | `Bash` | — |
+| Find files by name/pattern | `find_by_name` | `find` via run_command |
+| Search file contents | `grep_search` | `grep`/`rg` via run_command |
+| Read a file | `view_file` | `cat`/`head`/`tail` via run_command |
+| Modify existing file | `replace_file_content` / `multi_replace_file_content` | `sed`/`awk` via run_command |
+| Create new file | `write_to_file` | `echo`/heredoc via run_command |
+| Run system commands | `run_command` | — |
+| Search the web | `search_web` | — |
+| Read URL content | `read_url_content` | — |
 
 ## Rule 4: Batch Operations
 
-When creating multiple files, use parallel Write/Edit calls where possible. When reading a directory of related files, use Glob first to discover files, then parallel Read.
+When creating multiple files, use parallel write_to_file calls where possible. When reading a directory of related files, use find_by_name first to discover files, then parallel view_file.
 
 ## Rule 5: Config-Aware Paths
 
@@ -55,7 +57,7 @@ Always check `.production-grade.yaml` for path overrides before using hardcoded 
 
 ```
 # Read config paths
-config = Read(".production-grade.yaml")
+config = view_file(".production-grade.yaml")
 api_path = config.paths.api_contracts || "api/openapi/*.yaml"
 arch_path = config.paths.architecture_docs || "docs/architecture/"
 ```

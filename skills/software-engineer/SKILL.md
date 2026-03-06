@@ -8,17 +8,17 @@ description: >
 
 # Software Engineer
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
-**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — use AskUserQuestion with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
+**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — Use notify_user with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt decision surfacing:
 
@@ -31,7 +31,7 @@ Read engagement mode and adapt decision surfacing:
 
 **Decision surfacing format** (Standard/Thorough/Meticulous):
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "Implementing {service_name}. Key decision: {decision description}",
   "header": "Implementation Decision",
   "options": [
@@ -48,7 +48,7 @@ AskUserQuestion(questions=[{
 
 ## Brownfield Awareness
 
-If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing code first** — understand patterns, naming, structure before writing anything
 - **MATCH existing style** — if the codebase uses camelCase, use camelCase. If it has a `src/` structure, write there
 - **NEVER overwrite** — add new files alongside existing ones. If `services/auth.ts` exists, don't replace it
@@ -71,7 +71,7 @@ Product Manager          Solution Architect          Software Engineer          
                           docs/architecture/)           scripts/)
 ```
 
-This skill reads from `api/`, `schemas/`, and `docs/architecture/` and produces deliverables at project root (`services/`, `libs/`, `scripts/`, etc.) with workspace artifacts in `Claude-Production-Grade-Suite/software-engineer/`. It does NOT redesign the architecture or change API contracts — it implements them faithfully.
+This skill reads from `api/`, `schemas/`, and `docs/architecture/` and produces deliverables at project root (`services/`, `libs/`, `scripts/`, etc.) with workspace artifacts in `Antigravity-Production-Grade-Suite/software-engineer/`. It does NOT redesign the architecture or change API contracts — it implements them faithfully.
 
 ## Phase Index
 
@@ -108,19 +108,14 @@ When the architecture defines multiple services, Phase 2 uses a two-step approac
 
 3. Phase 2b (Service Implementation) runs in parallel — one Agent per service, each reading shared foundations:
 
-```python
+```
 # Example: architecture defines user-service, payment-service, notification-service
-Agent(
-  prompt="You are the Software Engineer. Implement the {service_name} service. "
-    "FIRST read shared foundations at libs/shared/ — use these patterns for error handling, "
-    "logging, auth, and types. Do NOT create your own versions. "
-    "Read API contract at api/openapi/{service}.yaml. "
-    "Follow skills/software-engineer/phases/02-service-implementation.md. "
-    "Write output to services/{service_name}/.",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True  # all services build simultaneously
-)
+# Execute each service sequentially:
+# For each service, read shared foundations at libs/shared/ — use these patterns
+# for error handling, logging, auth, and types. Do NOT create your own versions.
+# Read API contract at api/openapi/{service}.yaml.
+# Follow skills/software-engineer/phases/02-service-implementation.md.
+# Write output to services/{service_name}/.
 ```
 
 4. Wait for all service agents to complete
@@ -156,7 +151,7 @@ Triggered -> Phase 1: Context Analysis -> Implementation Plan
 | Docker Compose | `docker-compose.dev.yml` | Full local dev stack |
 | Environment template | `.env.example` | Template for local env vars |
 | Root Makefile | `Makefile` | Dev commands: setup, up, down, test, lint, migrate, seed |
-| Workspace artifacts | `Claude-Production-Grade-Suite/software-engineer/` | implementation-plan.md, progress.md, logs/ |
+| Workspace artifacts | `Antigravity-Production-Grade-Suite/software-engineer/` | implementation-plan.md, progress.md, logs/ |
 
 ## Cloud-Specific Patterns
 

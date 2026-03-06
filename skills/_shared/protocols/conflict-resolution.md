@@ -34,10 +34,10 @@ When multiple skills analyze the same code and produce overlapping findings:
 
 When HARDEN phase skills find issues that require code changes:
 
-1. **Findings become tasks**: The orchestrator reads all HARDEN findings and creates remediation TaskCreate entries.
-2. **Remediation assigned to build agents**: Critical/High findings are assigned to the original build agent (software-engineer or frontend-engineer).
+1. **Findings become tasks**: The orchestrator reads all HARDEN findings and creates remediation task entries tracked in `task.md`.
+2. **Remediation assigned to build agents**: Critical/High findings are assigned to the original build skill (software-engineer or frontend-engineer).
 3. **Re-scan after remediation**: After fixes are applied, the HARDEN skill re-scans the affected files.
-4. **Termination after 2 cycles**: If issues persist after 2 fix-rescan cycles, escalate to user via AskUserQuestion.
+4. **Termination after 2 cycles**: If issues persist after 2 fix-rescan cycles, escalate to user via notify_user.
 
 ## Specific Boundary Clarifications
 

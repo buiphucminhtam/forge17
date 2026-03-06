@@ -118,7 +118,7 @@ Before moving to Phase 5:
 - Migration runner can run up/down/status
 - All integration tests pass
 
-**After implementing all integration patterns, present to user via AskUserQuestion for review before proceeding.**
+**After implementing all integration patterns, present to user via notify_user for review before proceeding.**
 
 ## Quality Bar
 

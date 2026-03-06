@@ -8,13 +8,13 @@ Inventory every existing artifact across the project, identify documentation gap
 
 | Input | Path | What to Extract |
 |-------|------|-----------------|
-| Business context | `Claude-Production-Grade-Suite/product-manager/` | User personas, feature scope, domain glossary |
+| Business context | `Antigravity-Production-Grade-Suite/product-manager/` | User personas, feature scope, domain glossary |
 | Architecture docs | `docs/architecture/` | Service boundaries, ADRs, tech stack, data flow |
 | API contracts | `api/openapi/*.yaml`, `api/asyncapi/*.yaml` | Endpoints, schemas, auth methods, webhook events |
 | Source code | `services/`, `frontend/`, `libs/` | Module structure, code comments, config files, env vars |
-| Test artifacts | `tests/`, `Claude-Production-Grade-Suite/qa-engineer/` | Test coverage, integration test descriptions, test strategy |
+| Test artifacts | `tests/`, `Antigravity-Production-Grade-Suite/qa-engineer/` | Test coverage, integration test descriptions, test strategy |
 | DevOps artifacts | `infrastructure/`, `.github/workflows/` | CI/CD pipelines, deployment configs, environment definitions |
-| SRE artifacts | `docs/runbooks/`, `Claude-Production-Grade-Suite/sre/` | Runbooks, incident procedures, SLO definitions, DR playbooks |
+| SRE artifacts | `docs/runbooks/`, `Antigravity-Production-Grade-Suite/sre/` | Runbooks, incident procedures, SLO definitions, DR playbooks |
 | Project README | `README.md` | Current onboarding state, accuracy of existing instructions |
 
 ## 1.2 — Artifact Inventory
@@ -109,8 +109,8 @@ Produce a prioritized plan with estimated effort:
 
 | Artifact | Path |
 |----------|------|
-| Content inventory | `Claude-Production-Grade-Suite/technical-writer/content-inventory.md` |
-| Writing notes and style decisions | `Claude-Production-Grade-Suite/technical-writer/writing-notes.md` |
+| Content inventory | `Antigravity-Production-Grade-Suite/technical-writer/content-inventory.md` |
+| Writing notes and style decisions | `Antigravity-Production-Grade-Suite/technical-writer/writing-notes.md` |
 
 ## Validation Loop
 
@@ -118,7 +118,7 @@ Before moving to Phase 2:
 - Every suite directory has been read and catalogued
 - Gap analysis covers all rows in the documentation matrix
 - README assessment is recorded with specific issues
-- Documentation plan is prioritized and approved by user via AskUserQuestion
+- Documentation plan is prioritized and approved by user via notify_user
 - No source artifact has been overlooked
 
 ## Quality Bar

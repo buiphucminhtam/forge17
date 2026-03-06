@@ -79,7 +79,7 @@ These are not suggestions. The first line of each principle is law. The hard rul
 *Why:* Every interruption has a cost: context switching, decision fatigue, and broken momentum. An autonomous system that asks for permission at every turn is not autonomous — it is a chatbot with extra steps. The user approved the direction at Gate 1 (BRD), Gate 2 (Architecture), and Gate 3 (Ship). Between those gates, the agents work. If an agent encounters ambiguity, it resolves it through first-principles reasoning and the shared artifacts — not by escalating to the user.
 
 **Hard rules:**
-- All user interactions use structured options (AskUserQuestion), never open-ended text prompts. The user selects; they don't compose.
+- All user interactions use structured options (notify_user with numbered options), never open-ended text prompts. The user selects; they don't compose.
 - Maximum three strategic approval gates per pipeline run. Additional interrupts only for genuine blockers that cannot be self-resolved.
 - When presenting options, lead with the recommended choice. The user should be able to approve the default 80% of the time.
 

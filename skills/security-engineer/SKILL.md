@@ -8,16 +8,16 @@ description: >
 
 # Security Engineer
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
-**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — use AskUserQuestion with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
+**Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — Use notify_user with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -74,10 +74,10 @@ After Phase 0 (Reconnaissance) and Phase 1 (Threat Modeling), Phases 2-5 run in 
 
 ```python
 # After threat model is complete, spawn analysis domains simultaneously:
-Agent(prompt="Conduct OWASP Top 10 code audit following Phase 2. Read threat model for context. Write to security-engineer/code-audit/.", ...)
-Agent(prompt="Audit authentication and authorization flows following Phase 3. Write to security-engineer/auth-review/.", ...)
-Agent(prompt="Audit data security, PII handling, encryption following Phase 4. Write to security-engineer/data-security/.", ...)
-Agent(prompt="Audit supply chain, dependencies, licenses following Phase 5. Write to security-engineer/supply-chain/.", ...)
+Execute sequentially: Conduct OWASP Top 10 code audit following Phase 2. Read threat model for context. Write to security-engineer/code-audit/.
+Execute sequentially: Audit authentication and authorization flows following Phase 3. Write to security-engineer/auth-review/.
+Execute sequentially: Audit data security, PII handling, encryption following Phase 4. Write to security-engineer/data-security/.
+Execute sequentially: Audit supply chain, dependencies, licenses following Phase 5. Write to security-engineer/supply-chain/.
 ```
 
 Wait for all 4 agents, then run Phase 6 (Remediation) sequentially — it synthesizes all findings.
@@ -98,7 +98,7 @@ Before generating any output, read and understand the full codebase and prior pi
 4. **Catalog external integrations** — Third-party APIs, OAuth providers, payment processors, file storage
 5. **Check existing security measures** — What is already in place? Middleware, validation, rate limiting, logging
 
-Use AskUserQuestion (batch into 1-2 calls max) for anything not discoverable from code:
+Use notify_user (batch into 1-2 calls max) for anything not discoverable from code:
 
 1. **Compliance requirements** — SOC2, HIPAA, PCI-DSS, GDPR, CCPA? Which apply and what certification stage?
 2. **Threat context** — Known adversaries? Previous incidents? Particular concern areas? Public-facing vs internal?
@@ -115,13 +115,13 @@ Triggered -> Phase 0: Reconnaissance -> Phase 1: Threat Modeling
 
 | Output | Location | Description |
 |--------|----------|-------------|
-| Threat model | `Claude-Production-Grade-Suite/security-engineer/threat-model/` | STRIDE analysis, attack surface, trust boundaries, data flow threats |
-| Code audit | `Claude-Production-Grade-Suite/security-engineer/code-audit/` | OWASP Top 10 report, per-service findings, injection points |
-| Auth review | `Claude-Production-Grade-Suite/security-engineer/auth-review/` | Auth flow analysis, token management, RBAC policy review |
-| Data security | `Claude-Production-Grade-Suite/security-engineer/data-security/` | PII inventory, encryption audit, data retention, GDPR compliance |
-| Supply chain | `Claude-Production-Grade-Suite/security-engineer/supply-chain/` | SBOM, dependency audit, license compliance |
-| Pen test plan | `Claude-Production-Grade-Suite/security-engineer/pen-test/` | Test plan, API fuzzing config, attack scenarios |
-| Remediation | `Claude-Production-Grade-Suite/security-engineer/remediation/` | Remediation plan, critical fixes with code, timeline |
+| Threat model | `Antigravity-Production-Grade-Suite/security-engineer/threat-model/` | STRIDE analysis, attack surface, trust boundaries, data flow threats |
+| Code audit | `Antigravity-Production-Grade-Suite/security-engineer/code-audit/` | OWASP Top 10 report, per-service findings, injection points |
+| Auth review | `Antigravity-Production-Grade-Suite/security-engineer/auth-review/` | Auth flow analysis, token management, RBAC policy review |
+| Data security | `Antigravity-Production-Grade-Suite/security-engineer/data-security/` | PII inventory, encryption audit, data retention, GDPR compliance |
+| Supply chain | `Antigravity-Production-Grade-Suite/security-engineer/supply-chain/` | SBOM, dependency audit, license compliance |
+| Pen test plan | `Antigravity-Production-Grade-Suite/security-engineer/pen-test/` | Test plan, API fuzzing config, attack scenarios |
+| Remediation | `Antigravity-Production-Grade-Suite/security-engineer/remediation/` | Remediation plan, critical fixes with code, timeline |
 | Code fixes | `services/`, `frontend/`, etc. | Security fixes applied directly to project code |
 
 ## Severity Classification Standard

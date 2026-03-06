@@ -49,21 +49,21 @@ From the ADRs, determine and document:
 
 ## 1.3 — Clarify Ambiguities
 
-Use AskUserQuestion for anything not covered in the architect's output (batch into 1-2 calls max):
+Use notify_user for anything not covered in the architect's output (batch into 1-2 calls max):
 
 1. **Implementation preferences** — Specific ORM/library preferences? Existing codebase conventions?
 2. **Priority ordering** — Which services are MVP-critical vs can-wait?
 3. **External service accounts** — Any third-party API keys/SDKs needed? (Stripe, SendGrid, Twilio, etc.)
 4. **Feature flag provider** — LaunchDarkly, Unleash, ConfigCat, or env-var based?
 
-**Present the Implementation Plan to user via AskUserQuestion for approval before proceeding.**
+**Present the Implementation Plan to user via notify_user for approval before proceeding.**
 
 ## Validation Loop
 
 Before moving to Phase 2:
 - All mandatory inputs have been read and parsed
-- Implementation Plan document is written to `Claude-Production-Grade-Suite/software-engineer/implementation-plan.md`
-- User has approved the plan via AskUserQuestion
+- Implementation Plan document is written to `Antigravity-Production-Grade-Suite/software-engineer/implementation-plan.md`
+- User has approved the plan via notify_user
 - Ambiguities have been resolved or documented with chosen defaults
 
 ## Quality Bar

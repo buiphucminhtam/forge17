@@ -1,55 +1,53 @@
 # SUSTAIN Phase — Dispatcher
 
-This phase manages tasks T11 (Technical Writer), T12 (Skill Maker), and T13 (Compound Learning + Final Assembly). Features PARALLEL #7.
+This phase manages tasks T11 (Technical Writer), T12 (Skill Maker), and T13 (Compound Learning + Final Assembly).
 
-## PARALLEL #7: T11 + T12
+## T11: Technical Writer
 
-```python
-# T11: Technical Writer
-TaskUpdate(taskId=t11_id, status="in_progress")
-Agent(
-  prompt="""You are the Technical Writer.
-Read ALL workspace folders at Claude-Production-Grade-Suite/ for full project context.
-Read all project deliverables: api/, services/, frontend/, infrastructure/, tests/, docs/.
-Read protocols from: Claude-Production-Grade-Suite/.protocols/
-Read .production-grade.yaml for paths and preferences.
-Generate: API reference (from OpenAPI specs), developer guides, operational guide, architecture guide, contributing guide.
-If features.documentation_site is true: scaffold Docusaurus site.
-Write docs to project root: docs/
-Write workspace artifacts to: Claude-Production-Grade-Suite/technical-writer/
-When complete, mark your task as completed.""",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+```
+Update task.md: T11 status → in_progress
 
-# T12: Skill Maker
-TaskUpdate(taskId=t12_id, status="in_progress")
-Agent(
-  prompt="""You are the Skill Maker.
-Analyze the completed project for recurring patterns: API routes, DB queries, auth checks, deployment procedures, testing patterns, domain-specific workflows.
-Read protocols from: Claude-Production-Grade-Suite/.protocols/
-Generate 3-5 project-specific skills as SKILL.md files.
-Install skills to: .claude/skills/
-Write workspace artifacts to: Claude-Production-Grade-Suite/skill-maker/
-When complete, mark your task as completed.""",
-  subagent_type="general-purpose",
-  mode="bypassPermissions",
-  run_in_background=True
-)
+Read skills/technical-writer/SKILL.md and follow its instructions.
+Context:
+- Read ALL workspace folders at Antigravity-Production-Grade-Suite/ for full project context.
+- Read all project deliverables: api/, services/, frontend/, infrastructure/, tests/, docs/.
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read .production-grade.yaml for paths and preferences.
+- Generate: API reference (from OpenAPI specs), developer guides, operational guide, architecture guide, contributing guide.
+- If features.documentation_site is true: scaffold Docusaurus site.
+- Write docs to project root: docs/
+- Write workspace artifacts to: Antigravity-Production-Grade-Suite/technical-writer/
+
+Update task.md: T11 status → completed
+```
+
+## T12: Skill Maker
+
+```
+Update task.md: T12 status → in_progress
+
+Read skills/skill-maker/SKILL.md and follow its instructions.
+Context:
+- Analyze the completed project for recurring patterns: API routes, DB queries, auth checks, deployment procedures, testing patterns, domain-specific workflows.
+- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Generate 3-5 project-specific skills as SKILL.md files.
+- Install skills to: skills/
+- Write workspace artifacts to: Antigravity-Production-Grade-Suite/skill-maker/
+
+Update task.md: T12 status → completed
 ```
 
 ## T13: Compound Learning + Final Assembly
 
 After T11 and T12 complete:
 
-```python
-TaskUpdate(taskId=t13_id, status="in_progress")
+```
+Update task.md: T13 status → in_progress
 ```
 
 ### Compound Learning
 
-Write to `Claude-Production-Grade-Suite/.orchestrator/compound-learnings.md`:
+Write to `Antigravity-Production-Grade-Suite/.orchestrator/compound-learnings.md`:
 
 ```markdown
 ## Learning: [date] — [project name]
@@ -73,35 +71,31 @@ Write to `Claude-Production-Grade-Suite/.orchestrator/compound-learnings.md`:
 - [missing steps that should have been included]
 ```
 
-Optionally append key patterns to project `CLAUDE.md` for cross-session persistence.
+Optionally append key patterns to project `ANTIGRAVITY.md` for cross-session persistence.
 
 ### Final Assembly
 
-1. **Integration decision** — ask user via AskUserQuestion:
-```python
-AskUserQuestion(questions=[{
-  "question": "Code is ready. Integrate into your project root?",
-  "header": "Assembly",
-  "options": [
-    {"label": "Integrate all code (Recommended)", "description": "Copy services, frontend, infra to project root"},
-    {"label": "Keep in workspace only", "description": "Leave everything in Claude-Production-Grade-Suite/"},
-    {"label": "Let me choose what to copy", "description": "Select which components to integrate"},
-    {"label": "Chat about this", "description": "Discuss integration strategy"}
-  ],
-  "multiSelect": false
-}])
+1. **Integration decision** — ask user via notify_user:
+
+```
+Code is ready. How would you like to integrate?
+
+1. **Integrate all code (Recommended)** — Copy services, frontend, infra to project root
+2. **Keep in workspace only** — Leave everything in Antigravity-Production-Grade-Suite/
+3. **Let me choose what to copy** — Select which components to integrate
+4. **Chat about this** — Discuss integration strategy
 ```
 
 2. **Run final validation:** `docker-compose up`, `make test`, `terraform validate`, health checks.
 
 3. **Present final summary** using the orchestrator's template.
 
-4. **Clean up team:**
-```python
-TaskUpdate(taskId=t13_id, status="completed")
-TeamDelete()
+4. **Clean up:**
+```
+Update task.md: T13 status → completed
+Mark all tasks as complete.
 ```
 
 ## Pipeline Complete
 
-Print the final summary template from the orchestrator. All tasks should show as completed in TaskList.
+Print the final summary template from the orchestrator. All tasks should show as completed in task.md.

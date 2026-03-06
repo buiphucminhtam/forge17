@@ -4,14 +4,14 @@ Load this mode when the user needs to understand a domain, market, technology la
 
 ## Entry Behavior
 
-Before presenting options, do a landscape sweep — 3-5 parallel WebSearch calls:
+Before presenting options, do a landscape sweep — 3-5 parallel search_web calls:
 
 ```
-WebSearch("[domain] market overview [year]")
-WebSearch("[domain] top platforms comparison")
-WebSearch("[domain] pain points challenges users")
-WebSearch("[domain] technology stack architecture")
-WebSearch("[domain] market size growth trends")
+search_web("[domain] market overview [year]")
+search_web("[domain] top platforms comparison")
+search_web("[domain] pain points challenges users")
+search_web("[domain] technology stack architecture")
+search_web("[domain] market size growth trends")
 ```
 
 Synthesize results into a structured landscape map, THEN present direction options.
@@ -28,7 +28,7 @@ Synthesize results into a structured landscape map, THEN present direction optio
 1. **Identify players** — search for top platforms/products in the space
 2. **Feature comparison** — what each offers, pricing, strengths, weaknesses
 3. **Differentiation opportunities** — what's missing or poorly served
-4. **Deep dive** — WebFetch on specific competitor pages for detail
+4. **Deep dive** — read_url_content on specific competitor pages for detail
 
 ### Technology Research
 1. **Current state** — search for latest versions, maintenance status, adoption
@@ -80,7 +80,7 @@ Sources: [N] sources consulted
 Always present research with direction options — never end with a wall of text:
 
 ```python
-AskUserQuestion(questions=[{
+notify_user with markdown options:
   "question": "[Synthesis of findings — 3-5 key points]",
   "header": "Research: [Topic]",
   "options": [

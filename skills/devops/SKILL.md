@@ -10,17 +10,17 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -31,7 +31,7 @@ description: >
 
 ## Brownfield Awareness
 
-If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing infrastructure first** — check for Dockerfiles, CI configs, Terraform, K8s manifests
 - **EXTEND, don't replace** — add new services to existing docker-compose, add jobs to existing CI
 - **NEVER overwrite** — existing Dockerfile, workflows, or Terraform state
@@ -39,7 +39,7 @@ If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and 
 
 ## Overview
 
-Full DevOps pipeline generator: from infrastructure design to production-ready deployment with monitoring and security. Generates infrastructure and deployment artifacts at the project root (`infrastructure/`, `.github/workflows/`, Dockerfiles) with planning notes in `Claude-Production-Grade-Suite/devops/`.
+Full DevOps pipeline generator: from infrastructure design to production-ready deployment with monitoring and security. Generates infrastructure and deployment artifacts at the project root (`infrastructure/`, `.github/workflows/`, Dockerfiles) with planning notes in `Antigravity-Production-Grade-Suite/devops/`.
 
 ## Config Paths
 
@@ -65,15 +65,15 @@ After Phase 1 (Assessment), Phases 2-4 and Phases 5-6 can run as two parallel gr
 
 **Group 1 (infrastructure artifacts — independent):**
 ```python
-Agent(prompt="Generate Terraform IaC following Phase 2. Write to infrastructure/terraform/.", ...)
-Agent(prompt="Generate CI/CD pipelines following Phase 3. Write to .github/workflows/ and scripts/.", ...)
-Agent(prompt="Generate container orchestration following Phase 4. Write Dockerfiles and K8s manifests.", ...)
+Execute sequentially: Generate Terraform IaC following Phase 2. Write to infrastructure/terraform/.
+Execute sequentially: Generate CI/CD pipelines following Phase 3. Write to .github/workflows/ and scripts/.
+Execute sequentially: Generate container orchestration following Phase 4. Write Dockerfiles and K8s manifests.
 ```
 
 **Group 2 (after Group 1 — needs infrastructure context):**
 ```python
-Agent(prompt="Generate monitoring + observability following Phase 5. Write to infrastructure/monitoring/.", ...)
-Agent(prompt="Generate security infrastructure following Phase 6. Write to infrastructure/security/.", ...)
+Execute sequentially: Generate monitoring + observability following Phase 5. Write to infrastructure/monitoring/.
+Execute sequentially: Generate security infrastructure following Phase 6. Write to infrastructure/security/.
 ```
 
 **Execution order:**
@@ -110,7 +110,7 @@ digraph devops {
 
 ## Phase 1: Infrastructure Assessment
 
-Use AskUserQuestion to gather (batch into 2-3 calls max):
+Use notify_user to gather (batch into 2-3 calls max):
 
 1. **Current state** — Existing infra? Greenfield? Migration? What's already running?
 2. **Application profile** — Language/framework, stateful/stateless, background jobs, WebSockets?
@@ -437,7 +437,7 @@ docker-compose.test.yml     # Project root
 ### Workspace Output (Planning & Assessment)
 
 ```
-Claude-Production-Grade-Suite/devops/
+Antigravity-Production-Grade-Suite/devops/
 ├── deployment-plan.md          # Deployment planning notes
 ├── infrastructure-assessment.md # Infrastructure assessment documents
 └── decisions.md                # DevOps decision log

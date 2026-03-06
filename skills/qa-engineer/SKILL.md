@@ -10,17 +10,17 @@ description: >
 
 ## Protocols
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
-**Fallback (if protocols not loaded):** Use AskUserQuestion with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use smart_outline before full Read.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -31,7 +31,7 @@ description: >
 
 ## Brownfield Awareness
 
-If `Claude-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing tests first** — understand test framework, patterns, fixtures, helpers
 - **MATCH existing test framework** — if they use pytest, don't introduce jest. If they use Vitest, use Vitest
 - **ADD tests alongside existing ones** — don't restructure their test directory
@@ -54,7 +54,7 @@ This skill runs AFTER the Software Engineer and Frontend Engineer skills have co
 - **`api/`, `schemas/`, `docs/architecture/`** — API contracts (OpenAPI/AsyncAPI specs), data models, sequence diagrams
 - **BRD or PRD** — Acceptance criteria, user stories, business rules, edge cases
 
-The QA Engineer does NOT modify source code. It generates test files and test infrastructure to `tests/` at the project root, and test documentation (test plan, reports) to `Claude-Production-Grade-Suite/qa-engineer/`.
+The QA Engineer does NOT modify source code. It generates test files and test infrastructure to `tests/` at the project root, and test documentation (test plan, reports) to `Antigravity-Production-Grade-Suite/qa-engineer/`.
 
 ### Graceful Degradation
 
@@ -67,7 +67,7 @@ At startup, check whether `frontend/` (or `paths.frontend` from config) exists. 
 
 ## Output Structure
 
-This skill produces output in two locations: test deliverables (code, configs, fixtures) at `tests/` in the project root, and workspace artifacts (test plan, reports, findings) in `Claude-Production-Grade-Suite/qa-engineer/`. Never write test files into `services/` or `frontend/` directly.
+This skill produces output in two locations: test deliverables (code, configs, fixtures) at `tests/` in the project root, and workspace artifacts (test plan, reports, findings) in `Antigravity-Production-Grade-Suite/qa-engineer/`. Never write test files into `services/` or `frontend/` directly.
 
 ### Project Root Output (`tests/`)
 
@@ -143,10 +143,10 @@ tests/
     └── thresholds.json                # Per-service and global coverage gates
 ```
 
-### Workspace Output (`Claude-Production-Grade-Suite/qa-engineer/`)
+### Workspace Output (`Antigravity-Production-Grade-Suite/qa-engineer/`)
 
 ```
-Claude-Production-Grade-Suite/qa-engineer/
+Antigravity-Production-Grade-Suite/qa-engineer/
 ├── test-plan.md                        # Master test plan with traceability matrix
 ├── coverage-report.md                  # Coverage analysis and findings
 └── findings.md                         # QA findings and recommendations
@@ -164,11 +164,11 @@ After Phase 1 (Test Planning), Phases 2-6 run in parallel — each test type is 
 
 ```python
 # After test plan is written, spawn all test types simultaneously:
-Agent(prompt="Write unit tests following Phase 2 rules. Read test-plan.md for traceability. Write to tests/unit/.", ...)
-Agent(prompt="Write integration tests following Phase 3 rules. Read test-plan.md. Write to tests/integration/.", ...)
-Agent(prompt="Write contract tests following Phase 4 rules. Read test-plan.md. Write to tests/contract/.", ...)
-Agent(prompt="Write E2E tests following Phase 5 rules. Read test-plan.md. Write to tests/e2e/.", ...)
-Agent(prompt="Write performance tests following Phase 6 rules. Read test-plan.md. Write to tests/performance/.", ...)
+Execute sequentially: Write unit tests following Phase 2 rules. Read test-plan.md for traceability. Write to tests/unit/.
+Execute sequentially: Write integration tests following Phase 3 rules. Read test-plan.md. Write to tests/integration/.
+Execute sequentially: Write contract tests following Phase 4 rules. Read test-plan.md. Write to tests/contract/.
+Execute sequentially: Write E2E tests following Phase 5 rules. Read test-plan.md. Write to tests/e2e/.
+Execute sequentially: Write performance tests following Phase 6 rules. Read test-plan.md. Write to tests/performance/.
 ```
 
 Wait for all 5 agents to complete, then run Phase 7 (Test Infrastructure) sequentially — it needs all test files to configure CI.
@@ -202,7 +202,7 @@ Wait for all 5 agents to complete, then run Phase 7 (Test Infrastructure) sequen
 6. Identify performance-sensitive endpoints for load testing.
 7. Define coverage thresholds per service (lines, branches, functions).
 
-**Output:** Write `Claude-Production-Grade-Suite/qa-engineer/test-plan.md` with the following sections:
+**Output:** Write `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` with the following sections:
 - **Scope** — What is being tested, what is explicitly out of scope
 - **Test Strategy** — Test pyramid approach, which test types cover which risk areas
 - **Traceability Matrix** — Table mapping AC-ID to test case IDs, test type, and priority
@@ -402,7 +402,7 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
 
 Before marking the skill as complete, verify:
 
-- [ ] `Claude-Production-Grade-Suite/qa-engineer/test-plan.md` has a traceability matrix covering every BRD acceptance criterion
+- [ ] `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` has a traceability matrix covering every BRD acceptance criterion
 - [ ] Every service in `services/` has corresponding unit tests in `tests/unit/`
 - [ ] Every repository/data-access module has integration tests with real database containers
 - [ ] Every API endpoint has at least one contract test validating its schema

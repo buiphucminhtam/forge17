@@ -10,11 +10,11 @@ description: >
 
 ## Preprocessing
 
-!`cat Claude-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Claude-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Claude-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
 
 ## Brownfield Awareness
 
@@ -25,7 +25,7 @@ If codebase context indicates `brownfield` mode:
 
 ## Engagement Mode
 
-!`cat Claude-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -36,7 +36,7 @@ If codebase context indicates `brownfield` mode:
 
 ## Fallback Protocol Summary
 
-If protocols above fail to load: (1) Never ask open-ended questions — use AskUserQuestion with predefined options, "Chat about this" always last, recommended option first. (2) Work continuously, print real-time progress, default to sensible choices. (3) Validate inputs exist before starting; degrade gracefully if optional inputs missing.
+If protocols above fail to load: (1) Never ask open-ended questions — Use notify_user with predefined options, "Chat about this" always last, recommended option first. (2) Work continuously, print real-time progress, default to sensible choices. (3) Validate inputs exist before starting; degrade gracefully if optional inputs missing.
 
 ## Identity
 
@@ -46,13 +46,13 @@ You are the **Technical Writer Specialist**. Your role is to produce comprehensi
 
 | Input | Status | Source | What Technical Writer Needs |
 |-------|--------|--------|----------------------------|
-| `Claude-Production-Grade-Suite/product-manager/` | Critical | BA | Business context, user personas, feature scope, glossary |
+| `Antigravity-Production-Grade-Suite/product-manager/` | Critical | BA | Business context, user personas, feature scope, glossary |
 | `docs/architecture/` | Critical | Architect | Service boundaries, technology choices, data flow, decision rationale |
 | `api/` (OpenAPI / AsyncAPI specs) | Critical | Implementation | API contracts, schemas, auth methods |
 | `services/`, `frontend/` (Source code) | Degraded | Implementation | Code comments, module structure, config files, env vars |
 | `tests/`, test plan | Degraded | Testing | Coverage reports, integration test descriptions, testing strategy |
 | `infrastructure/`, `.github/workflows/` | Degraded | DevOps | Deployment procedures, environment configs, CI/CD pipeline |
-| `docs/runbooks/`, `Claude-Production-Grade-Suite/sre/` | Optional | SRE | Runbooks, incident procedures, SLO definitions, DR playbooks |
+| `docs/runbooks/`, `Antigravity-Production-Grade-Suite/sre/` | Optional | SRE | Runbooks, incident procedures, SLO definitions, DR playbooks |
 
 ## Phase Index
 
@@ -72,8 +72,8 @@ Read the relevant phase file before starting that phase. Never read all phases a
 After Phase 1 (Content Audit), Phases 2-3 run in parallel:
 
 ```python
-Agent(prompt="Generate API reference documentation following Phase 2. Read OpenAPI specs from api/. Write to docs/api-reference/.", ...)
-Agent(prompt="Generate developer guides following Phase 3. Read architecture and source code. Write to docs/getting-started/, docs/guides/, docs/operations/.", ...)
+Execute sequentially: Generate API reference documentation following Phase 2. Read OpenAPI specs from api/. Write to docs/api-reference/.
+Execute sequentially: Generate developer guides following Phase 3. Read architecture and source code. Write to docs/getting-started/, docs/guides/, docs/operations/.
 ```
 
 Wait for both, then run Phase 4 (Docusaurus Scaffold) sequentially — it organizes all docs into the site.
@@ -101,7 +101,7 @@ CHANGELOG.md
 
 ### Workspace (Writing Notes)
 ```
-Claude-Production-Grade-Suite/technical-writer/
+Antigravity-Production-Grade-Suite/technical-writer/
     writing-notes.md
     content-inventory.md
 ```

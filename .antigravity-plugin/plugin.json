@@ -1,9 +1,9 @@
 {
   "name": "production-grade",
   "description": "Adaptive orchestrator for all software engineering work: 14 bundled skills, smart routing, 10 execution modes. From full greenfield builds to adding features, code review, testing, hardening, and deployment.",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "author": {
-    "name": "nagisanzenin"
+    "name": "antigravity-code"
   },
   "license": "MIT",
   "keywords": ["production-grade", "saas", "orchestrator", "full-stack", "meta-skill", "pipeline", "devops", "architecture", "testing", "security", "sre", "ai", "ml", "llm"]
