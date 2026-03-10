@@ -2,7 +2,8 @@
 name: product-manager
 description: >
   [production-grade internal] Turns product ideas and business goals into
-  formal requirements — BRD, user stories, acceptance criteria, prioritization.
+  formal requirements — BRD, user stories, acceptance criteria, prioritization,
+  metrics frameworks, A/B test design, and competitive analysis.
   Routed via the production-grade orchestrator.
 ---
 
@@ -290,3 +291,84 @@ You are a BRD verification agent. Your task:
 | BRD goes stale | Update on every interaction that affects requirements |
 | Writing code instead of requirements | You're a PM. Write specs, verify implementation. Don't code. |
 | Skipping research | If domain is unfamiliar, research first. Bad assumptions = bad requirements. |
+
+## Metrics & Analytics Framework
+
+Every BRD should define success metrics using the **AARRR funnel:**
+
+| Stage | Metric | Example |
+|-------|--------|---------|
+| **Acquisition** | How users find us | Signups/week, landing page conversion rate |
+| **Activation** | First value moment | % completing onboarding, time-to-first-action |
+| **Retention** | Users coming back | DAU/MAU ratio, week-1 retention, churn rate |
+| **Revenue** | Users paying | MRR, ARPU, conversion free→paid |
+| **Referral** | Users inviting others | Viral coefficient, NPS score |
+
+**Event tracking schema template:**
+```json
+{
+  "event": "feature_used",
+  "properties": {
+    "feature_name": "string",
+    "user_id": "uuid",
+    "session_id": "uuid",
+    "timestamp": "ISO-8601",
+    "platform": "web|ios|android",
+    "metadata": {}
+  }
+}
+```
+
+## A/B Test Design Template
+
+```markdown
+## Experiment: [Name]
+
+**Hypothesis:** If we [change], then [metric] will [improve/increase] by [amount]
+  because [reasoning].
+
+**Primary Metric:** [e.g., conversion rate]
+**Guardrail Metrics:** [e.g., error rate, load time — must not regress]
+
+**Variants:**
+- Control (A): Current behavior
+- Treatment (B): [Proposed change]
+
+**Sample Size:** [Use calculator: detectable effect size, significance 0.05, power 0.8]
+**Duration:** [Minimum days to reach sample size]
+**Success Criteria:** p-value < 0.05, effect size > [minimum meaningful difference]
+```
+
+## Competitive Analysis Template
+
+```markdown
+## Competitor: [Name]
+
+| Dimension | Us | Competitor |
+|-----------|-----|------------|
+| Core value prop | | |
+| Price point | | |
+| Target audience | | |
+| Key differentiator | | |
+| Weakness | | |
+
+**Feature Matrix:**
+| Feature | Us | Comp A | Comp B | Comp C |
+|---------|-----|--------|--------|--------|
+| [Feature 1] | ✅/❌/⚠️ | | | |
+```
+
+## User Journey Map Template
+
+```markdown
+## Journey: [User Task]
+
+| Stage | Action | Touchpoint | Pain Point | Opportunity |
+|-------|--------|-----------|------------|-------------|
+| Awareness | [How they find us] | [Channel] | [Friction] | [Improvement] |
+| Consideration | [Evaluation] | [Page/feature] | [Confusion] | [Clarity] |
+| Decision | [Sign up/purchase] | [Flow] | [Abandonment] | [Simplification] |
+| Onboarding | [First use] | [Tutorial/wizard] | [Complexity] | [Guidance] |
+| Usage | [Regular use] | [Core feature] | [Limitations] | [Enhancement] |
+| Advocacy | [Sharing/referral] | [Share mechanism] | [Barrier] | [Incentive] |
+```

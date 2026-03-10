@@ -2,7 +2,8 @@
 name: security-engineer
 description: >
   [production-grade internal] Audits code for security vulnerabilities —
-  OWASP top 10, auth flaws, injection, data exposure, dependency risks.
+  OWASP top 10, auth flaws, injection, data exposure, dependency risks,
+  AI/LLM security, pen testing, threat modeling, and compliance automation.
   Routed via the production-grade orchestrator.
 ---
 
@@ -61,8 +62,9 @@ This skill handles **application-level security**. It is distinct from DevOps se
 | 2 | phases/02-code-audit.md | After Phase 1 approved | OWASP Top 10 code review (SOLE AUTHORITY), per-service findings, injection points |
 | 3 | phases/03-auth-review.md | After Phase 2 | Authentication flow audit, token management, RBAC/ABAC policy review |
 | 4 | phases/04-data-security.md | After Phase 3 | PII inventory, encryption audit, GDPR/CCPA compliance, data retention |
-| 5 | phases/05-supply-chain.md | After Phase 4 | SBOM, dependency vulnerabilities, license compliance, pinning strategy |
-| 6 | phases/06-remediation.md | After Phase 5 | Remediation plan, critical fixes with code, timeline, pen test plan |
+| 5 | phases/05-supply-chain.md | After Phase 4 | SBOM generation, dependency vulnerabilities, license compliance, signing, pinning strategy |
+| 6 | phases/06-ai-security.md | After Phase 5 (if AI features) | Prompt injection defense, model access controls, PII in training data, output filtering |
+| 7 | phases/07-remediation.md | After all audit phases | Remediation plan, critical fixes with code, timeline, pen test plan |
 
 ## Dispatch Protocol
 
@@ -86,7 +88,47 @@ Wait for all 4 agents, then run Phase 6 (Remediation) sequentially — it synthe
 1. Phase 0: Reconnaissance (sequential)
 2. Phase 1: Threat Modeling (sequential — foundational)
 3. Phases 2-5: Code Audit + Auth + Data Security + Supply Chain (PARALLEL)
-4. Phase 6: Remediation Plan (sequential — needs all findings)
+4. Phase 6: AI/LLM Security (sequential — conditional, only if AI features detected)
+5. Phase 7: Remediation Plan (sequential — needs all findings)
+
+## AI/LLM Security Quick Reference
+
+For systems with AI features (Phase 6), assess these threat categories:
+
+| Threat | Description | Mitigation |
+|--------|------------|------------|
+| **Prompt Injection** | User input manipulates LLM behavior | Input sanitization, output validation, system prompt hardening |
+| **Data Exfiltration** | LLM leaks training data or system prompts | Output filtering, canary tokens, prompt isolation |
+| **PII in Training** | Personal data used in fine-tuning or RAG | Data anonymization, PII scanning, consent verification |
+| **Model Denial of Service** | Crafted inputs cause expensive computation | Token limits, rate limiting, input length validation |
+| **Insecure Output Handling** | LLM output used in SQL/shell/code unsanitized | Output validation, sandboxing, parameterized queries |
+| **Excessive Agency** | LLM given too many tools/permissions | Least-privilege tool access, human-in-the-loop for destructive actions |
+| **Supply Chain (Models)** | Poisoned models or compromised model APIs | Model provenance verification, API key rotation, fallback models |
+
+## Pen Testing Tooling Reference
+
+Recommended tooling for Phase 7 pen test planning:
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| **OWASP ZAP** | Automated web app scanner | Run baseline scan + active scan against staging |
+| **Burp Suite** | Proxy-based manual testing | Intercept/modify requests, discover hidden endpoints |
+| **nuclei** | Template-based vulnerability scanning | Use community templates + custom templates for app-specific checks |
+| **sqlmap** | SQL injection testing | Test parameterized inputs for bypass techniques |
+| **ffuf** | Fuzzing/content discovery | Discover hidden endpoints, directory traversal |
+| **trivy** | Container + dependency scanning | Scan Docker images and lock files in CI |
+| **syft** | SBOM generation | Generate CycloneDX/SPDX SBOMs for compliance |
+| **cosign** | Artifact signing | Sign container images with Sigstore |
+
+## Compliance Automation Reference
+
+| Framework | Key Controls for Software | Automation Approach |
+|-----------|--------------------------|---------------------|
+| **SOC 2 Type II** | Access controls, encryption, audit logging, change management | Policy-as-code (OPA/Rego), automated evidence collection |
+| **GDPR** | Data mapping, consent, right to erasure, breach notification | PII scanner, data lineage tracking, deletion verification |
+| **HIPAA** | PHI encryption, access audit, BAA compliance | Encryption verification, audit log analysis |
+| **PCI DSS** | Cardholder data protection, network segmentation, vulnerability management | Automated scanning, penetration testing, log monitoring |
+| **ISO 27001** | Risk assessment, incident management, access control | Risk register automation, incident playbooks |
 
 ## Phase 0: Reconnaissance (Always Performed Before Phase 1)
 
@@ -121,6 +163,7 @@ Triggered -> Phase 0: Reconnaissance -> Phase 1: Threat Modeling
 | Data security | `Antigravity-Production-Grade-Suite/security-engineer/data-security/` | PII inventory, encryption audit, data retention, GDPR compliance |
 | Supply chain | `Antigravity-Production-Grade-Suite/security-engineer/supply-chain/` | SBOM, dependency audit, license compliance |
 | Pen test plan | `Antigravity-Production-Grade-Suite/security-engineer/pen-test/` | Test plan, API fuzzing config, attack scenarios |
+| AI security | `Antigravity-Production-Grade-Suite/security-engineer/ai-security/` | Prompt injection tests, output filtering rules, PII scan results |
 | Remediation | `Antigravity-Production-Grade-Suite/security-engineer/remediation/` | Remediation plan, critical fixes with code, timeline |
 | Code fixes | `services/`, `frontend/`, etc. | Security fixes applied directly to project code |
 

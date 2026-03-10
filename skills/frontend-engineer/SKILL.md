@@ -2,7 +2,8 @@
 name: frontend-engineer
 description: >
   [production-grade internal] Builds web frontends — React/Next.js components,
-  pages, design systems, state management, typed API clients.
+  pages, design systems, state management, typed API clients. Includes
+  Server Components, PWA, edge rendering, and web animation patterns.
   Routed via the production-grade orchestrator.
 ---
 
@@ -162,3 +163,69 @@ Triggered -> Phase 1: UI/UX Analysis -> Phase 2: Design System
 | Skipping form validation | Validate on both client (instant feedback) and server (security) — use Zod schemas shared with API layer |
 | No dark mode from the start | Implement light/dark via CSS custom properties and theme provider from Phase 2 — retrofitting dark mode into an existing component library is extremely painful |
 | Testing implementation details | Test behavior, not implementation — assert what the user sees and does, not internal component state or DOM structure |
+
+## React Server Components (RSC) Reference
+
+Decision guide for when to use each rendering pattern:
+
+| Pattern | Use When | Example |
+|---------|----------|--------|
+| **Server Component** (default) | Data fetching, no interactivity, SEO content | Dashboard data grids, blog posts, product listings |
+| **Client Component** (`'use client'`) | User interaction, browser APIs, state | Forms, dropdowns, modals, charts, drag-and-drop |
+| **Server Action** | Mutations from server components | Form submissions, data updates, file uploads |
+| **Streaming SSR** | Large pages, progressive loading | Dashboard with multiple data sources |
+
+**RSC Rules:**
+- Server Components are the default — only add `'use client'` when you need interactivity
+- Server Components can import Client Components, but NOT vice versa
+- Pass serializable data (no functions, classes) from Server to Client Components
+- Use `Suspense` boundaries for streaming data loading
+- Server Actions replace API routes for mutations in App Router
+
+## Edge Rendering Reference
+
+| Strategy | When | Implementation |
+|----------|------|---------------|
+| **SSG** (Static Site Generation) | Content rarely changes | `generateStaticParams()` at build time |
+| **ISR** (Incremental Static Regen) | Content updates periodically | `revalidate: 3600` (hourly) |
+| **On-demand revalidation** | Content updates on webhook/action | `revalidatePath('/blog')` or `revalidateTag('posts')` |
+| **Edge Middleware** | Auth checks, redirects, A/B tests | `middleware.ts` runs on edge before page renders |
+| **PPR** (Partial Prerendering) | Static shell + dynamic content | Next.js 15+ experimental feature |
+
+## PWA (Progressive Web App) Reference
+
+When BRD requires offline support or installability:
+- **Service Worker** — cache static assets (app shell), cache API responses (stale-while-revalidate)
+- **Web App Manifest** — `manifest.json` for install prompt, icons, splash screen, theme color
+- **Offline-first** — use IndexedDB for offline data, sync when reconnected
+- **Push Notifications** — `Notification` API + service worker push events
+- Use `next-pwa` or `@serwist/next` for Next.js integration
+
+## Web Animations Reference
+
+| Technique | Use Case | Library |
+|-----------|----------|--------|
+| **CSS Transitions** | Simple state changes (hover, focus) | Native CSS |
+| **CSS Keyframes** | Loading spinners, repeating animations | Native CSS |
+| **Framer Motion** | Complex component animations, layout transitions, gestures | `framer-motion` |
+| **View Transitions API** | Page-to-page transitions | Native browser API (`startViewTransition`) |
+| **Scroll-driven animations** | Parallax, progress bars, reveal on scroll | CSS `animation-timeline: scroll()` |
+| **GSAP** | Complex timeline sequences, SVG animations | `gsap` |
+
+**Animation performance rules:**
+- Only animate `transform` and `opacity` (GPU-composited, no layout/paint)
+- Use `will-change` sparingly and only when needed
+- Prefer CSS transitions for simple state changes (zero JS overhead)
+- Use `prefers-reduced-motion` media query to respect user preferences
+- Keep animations under 300ms for interactions, 500ms for transitions
+
+## Micro-Frontend Reference
+
+For large-scale applications with multiple teams:
+
+| Approach | Use Case | Trade-off |
+|----------|----------|----------|
+| **Module Federation** | Multiple Next.js/Webpack apps sharing components | Complex config, great DX |
+| **Import Maps** | Runtime module loading from CDN | Simple, browser-native, less type safety |
+| **Web Components** | Framework-agnostic shared UI elements | Verbose, limited SSR support |
+| **Route-based splitting** | Different teams own different routes | Simple, requires shared shell app |

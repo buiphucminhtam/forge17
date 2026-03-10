@@ -2,7 +2,8 @@
 name: software-engineer
 description: >
   [production-grade internal] Implements backend services, APIs, and business
-  logic — builds features, fixes bugs, refactors code from specs.
+  logic — builds features, fixes bugs, refactors code from specs. Includes
+  error handling, idempotency, concurrency, and clean architecture patterns.
   Routed via the production-grade orchestrator.
 ---
 
@@ -156,6 +157,98 @@ Triggered -> Phase 1: Context Analysis -> Implementation Plan
 ## Cloud-Specific Patterns
 
 The skill supports AWS (SDK v3, LocalStack), GCP (@google-cloud/*, emulators), Azure (@azure/*, Azurite), and multi-cloud abstractions via provider interfaces selected by `CLOUD_PROVIDER` config.
+
+## Error Handling Patterns Reference
+
+Use these patterns consistently across all services:
+
+### Result Type Pattern
+```typescript
+// Use Result<T, E> for expected errors (validation, business rules)
+type Result<T, E = Error> = { ok: true; data: T } | { ok: false; error: E };
+
+// Service layer returns Results, handlers convert to HTTP responses
+async function createOrder(input: CreateOrderInput): Promise<Result<Order, OrderError>> {
+  if (!input.items.length) return { ok: false, error: { code: 'EMPTY_CART' } };
+  const order = await repo.create(input);
+  return { ok: true, data: order };
+}
+```
+
+### Error Hierarchy
+```
+AppError (base)
+├── ValidationError        → 400 (input format, missing fields)
+├── BusinessRuleError      → 422 (valid format but violates business rules)
+├── NotFoundError          → 404 (resource doesn't exist)
+├── ConflictError          → 409 (duplicate, stale update)
+├── AuthenticationError    → 401 (missing/invalid credentials)
+├── AuthorizationError     → 403 (insufficient permissions)
+└── ExternalServiceError   → 502/503 (dependency failure)
+```
+
+### Retry with Exponential Backoff
+```typescript
+async function withRetry<T>(fn: () => Promise<T>, opts: { maxAttempts: number; baseDelayMs: number }): Promise<T> {
+  for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
+    try { return await fn(); }
+    catch (err) {
+      if (attempt === opts.maxAttempts || !isRetryable(err)) throw err;
+      await sleep(opts.baseDelayMs * Math.pow(2, attempt - 1) + jitter());
+    }
+  }
+}
+// Retryable: network errors, 429, 503. NOT retryable: 400, 401, 404.
+```
+
+### Circuit Breaker States
+```
+CLOSED (normal) → failures exceed threshold → OPEN (reject all)
+OPEN → after timeout → HALF-OPEN (allow one request)
+HALF-OPEN → success → CLOSED  |  failure → OPEN
+```
+
+## Idempotency Reference
+
+| Method | Naturally Idempotent | Strategy |
+|--------|---------------------|----------|
+| GET | Yes | N/A — reads are safe |
+| PUT | Yes | Full replacement is inherently idempotent |
+| DELETE | Yes | Deleting twice = same result |
+| POST | **No** | Require `Idempotency-Key` header |
+| PATCH | **No** | Use optimistic locking (`ETag` + `If-Match`) |
+
+**Idempotency-Key implementation:**
+1. Client sends `Idempotency-Key: <uuid>` header with POST request
+2. Server checks if key exists in idempotency store (Redis, 24h TTL)
+3. If exists → return stored response (no re-execution)
+4. If new → execute, store response, return to client
+
+## Concurrency Patterns Reference
+
+| Pattern | Use Case | Implementation |
+|---------|----------|---------------|
+| **Optimistic Locking** | Low-contention updates | `version` column + `WHERE version = N` |
+| **Pessimistic Locking** | High-contention, short transactions | `SELECT ... FOR UPDATE` |
+| **Queue-based** | Background jobs, event processing | Bull/BullMQ, SQS, RabbitMQ |
+| **Semaphore** | Rate-limited resources (API calls) | Redis-based distributed semaphore |
+| **Saga** | Multi-service transactions | Orchestrator or choreography pattern |
+
+## Clean Architecture Layers
+
+```
+┌─────────────────────────────────────┐
+│  Handlers (HTTP/gRPC/Event)         │ ← Thin. Parse input, call service, format response.
+├─────────────────────────────────────┤
+│  Services (Business Logic)          │ ← All domain logic. No framework imports.
+├─────────────────────────────────────┤
+│  Repositories (Data Access)         │ ← DB queries. Returns domain entities, not DB rows.
+├─────────────────────────────────────┤
+│  Infrastructure (External)          │ ← HTTP clients, message queues, file storage.
+└─────────────────────────────────────┘
+```
+
+**Rule:** Dependencies point inward. Services never import from Handlers. Repositories never import from Services. Infrastructure is injected via interfaces.
 
 ## Common Mistakes
 

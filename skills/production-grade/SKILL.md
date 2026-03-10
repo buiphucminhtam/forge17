@@ -47,10 +47,13 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 
 | Mode | Trigger Signals | Skills Involved |
 |------|----------------|-----------------|
-| **Full Build** | "build a SaaS", "production grade", "from scratch", "full stack", greenfield intent | All 17 skills, full DEFINE→BUILD→HARDEN→SHIP→SUSTAIN pipeline |
+| **Full Build** | "build a SaaS", "production grade", "from scratch", "full stack", greenfield intent | All skills, full DEFINE→BUILD→HARDEN→SHIP→SUSTAIN pipeline |
 | **Feature** | "add [feature]", "implement [feature]", "new endpoint", "new page", "integrate [service]" | PM (scoped) → Architect (scoped) → BE/FE → QA |
 | **Harden** | "review", "audit", "secure", "harden", "before launch", "production ready" (on EXISTING code) | Security + QA + Code Review (sequential) → Remediation |
 | **Ship** | "deploy", "CI/CD", "containerize", "infrastructure", "terraform", "docker" | DevOps → SRE |
+| **Debug** | "debug", "fix bug", "broken", "investigate", "not working", "error", "trace", "crashes" | Debugger (→ Software/Frontend Engineer for fix) |
+| **AI Build** | "AI feature", "chatbot", "RAG", "embeddings", "LLM", "agent", "prompt", "AI-powered" | Prompt Engineer + Data Scientist + Architect (scoped) → BE/FE |
+| **Migrate** | "migrate", "upgrade", "migration", "database change", "schema change", "refactor DB", "move to" | Database Engineer + Software Engineer → QA |
 | **Test** | "write tests", "test coverage", "test this", "add tests" | QA |
 | **Review** | "review my code", "code review", "code quality", "check my code" | Code Reviewer |
 | **Architect** | "design", "architecture", "API design", "data model", "tech stack", "how should I structure" | Solution Architect |
@@ -63,9 +66,9 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 
 **Step 2 — Present or skip the plan:**
 
-**Single-skill modes** (Test, Review, Architect, Document, Explore, Design): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
+**Single-skill modes** (Test, Review, Architect, Document, Explore, Design, Debug): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
 
-**Multi-skill modes** (Feature, Harden, Ship, Optimize, Custom): Present the plan for confirmation via notify_user:
+**Multi-skill modes** (Feature, Harden, Ship, Optimize, AI Build, Migrate, Custom): Present the plan for confirmation via notify_user:
 
 ```
 Here's my plan:
@@ -205,16 +208,59 @@ Which skills do you need? (list the numbers separated by commas)
 3. **Software Engineer** — Backend implementation
 4. **Frontend Engineer** — UI components, pages, design system
 5. **QA Engineer** — Tests — unit, integration, e2e, performance
-6. **Security Engineer** — OWASP audit, STRIDE, vulnerability scan
+6. **Security Engineer** — OWASP audit, STRIDE, AI security, vulnerability scan
 7. **Code Reviewer** — Architecture conformance, code quality
 8. **DevOps** — Docker, CI/CD, Terraform, monitoring
 9. **SRE** — SLOs, chaos engineering, runbooks
 10. **Technical Writer** — API docs, dev guides, architecture docs
-11. **Data Scientist** — LLM optimization, ML pipelines, experiments
-12. **Chat about this** — Free-form input
+11. **Data Scientist** — AI/ML systems, RAG pipelines, agent orchestration
+12. **Debugger** — Bug investigation, root cause analysis, regression testing
+13. **Prompt Engineer** — Prompt design, evaluation, optimization
+14. **API Designer** — REST/GraphQL design, endpoints, error taxonomy
+15. **Database Engineer** — Schema design, migrations, query optimization
+16. **Chat about this** — Free-form input
 ```
 
 Execute selected skills in dependency order. If user picks conflicting skills, resolve via the authority hierarchy.
+
+### Debug Mode
+
+Systematic bug investigation. Single skill (+ optional fix).
+
+1. Read `skills/debugger/SKILL.md` and follow its instructions
+2. Debugger triages, generates hypotheses, investigates, finds root cause
+3. Present root cause and proposed fix
+4. If user approves fix → apply fix + regression test
+5. If fix touches backend code → Software Engineer applies it
+6. If fix touches frontend code → Frontend Engineer applies it
+
+**1 gate:** After root cause identified (step 3), before applying fix.
+
+### AI Build Mode
+
+Build or integrate AI-powered features. Multi-skill.
+
+1. **Codebase scan** — identify existing AI infrastructure (LLM clients, embeddings, RAG, agents)
+2. **PM (Express depth)** — scope the AI feature. User stories focused on AI behavior.
+3. **Data Scientist** — select model, design RAG pipeline/agent architecture (if needed)
+4. **Prompt Engineer** — design and evaluate prompts for the feature
+5. **Architect (scoped)** — API contracts for AI endpoints, vector DB schema
+6. **Build** — Software Engineer + Frontend Engineer implement
+7. **Test** — QA + evaluation framework for AI quality
+
+**2 gates:** After AI architecture design (step 3-4), and after prompt evaluation (step 7).
+
+### Migrate Mode
+
+Database migration, framework upgrade, or large-scale code migration.
+
+1. **Codebase scan** — understand current state (schema, framework version, code patterns)
+2. **Database Engineer** — design migration: new schema, zero-downtime migration scripts, data transformation
+3. **Software Engineer** — update code to work with new schema/framework
+4. **QA** — regression tests, data integrity verification
+5. **Optional: Rollback plan** — reversible migrations, feature flags for gradual rollout
+
+**2 gates:** After migration plan (step 2), and after migration scripts generated (before execution).
 
 ## Auto-Update Check
 
