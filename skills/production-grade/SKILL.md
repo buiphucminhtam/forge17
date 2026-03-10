@@ -367,23 +367,164 @@ All skills read this file at startup to adapt their depth. The engagement mode c
 - **Phase summaries** — Thorough/Meticulous show intermediate outputs between phases.
 - **Gate detail** — Meticulous adds per-skill output review at each gate.
 
-5b. **Execution strategy:**
+5b. **Execution strategy — Scope Analysis & Recommendation:**
 
-Notify user via notify_user:
+Before asking the user, the orchestrator MUST analyze the project scope and generate a data-driven recommendation. This runs AFTER Gate 2 (architecture approved), when the full scope is known.
+
+**Step 5b-1: Scope Metrics Collection**
+
+Read the approved architecture and BRD to extract these metrics:
 
 ```
-How should the pipeline execute independent tasks?
+From docs/architecture/ and api/:
+  service_count    = number of backend services/modules
+  endpoint_count   = number of API endpoints
+  db_model_count   = number of database models/entities
 
-1. **Parallel (Recommended for Full Build)** — Independent tasks run in separate git worktrees simultaneously. Faster, uses more resources. Tasks with dependencies still run sequentially.
-2. **Sequential** — All tasks run one at a time. Slower but simpler. Best for small projects or debugging.
-3. **Chat about this** — Learn more about parallel vs sequential execution.
+From product-manager/BRD/:
+  page_count       = number of frontend pages/screens
+  user_story_count = number of user stories
+
+From .production-grade.yaml:
+  has_frontend     = features.frontend (true/false)
+  has_mobile       = features.mobile (true/false)
+  has_ai_ml        = features.ai_ml (true/false)
+  architecture     = project.architecture (monolith/microservices)
+
+Derived:
+  parallel_task_count = count of active BUILD tasks (T3a + T3b? + T3c? + T4)
+  integration_points  = number of cross-service API calls
+  shared_deps         = number of shared libraries/packages
 ```
+
+**Step 5b-2: Complexity Scoring**
+
+Calculate a complexity score (1-10) from the metrics:
+
+| Factor | Weight | Score Formula |
+|--------|--------|---------------|
+| Service count | 25% | 1-2: score 2, 3-5: score 5, 6+: score 8 |
+| Page count | 15% | 1-3: score 2, 4-8: score 5, 9+: score 8 |
+| Cross-cutting concerns | 20% | shared_deps × 2 + integration_points |
+| Architecture type | 20% | monolith: 2, modular-monolith: 5, microservices: 8 |
+| Feature breadth | 20% | +2 per active platform (web, mobile, AI/ML) |
+
+```
+complexity_score = weighted_sum(factors)
+```
+
+**Step 5b-3: Time Estimation**
+
+Estimate wall-clock execution time for both modes:
+
+```
+Base times per task (approximate):
+  T3a (Backend):  ~15-40 min (scales with service_count)
+  T3b (Frontend): ~10-25 min (scales with page_count)
+  T3c (Mobile):   ~10-20 min (scales with page_count)
+  T4  (DevOps):   ~5-10 min
+  T5  (QA):       ~10-20 min
+  T6a (Security): ~5-10 min
+  T6b (Review):   ~5-10 min
+
+Sequential time:
+  total_sequential = sum of all active task times (BUILD + HARDEN)
+
+Parallel time:
+  build_parallel  = max(T3a, T3b, T3c) + T4    # longest worker + sequential T4
+  harden_parallel = max(T5, T6a, T6b)           # longest worker
+  merge_overhead  = 2-5 min per parallel group  # validation + merge
+  total_parallel  = build_parallel + merge_overhead + harden_parallel + merge_overhead
+
+Speed gain:
+  speedup_factor = total_sequential / total_parallel
+  time_saved     = total_sequential - total_parallel
+```
+
+**Step 5b-4: Risk Assessment (Parallel Mode)**
+
+Evaluate risks specific to parallel execution:
+
+| Risk | Condition | Severity | Mitigation |
+|------|-----------|----------|------------|
+| **Merge conflict** | shared_deps > 2 OR services share DB models | Medium-High | Merge Arbiter auto-resolves configs; code conflicts escalate |
+| **Shared schema divergence** | Multiple workers read same schema, one modifies | Medium | Contract locks schema as readonly for all workers |
+| **Package version mismatch** | Workers add conflicting dependency versions | Low | Merge Arbiter unions package.json, runs dedupe |
+| **Integration failure post-merge** | Workers build against stale API contracts | Medium | All workers share same frozen api/ snapshot |
+| **Resource exhaustion** | 4 Gemini CLI processes × large context | Low | MAX_WORKERS cap + timeout per worker |
+| **Rollback complexity** | Post-merge integration fail, hard to isolate | Medium | Per-branch rollback via merge-arbiter protocol |
+
+```
+Risk level:
+  LOW    — service_count <= 2, no shared deps, monolith
+  MEDIUM — service_count 3-5, some shared deps, modular
+  HIGH   — service_count 6+, heavy integration, microservices
+```
+
+**Step 5b-5: Generate Recommendation**
+
+Based on analysis, determine the recommended mode:
+
+```
+IF complexity_score >= 5 AND parallel_task_count >= 3 AND risk_level != HIGH:
+  recommendation = PARALLEL
+  reason = "Scope large enough to benefit from parallelization"
+
+ELIF complexity_score >= 5 AND risk_level == HIGH:
+  recommendation = PARALLEL with caution
+  reason = "Large scope benefits from parallel, but high integration risk"
+
+ELIF complexity_score < 5 OR parallel_task_count < 3:
+  recommendation = SEQUENTIAL
+  reason = "Scope too small for parallel overhead to pay off"
+```
+
+**Step 5b-6: Present to User**
+
+Notify user via notify_user with the analysis:
+
+```
+━━━ Execution Strategy Analysis ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Project Scope:
+  Services: [N]  |  Pages: [N]  |  Endpoints: [N]
+  Platforms: [Web / Mobile / AI]
+  Architecture: [monolith / modular / microservices]
+  Complexity Score: [X]/10
+
+⏱ Time Estimates:
+  Sequential:  ~[X] min (all tasks one-by-one)
+  Parallel:    ~[Y] min (independent tasks simultaneous)
+  ⚡ Speedup:   ~[Z]x faster ([N] min saved)
+
+⚠️ Parallel Risks:
+  • Merge conflict risk: [Low/Medium/High] — [detail]
+  • Integration risk: [Low/Medium/High] — [detail]
+  • Resource usage: [N] concurrent Gemini CLI workers
+
+📋 Recommendation: [PARALLEL / SEQUENTIAL]
+   Reason: [explanation]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **[Recommended mode] (Recommended)** — [brief why]
+2. **[Other mode]** — [brief why user might want this]
+3. **Chat about this** — Discuss the analysis or ask questions
+```
+
+**Step 5b-7: Save Decision**
 
 Append to `Antigravity-Production-Grade-Suite/.orchestrator/settings.md`:
 ```markdown
 Execution: [parallel|sequential]
 Max_Workers: 4
+Complexity_Score: [X]
+Estimated_Time_Sequential: [N]min
+Estimated_Time_Parallel: [N]min
+Risk_Level: [LOW|MEDIUM|HIGH]
 ```
+
+Write analysis report to `Antigravity-Production-Grade-Suite/.orchestrator/scope-analysis.md` for future reference.
 
 When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-dispatch skill (`skills/parallel-dispatch/SKILL.md`) to spawn git worktrees, distribute Task Contracts, and merge results. When **Sequential** is selected, the pipeline behaves as before.
 
