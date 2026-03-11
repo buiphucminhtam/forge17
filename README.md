@@ -25,7 +25,7 @@ If Forge17 helps you ship faster, you can support the project here:
 
 | Vietnam (Bank QR) | International |
 |---|---|
-| ![Vietnam donate QR](assets/donate/give-me-a-coffee.png) | ![International donate QR](assets/donate/give-me-a-coffee-international.png) |
+| <img src="assets/donate/give-me-a-coffee.png" width="240" /> | <img src="assets/donate/give-me-a-coffee-international.png" width="240" /> |
 
 
 ### Release Timeline
