@@ -13,7 +13,7 @@ Forge17 is an adaptive orchestrator with **18 AI skills** (17 domain skills + 1 
 **IMPORTANT:** When the user gives any software development request, you MUST:
 
 1. **Read `skills/production-grade/SKILL.md`** — this is the orchestrator that routes to all 17 skills
-2. **Classify the request** into one of 12 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Optimize, Design, Mobile)
+2. **Classify the request** into one of 13 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile)
 3. **Follow the pipeline** as defined in the orchestrator
 
 Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the production-grade skill classify and route.
@@ -30,6 +30,7 @@ Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the pr
 | "Design UI for..." | Design | UI Designer only |
 | "Build mobile app" | Mobile | Mobile Engineer (+ PM, Architect) |
 | "Help me think about..." | Explore | Polymath co-pilot |
+| "Deep research on..." | Research | Polymath + NotebookLM MCP (grounded) |
 
 ## Available Workflows
 

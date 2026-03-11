@@ -274,6 +274,47 @@ search_web("[competitor] pricing plans")
 5. **Persist findings.** Write research to `research/YYYY-MM-DD-topic.md`. Don't re-search the same topic in future sessions.
 6. **Proactive search.** If the conversation touches a topic where training data is likely stale, search automatically and present findings with direction options.
 
+### NotebookLM Enhanced Research (Optional)
+
+When NotebookLM MCP tools are available (`mcp_notebooklm_*`), you gain a powerful grounding layer:
+
+**When to use NotebookLM:**
+- Deep domain research requiring citation-backed answers
+- Technology evaluation with real-world evidence
+- Competitive analysis across multiple sources
+- Any research where zero-hallucination is critical
+
+**Activation check:**
+```python
+# Quick check — if this succeeds, NotebookLM is available
+server_info()  # Returns version info if MCP is connected
+```
+
+**Enhanced Research Pattern:**
+1. **Web Discovery** (always) — run `search_web` sweeps, collect URLs
+2. **Create Research Notebook** — `notebook_create(title="Research: [Topic]")`
+3. **Add Sources** — add collected URLs + any relevant docs (wait 2s between each)
+4. **Deep Research** — `research_start(query, notebook_id, mode="deep")` for 40+ additional sources
+5. **Iterative Querying** — multi-round `notebook_query` with `conversation_id` for context buildup
+6. **Generate Output** — `studio_create(artifact_type="report")` for structured synthesis
+
+**Graceful Fallback:**
+```
+IF NotebookLM MCP available AND authenticated:
+    Use enhanced pattern (web search + NotebookLM grounding)
+ELSE:
+    Use standard pattern (web search + read_url_content + synthesis)
+    ← Still effective, just without grounding/citation layer
+```
+
+**Guard Rails:**
+- Use dedicated Google account (not primary)
+- Session expires ~20 min — re-auth if commands fail
+- Rate limit: wait 2s between operations
+- Free tier: ~50 queries/day
+
+See `workflows/deep-research.md` for the complete workflow reference.
+
 ---
 
 ## Modes

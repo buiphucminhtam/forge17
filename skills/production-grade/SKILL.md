@@ -59,6 +59,7 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 | **Architect** | "design", "architecture", "API design", "data model", "tech stack", "how should I structure" | Solution Architect |
 | **Document** | "document", "write docs", "API docs", "README" | Technical Writer |
 | **Explore** | "explain", "understand", "help me think", "what should I", "I'm not sure" | Polymath |
+| **Research** | "research", "deep research", "find sources", "analyze topic", "investigate [domain]" | Polymath (research mode) + NotebookLM MCP (optional) |
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | SRE + Code Reviewer |
 | **Design** | "design UI", "wireframes", "design system", "color palette", "UX flow" | UI Designer |
 | **Mobile** | "mobile app", "React Native", "Flutter", "iOS", "Android" | Mobile Engineer (+ PM scoped, Architect scoped if needed) |
@@ -184,6 +185,22 @@ Thinking partner. Single skill.
 3. When ready, offer to hand off to any other mode
 
 **0 gates.** Polymath manages its own dialogue.
+
+### Research Mode
+
+Deep, grounded research on any topic. Polymath + NotebookLM MCP (optional enhancement).
+
+1. Read `skills/polymath/SKILL.md` and invoke in **research mode**
+2. **Phase 1 — Web Discovery:** Polymath runs broad `search_web` sweeps (3-5 parallel) to gather relevant URLs and initial understanding
+3. **Phase 2 — NotebookLM Enhancement (optional):**
+   - Check if NotebookLM MCP tools are available (`server_info()`)
+   - If available: create notebook → add source URLs → run deep research → iterative querying → generate report
+   - If unavailable: skip — Polymath synthesizes from web search alone (still effective)
+   - Follow `workflows/deep-research.md` for detailed steps
+4. **Phase 3 — Synthesize:** Combine all findings into grounded research report with citations, trade-offs, and recommendations
+5. When ready, offer handoff to relevant mode (Feature, Architect, Full Build, etc.)
+
+**0 gates.** Polymath manages dialogue. NotebookLM is an enhancement layer, not a requirement.
 
 ### Optimize Mode
 
