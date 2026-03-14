@@ -6,7 +6,7 @@ description: >
   Produces design specifications for frontend-engineer to consume.
   Routed via the production-grade orchestrator.
 version: 1.0.0
-author: antigravity-code
+author: buiphucminhtam
 tags: [design, ux, ui, wireframes, design-system, color, typography, accessibility]
 ---
 

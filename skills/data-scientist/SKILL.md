@@ -6,7 +6,7 @@ description: >
   ML pipeline management, evaluation frameworks, and cost modeling.
   Routed via the production-grade orchestrator.
 version: 2.0.0
-author: antigravity-code
+author: buiphucminhtam
 tags: [ml, ai, llm, data-science, optimization, analytics, ab-testing, prompt-engineering, mlops, rag, vector-db, agents, evaluation]
 ---
 

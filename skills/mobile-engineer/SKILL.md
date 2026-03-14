@@ -7,7 +7,7 @@ description: >
   Conditional skill — only activated when BRD includes mobile requirements.
   Routed via the production-grade orchestrator.
 version: 1.0.0
-author: antigravity-code
+author: buiphucminhtam
 tags: [mobile, react-native, flutter, ios, android, cross-platform, app-store]
 ---
 

@@ -380,7 +380,7 @@ Run BEFORE any execution (all modes). Silent if current. One prompt max if updat
 **Step 0 — version check:**
 
 1. Check current version from plugin metadata
-2. Use `read_url_content` to fetch `https://raw.githubusercontent.com/antigravity-code/antigravity-code-production-grade-plugin/main/.antigravity-plugin/plugin.json` → extract `version` (this is the remote version)
+2. Use `read_url_content` to fetch `https://raw.githubusercontent.com/buiphucminhtam/forge17/main/VERSION` → read the version string (this is the remote version)
 3. **If fetch fails** (offline, timeout, 404) → silently continue. Never block the pipeline over an update check.
 4. **If remote ≤ local** → continue silently (user sees nothing)
 5. **If remote > local** → prompt via notify_user:
@@ -395,7 +395,7 @@ production-grade v{remote} is available (you have v{local})
 6. **If skip** → continue pipeline with current version
 7. **If update** → execute in sequence:
    ```bash
-   git clone --depth 1 https://github.com/antigravity-code/antigravity-code-production-grade-plugin.git /tmp/pg-update
+   git clone --depth 1 https://github.com/buiphucminhtam/forge17.git /tmp/pg-update
    ```
    - Copy updated files to the skills directory
    - Clean up: `rm -rf /tmp/pg-update`
