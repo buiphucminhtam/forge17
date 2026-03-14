@@ -125,14 +125,36 @@ Context:
 Update task.md: T4 status → completed
 ```
 
+## Quality Gate & Regression Checks
+
+After EACH build task (T3a, T3b, T3c, T4), run the Universal Quality Gate Protocol (`skills/_shared/protocols/quality-gate.md`):
+
+1. **Per-skill quality gate** — verify build, regression, standards, traceability
+2. **Brownfield regression check** — if brownfield project:
+   - Run existing test suite
+   - Compare with baseline from `.forge17/baseline-{session}.json`
+   - If any previously-passing test now fails → REGRESSION → skill must fix before proceeding
+3. **Change manifest update** — log all file operations to `.forge17/change-manifest-{session}.json`
+4. **Session lifecycle hook** — call `TASK_COMPLETE(task_id, name, status, summary)`
+
+Display mini-scorecard after each task:
+```
+┌─ Quality Gate: T3a Backend ──────────┐
+│ Build: ✓ | Regression: ✓ | Score: 92 │
+└──────────────────────────────────────┘
+```
+
 ## Completion
 
 When all BUILD tasks complete:
 1. Verify all services compile and start
 2. Verify docker-compose brings up the full stack
 3. If T3c ran, verify mobile project builds for both platforms
-4. Log BUILD completion to workspace
-5. Read `phases/harden.md` and begin HARDEN phase
+4. **Run aggregate quality check** — display BUILD phase quality summary
+5. **Call session lifecycle hook** — `PHASE_COMPLETE("BUILD", summary)`
+6. **Brownfield: full regression suite** — verify ALL existing tests still pass
+7. Log BUILD completion to workspace
+8. Read `phases/harden.md` and begin HARDEN phase
 
 ## Failure Handling
 
@@ -140,3 +162,5 @@ When all BUILD tasks complete:
 - Frontend fails but backend succeeds → continue backend-only pipeline
 - Mobile fails but web succeeds → continue web-only pipeline, flag mobile issues
 - Self-debug: read errors, fix, retry before escalating
+- **Regression detected** → revert task changes, retry with constraints (brownfield-safety.md)
+- **Quality score below threshold** → pause, show scorecard, ask user to continue or fix

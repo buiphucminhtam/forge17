@@ -404,6 +404,35 @@ production-grade v{remote} is available (you have v{local})
 
 **If any update step fails**, print a warning and continue with the current version. Never let the updater break the pipeline.
 
+## Session Lifecycle Pre-Flight
+
+Run AFTER update check, BEFORE mode classification. Follows `skills/_shared/protocols/session-lifecycle.md`.
+
+**Step 0.5 — session start:**
+
+1. **Load project profile:**
+   - If `.forge17/project-profile.json` exists and is fresh (<24h) → load context, skip re-onboarding
+   - If stale → re-run health check only (project-onboarding Phase 2)
+   - If missing → run full project onboarding (see `skills/_shared/protocols/project-onboarding.md`)
+
+2. **Load last session state:**
+   - If `.forge17/session-log.json` exists with interrupted session → offer resume via notify_user
+   - If last session completed → log summary, continue to new request
+   - If first session → continue normally
+
+3. **Load memory context:**
+   - If memory-manager configured → retrieve top-5 project context (max 800 tokens)
+   - If not configured → read `.forge17/code-conventions.md` if exists
+
+4. **Detect manual changes:**
+   - If git available → check commits since last session
+   - If structural changes detected → re-run onboarding fingerprint + patterns
+
+5. **Display quality trend** (if history exists):
+   - Read `.forge17/quality-history.json` → show trend of last 5 sessions
+
+Log: `✓ Session context loaded — [project name], last session: [summary or "first session"]`
+
 ## Full Build Pipeline
 
 When mode is **Full Build**, follow this EXACT sequence:
@@ -429,10 +458,17 @@ mkdir -p Antigravity-Production-Grade-Suite/.orchestrator/
 | `input-validation.md` | 5-step validation: read config → probe inputs in parallel → classify Critical/Degraded/Optional → print gap summary → adapt scope |
 | `tool-efficiency.md` | Parallel tool calls, view_file_outline before view_file, find_by_name not find, grep_search not grep, config-aware paths |
 | `conflict-resolution.md` | Authority hierarchy, dedup by file:line (keep highest severity), HARDEN→BUILD feedback loops (2 cycle max) |
+| `project-onboarding.md` | 5-phase deep project analysis: fingerprint → health check → pattern analysis → risk assessment → profile generation |
+| `session-lifecycle.md` | Cross-session continuity: session start/save/end hooks, resume protocol, drift detection, memory integration |
+| `quality-gate.md` | Universal per-skill validation: 4 levels (build, regression, standards, traceability), quality scoring 0-100, configurable thresholds |
+| `brownfield-safety.md` | Safety net for existing projects: git branching, baseline snapshots, protected paths, change manifest, regression checks, rollback |
+| `quality-dashboard.md` | Quality scoring & reporting: real-time tracking, final dashboard, machine-readable JSON reports, cross-session trending, early warning |
 
 Read these from the plugin's `skills/_shared/protocols/` directory and copy them. If plugin path is unavailable, write from the summaries above.
 
 4. **Codebase discovery — detect greenfield vs brownfield:**
+
+   **If project onboarding already ran** (Step 0.5 loaded `.forge17/project-profile.json`) → use cached fingerprint data. Otherwise, run scans:
 
    Run these scans in parallel:
    ```
@@ -447,28 +483,34 @@ Read these from the plugin's `skills/_shared/protocols/` directory and copy them
    | Signal | Mode | Behavior |
    |--------|------|----------|
    | Empty/new directory, no source files | **Greenfield** | Create everything from scratch |
-   | Source files exist, no `.production-grade.yaml` | **Brownfield (unmapped)** | Discover structure, generate config, adapt |
+   | Source files exist, no `.production-grade.yaml` | **Brownfield (unmapped)** | Deep onboarding, generate config, adapt |
    | Source files + `.production-grade.yaml` exist | **Brownfield (mapped)** | Use config paths, augment existing code |
 
-   **If Greenfield** → log `✓ Greenfield project — creating from scratch` and continue to step 5.
+   **If Greenfield** → log `✓ Greenfield project — creating from scratch`. Write minimal `.forge17/project-profile.json` (to be populated progressively). Continue to step 5.
 
-   **If Brownfield** → run the adaptation sequence:
+   **If Brownfield** → run the enhanced adaptation sequence:
 
-   a. **Structure report** — scan and summarize what exists:
+   a. **Deep project onboarding** — run full `skills/_shared/protocols/project-onboarding.md` if not already done in Step 0.5. This produces:
+      - `.forge17/project-profile.json` — full fingerprint, health, patterns, risk
+      - `.forge17/code-conventions.md` — coding patterns for all skills to follow
+
+   b. **Structure report** — display from project profile:
    ```
-   ⧖ Existing codebase detected. Scanning structure...
-   Language: [detected from package.json/go.mod/etc.]
-   Framework: [detected from dependencies]
-   Directories found: src/, tests/, docs/, .github/workflows/
-   Files: [N] source files, [N] test files, [N] config files
+   ⧖ Existing codebase analyzed:
+   Language: [fingerprint.language]  |  Framework: [fingerprint.framework]
+   Architecture: [fingerprint.architecture]
+   Tests: [health.test_count] ([health.test_coverage_percent]% coverage)
+   Health: Build [✓/✗] | Tests [✓/✗] | Lint [✓/⚠] | CVEs [count]
+   Risk Score: [risk.overall_risk_score]/10
+   Patterns: [patterns.naming_convention], [patterns.component_pattern]
    ```
 
-   b. **Path mapping** — if no `.production-grade.yaml`, generate one from discovered structure. Notify user via notify_user:
+   c. **Path mapping** — if no `.production-grade.yaml`, generate one from discovered structure. Notify user via notify_user:
 
    ```
-   I've detected an existing codebase. Here's what I found:
+   I've analyzed your existing codebase. Here's what I found:
 
-   [structure summary]
+   [structure summary from project profile]
 
    I'll map the pipeline outputs to your existing structure.
 
@@ -478,26 +520,34 @@ Read these from the plugin's `skills/_shared/protocols/` directory and copy them
    4. **Chat about this** — Discuss how the pipeline adapts to your codebase
    ```
 
-   c. **Write `.production-grade.yaml`** from discovered structure — map `paths.*` to actual directories found.
+   d. **Write `.production-grade.yaml`** from discovered structure — map `paths.*` to actual directories found.
 
-   d. **Set brownfield context** — write to `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md`:
+   e. **Set brownfield context** — write to `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md`:
    ```markdown
    # Codebase Context
    Mode: brownfield
    Language: [detected]
    Framework: [detected]
    Existing paths: [mapping]
+   Code conventions: .forge17/code-conventions.md
+   Project profile: .forge17/project-profile.json
 
    ## Rules for all agents
    - NEVER overwrite existing files without explicit user approval
-   - READ existing code patterns before writing new code
-   - MATCH existing code style (naming, formatting, structure)
+   - READ .forge17/code-conventions.md and MATCH existing code style
    - ADD to existing directories, don't replace them
    - If a file exists at the target path, create alongside it or extend it
-   - Existing tests must still pass after changes
+   - Existing tests must still pass after changes (verified by quality-gate)
+   - Check .forge17/project-profile.json → risk.protected_paths before writing
    ```
 
-   All skills read this file before executing. It overrides default "create from scratch" behavior.
+   f. **Activate brownfield safety net** — follow `skills/_shared/protocols/brownfield-safety.md`:
+      - Create session branch: `forge17/session-{timestamp}`
+      - Snapshot baseline (existing tests pass count)
+      - Register protected paths
+      - Log: `✓ Safety net active — branch: forge17/session-{timestamp}, baseline: [N] tests`
+
+   All skills read codebase-context.md and code-conventions.md before executing.
 
 5. **Engagement mode:**
 
@@ -685,7 +735,7 @@ Write analysis report to `Antigravity-Production-Grade-Suite/.orchestrator/scope
 
 When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-dispatch skill (`skills/parallel-dispatch/SKILL.md`) to spawn git worktrees, distribute Task Contracts, and merge results. When **Sequential** is selected, the pipeline behaves as before.
 
-6. **Detect existing workspace** — if `Antigravity-Production-Grade-Suite/.orchestrator/` has prior state, offer to resume or restart via notify_user.
+6. **Detect existing workspace** — if `Antigravity-Production-Grade-Suite/.orchestrator/` has prior state, use session-lifecycle resume protocol. If `.forge17/session-log.json` has interrupted state, offer resume. Otherwise offer clean start via notify_user.
 
 7. **Polymath pre-flight check:**
    - If `Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ Polymath context loaded — skipping redundant discovery`
@@ -694,6 +744,10 @@ When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-disp
      - If gaps detected → read `skills/polymath/SKILL.md` and follow its instructions for pre-flight consultation before proceeding. The polymath will research, clarify with the user, and write a context package when ready.
      - If no gaps → proceed directly. Log: `✓ Request is clear — proceeding to PM`
    - If user explicitly requests to skip polymath ("just build it", clear detailed spec) → proceed immediately.
+   - **Context-aware routing (v7.0):** If project-profile shows health issues, suggest addressing them:
+     - `health.tests_pass == false` → suggest Harden mode first
+     - `risk.known_cves > 0` (Critical/High) → warn and suggest Security audit
+     - `risk.tech_debt_score > 7` → suggest addressing tech debt before new features
 
 8. **Research the domain** — use search_web before asking the user anything (skip if polymath already researched).
 
@@ -704,6 +758,32 @@ Create a `task.md` file in `Antigravity-Production-Grade-Suite/.orchestrator/` w
 10. **Begin Phase 1** — read `phases/define.md` and start immediately. Do NOT ask "should I proceed?"
 
 **Key principle:** The user already told you what to build. Research, plan, start building. Pause at the 3 approval gates. In Thorough/Meticulous mode, also show phase summaries between major phases — but never block on them (inform, don't gate).
+
+## Quality Gate Integration
+
+After EVERY skill completes (in any mode — Full Build, Feature, Harden, etc.), run the Universal Quality Gate Protocol (`skills/_shared/protocols/quality-gate.md`):
+
+1. **Per-skill validation:** Level 1 (Build), Level 2 (Regression), Level 3 (Standards), Level 4 (Traceability)
+2. **Score computation:** 0-100 quality score per skill output
+3. **Threshold enforcement:** Score < `quality.block_score` (default 60) → STOP. Score < `quality.minimum_score` (default 70) → WARN at next gate.
+4. **Display mini-scorecard** after each skill in task_boundary status
+5. **Aggregate scorecard** displayed at each strategic gate
+
+**For brownfield projects:** Level 2 (Regression) compares against the baseline snapshot from brownfield-safety.md. Any previously-passing test that now fails = regression = STOP.
+
+**For greenfield projects:** Level 2 is auto-satisfied (no baseline).
+
+### Session Lifecycle Hooks
+
+Call these hooks at the appropriate lifecycle points:
+
+| Event | Hook | Action |
+|-------|------|--------|
+| Phase completes | `PHASE_COMPLETE(name, summary)` | Update session-log, save to memory, update quality metrics |
+| Task completes | `TASK_COMPLETE(id, name, status, summary)` | Update session-log |
+| Gate decided | `GATE_DECISION(gate#, decision, feedback)` | Update session-log, save decision to memory |
+| Error occurs | `ERROR(task_id, type, details)` | Update session-log, save blocker to memory |
+| Pipeline ends | Session End | Summarize, save to memory, update project profile |
 
 ## User Experience Protocol
 
@@ -984,10 +1064,12 @@ Security runs during ALL phases:
 
 Every skill execution follows:
 1. **Build and verify** — after writing code, run it. After writing tests, execute them.
-2. **Validation loop** — `while not valid: fix(errors); validate()`
-3. **Self-debug** — read errors, identify root cause. After 3 failures: stop and report.
-4. **Quality bar** — no TODOs, no stubs. All code compiles. All tests pass.
-5. **TDD enforced** — write test first, watch fail, implement, watch pass, refactor.
+2. **Quality gate** — run `skills/_shared/protocols/quality-gate.md` after each skill output. Score must meet threshold.
+3. **Validation loop** — `while not valid: fix(errors); validate()`
+4. **Self-debug** — read errors, identify root cause. After 3 failures: stop and report.
+5. **Quality bar** — no TODOs, no stubs. All code compiles. All tests pass. Quality score ≥ 70.
+6. **TDD enforced** — write test first, watch fail, implement, watch pass, refactor.
+7. **Convention compliance** — read `.forge17/code-conventions.md` (if brownfield) and match existing patterns.
 
 ## Partial Execution
 
@@ -1000,14 +1082,31 @@ Every skill execution follows:
 | `just document` | T11 only |
 | `skip frontend` | Omit T3b |
 | `start from architecture` | Skip T1, start at T2 |
+| `just onboard` | Run project-onboarding only (no pipeline) |
 
-## Final Summary Template
+## Final Summary — Quality Dashboard
 
+At pipeline completion, generate the Quality Dashboard from `skills/_shared/protocols/quality-dashboard.md`. This replaces the legacy text banner with a comprehensive, machine-readable quality report.
+
+The dashboard includes:
+- **Overall quality score** (0-100) with grade (A-F)
+- **Build health** — compilation, Docker, dependencies, lint
+- **Test coverage** — unit, integration, E2E, contract, performance, regression
+- **Security** — OWASP, STRIDE, CVEs, secrets scan
+- **Code quality** — architecture conformance, conventions, stubs, imports
+- **Acceptance** — BRD criteria coverage, traceability
+- **Pipeline stats** — mode, duration, skills run, files changed
+
+**Machine-readable output:** `.forge17/quality-report-{session}.json`
+**Quality trending:** `.forge17/quality-history.json` (appended each session)
+
+Also display the legacy summary for backward compatibility:
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║          PRODUCTION GRADE v{local_version} — COMPLETE          ║
+║          FORGE17 v{local_version} — COMPLETE                    ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Project: <name>                                             ║
+║  Quality Score: [XX]/100 (Grade [A-F])                       ║
 ║                                                              ║
 ║  DEFINE:  ✓ BRD (<X> stories) ✓ Architecture (<pattern>)     ║
 ║  BUILD:   ✓ Backend (<N> services) ✓ Tests (<N> passing)     ║
@@ -1017,8 +1116,23 @@ Every skill execution follows:
 ║                                                              ║
 ║  Workspace: Antigravity-Production-Grade-Suite/              ║
 ║  Config: .production-grade.yaml                              ║
+║  Report: .forge17/quality-report-{session}.json              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
+
+## Brownfield Safety Net
+
+For ALL brownfield projects (any mode, not just Full Build), activate the safety net from `skills/_shared/protocols/brownfield-safety.md`:
+
+| Safety Layer | When | Action |
+|-------------|------|--------|
+| Git branch | Pre-pipeline | Create `forge17/session-{timestamp}` branch |
+| Baseline snapshot | Pre-pipeline | Run existing tests, record pass count |
+| Protected paths | Pre-pipeline | Register paths that must not be modified |
+| Regression checks | After T3a, T3b, T5 | Verify existing tests still pass |
+| Change manifest | During pipeline | Track every file create/modify/delete |
+| Merge readiness | Pre-Gate 3 | Full regression + quality check |
+| Rollback | On failure | Revert via session branch |
 
 ## Common Mistakes
 
@@ -1038,3 +1152,8 @@ Every skill execution follows:
 | Hardcoded paths | Read `.production-grade.yaml` for path overrides |
 | Not leveraging skill architecture | Even though execution is sequential, each skill's internal phase structure ensures quality. Foundations before dependent work. |
 | Duplicating security review | code-reviewer references security-engineer findings |
+| Skipping quality gate | EVERY skill output must pass quality-gate.md — no exceptions, even in sequential mode |
+| Ignoring code conventions in brownfield | Read `.forge17/code-conventions.md` BEFORE writing code. Match existing patterns. |
+| Modifying protected paths | Check brownfield-safety protected paths before ANY file write |
+| No regression check in brownfield | After EACH build skill, verify existing tests still pass against baseline |
+| Not saving session state | Call session lifecycle hooks at every phase/task/gate completion |

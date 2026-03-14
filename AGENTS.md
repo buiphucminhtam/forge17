@@ -47,6 +47,7 @@ Users can invoke these workflows directly:
 - `/update` — Check for and install updates
 - `/pipeline` — Show full pipeline reference and available modes
 - `/setup-mobile-test` — Set up plug-and-play mobile testing (Android/iOS)
+- `/onboard` — Run deep project analysis (creates `.forge17/project-profile.json`)
 
 ## Auto-Update Check
 
@@ -121,6 +122,11 @@ All 46 skills are in the `skills/` directory:
 | Task Contract Protocol | `skills/_shared/protocols/task-contract.md` |
 | Task Validator Protocol | `skills/_shared/protocols/task-validator.md` |
 | Merge Arbiter Protocol | `skills/_shared/protocols/merge-arbiter.md` |
+| Project Onboarding Protocol | `skills/_shared/protocols/project-onboarding.md` |
+| Session Lifecycle Protocol | `skills/_shared/protocols/session-lifecycle.md` |
+| Quality Gate Protocol | `skills/_shared/protocols/quality-gate.md` |
+| Brownfield Safety Protocol | `skills/_shared/protocols/brownfield-safety.md` |
+| Quality Dashboard Protocol | `skills/_shared/protocols/quality-dashboard.md` |
 | Worktree Manager | `scripts/worktree-manager.sh` |
 | Memory CLI | `scripts/mem0-cli.py` |
 | Mobile Test Setup | `scripts/mobile-test-setup.sh` |
@@ -128,3 +134,14 @@ All 46 skills are in the `skills/` directory:
 ## Configuration
 
 Optional: create `.production-grade.yaml` at project root to customize paths, preferences, and feature flags. If absent, defaults apply.
+
+## Project State (v7.0)
+
+Forge17 maintains project state in the `.forge17/` directory:
+- `project-profile.json` — Project fingerprint, health, patterns, risk (committed)
+- `code-conventions.md` — Detected coding patterns for consistency (committed)
+- `session-log.json` — Session history and resume state (gitignored)
+- `quality-history.json` — Quality score trending across sessions (gitignored)
+- `quality-report-{session}.json` — Per-session quality reports (gitignored)
+- `baseline-{session}.json` — Brownfield test baselines (gitignored)
+- `change-manifest-{session}.json` — File change tracking (gitignored)

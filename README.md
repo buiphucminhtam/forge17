@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-6.1.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-7.0.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-46-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-18-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/vibe-coded_%F0%9F%8E%B5-ff69b4.svg" alt="Vibe Coded" />
@@ -42,6 +42,10 @@ If Forge17 helps you ship faster, you can support the project here:
 ## Release Timeline
 
 ```
+2026-03-14  v7.0  ●━━━ Project Onboarding, Quality Gates & Brownfield Safety —
+                  │     5 new protocols, session lifecycle, quality scoring 0-100,
+                  │     brownfield safety net with git branching & regression checks.
+                  │
 2026-03-14  v6.1  ●━━━ Round 2 — AI Engineer, Performance, Accessibility, UX Research,
                   │     Data Engineer, Project Manager, Roblox, Godot Multiplayer
                   │     + 5 existing skill upgrades. 46 total skills.
@@ -90,7 +94,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/buiphucminhtam/forge17
 
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forge17.git .antigravity/plugins/production-grade
-git add .gitmodules .antigravity/ && git commit -m "feat: add production-grade plugin v6.1"
+git add .gitmodules .antigravity/ && git commit -m "feat: add forge17 v7.0"
 ```
 
 ### Option C: Standalone Clone
@@ -124,6 +128,7 @@ Forge17 is self-discovering. Once installed, Antigravity reads `AGENTS.md` on ev
 | `/update` | Check for and install updates |
 | `/pipeline` | Show full pipeline reference, modes, and skill list |
 | `/setup-mobile-test` | Set up plug-and-play mobile testing (Android/iOS) |
+| `/onboard` | Deep project analysis — creates `.forge17/project-profile.json` |
 
 ---
 
@@ -331,6 +336,27 @@ CEO Agent (Orchestrator)
 └─────────────────────────────────────────────────────┘
 ```
 
+### Project Onboarding & Quality Gates (v7.0)
+
+```
+┌─────────────────────────────────────────────────────┐
+│              Project Onboarding (v7.0)                │
+│                                                       │
+│  Phase 1: Fingerprint ── tech stack, framework, CI    │
+│  Phase 2: Health Check ── build, tests, lint, CVEs    │
+│  Phase 3: Pattern Analysis ── naming, style, arch     │
+│  Phase 4: Risk Assessment ── tech debt, protected     │
+│  Phase 5: Profile → .forge17/project-profile.json     │
+│                                                       │
+│  📊 Quality Gate: runs after EVERY skill output       │
+│  Level 1: Build     │ Level 2: Regression (brownfield)│
+│  Level 3: Standards │ Level 4: Traceability           │
+│  Score: 0-100 │ Grade: A-F │ Threshold: configurable  │
+│                                                       │
+│  🛡️ Brownfield Safety: git branch + baseline + rollback│
+└─────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## By the Numbers
@@ -347,7 +373,8 @@ CEO Agent (Orchestrator)
 | **Go-to-Market** | SEO, AEO/GEO, copywriting, campaigns, funnel CRO, A/B testing |
 | **Parallel dispatch** | Git worktree-based with anti-hallucination pipeline |
 | **3 approval gates** | Everything between gates is fully autonomous |
-| **7 shared protocols** | UX, input validation, tool efficiency, conflict resolution, task contracts |
+| **12 shared protocols** | UX, input validation, tool efficiency, conflict resolution, task contracts, project onboarding, session lifecycle, quality gate, brownfield safety, quality dashboard |
+| **Quality scoring** | 0-100 per-skill scoring with A-F grades, cross-session trending |
 | **4 engagement modes** | Express, Standard, Thorough, Meticulous |
 
 ---
@@ -366,7 +393,7 @@ CEO Agent (Orchestrator)
 ### Custom Config (`.production-grade.yaml`)
 
 ```yaml
-version: "6.1"
+version: "7.0"
 
 project:
   name: "my-project"
@@ -386,6 +413,18 @@ features:
   game_dev: false               # auto-detected from engine mentions
   xr: false                     # auto-detected from VR/AR mentions
   ai_ml: false                  # auto-detected from imports
+
+# v7.0: Quality gate configuration
+quality:
+  minimum_score: 70             # warn below this
+  block_score: 60               # stop below this
+  strict_mode: false            # if true, Level 3 violations also block
+
+# v7.0: Brownfield safety configuration
+brownfield:
+  auto_branch: true             # create session branch automatically
+  baseline_tests: true          # run existing tests before pipeline
+  change_manifest: true         # track all file changes
 ```
 
 ### Partial Execution
@@ -474,7 +513,7 @@ Yes. The Game Build mode orchestrates game-specific skills: Game Designer → En
 Yes. Every skill: write, build, test, debug, fix. No stubs. No TODOs.
 
 **Can I use it on existing projects?**
-Yes. Create `.production-grade.yaml`, then run specific modes: `"harden"`, `"add feature"`, `"write tests"`.
+Yes. Run `/onboard` first — Forge17 will analyze your project, learn your coding patterns, and create a safety net (git branch + test baseline). Then run any mode: `"add feature"`, `"harden"`, `"write tests"`. Existing tests are verified after every change.
 
 **Is NotebookLM MCP required?**
 No. Optional enhancement. When available, research quality gets zero hallucinations + citations.
@@ -511,8 +550,8 @@ MIT
 ---
 
 <p align="center">
-  <strong>Forge17 — 46 AI skills. 18 modes. SaaS to AAA games. One prompt. Idea to market. ⭐</strong>
+  <strong>Forge17 — 46 AI skills. 18 modes. 12 protocols. SaaS to AAA games. One prompt. Idea to market. ⭐</strong>
 </p>
 <p align="center">
-  <em>Research with zero hallucinations. Build games with Unity/Unreal/Godot/Roblox. Ship with confidence. Grow with data.</em>
+  <em>Research with zero hallucinations. Build games with Unity/Unreal/Godot/Roblox. Ship with quality scoring. Grow with data.</em>
 </p>

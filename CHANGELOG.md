@@ -1,6 +1,44 @@
 # Changelog
 
-All notable changes to the Production Grade Plugin.
+All notable changes to Forge17 (formerly Production Grade Plugin).
+
+## [7.0.0] — 2026-03-14
+
+### Added — New Protocols (5)
+- **Project Onboarding** (`project-onboarding.md`) — 5-phase deep project analysis: fingerprint → health check → pattern analysis → risk assessment → profile generation. Produces `.forge17/project-profile.json` and `.forge17/code-conventions.md`.
+- **Session Lifecycle** (`session-lifecycle.md`) — Cross-session continuity with start/save/end hooks. Resume interrupted sessions, detect drift, memory integration.
+- **Quality Gate** (`quality-gate.md`) — Universal per-skill validation: 4 levels (Build, Regression, Standards, Traceability), 0-100 quality scoring, configurable thresholds. Works in sequential AND parallel modes.
+- **Brownfield Safety** (`brownfield-safety.md`) — Safety net: auto git branching, baseline snapshots, protected paths, change manifest, regression checks, rollback.
+- **Quality Dashboard** (`quality-dashboard.md`) — Real-time tracking, final dashboard, machine-readable JSON reports, cross-session trending, early warning system.
+
+### Added — Workflow
+- `/onboard` — Run deep project analysis without starting pipeline.
+
+### Added — Project State
+- `.forge17/` directory for persistent project state (profile, conventions, session logs, quality reports).
+
+### Changed — Orchestrator
+- **Session lifecycle pre-flight (Step 0.5)** — Loads project profile, session state, memory context, quality trends before work begins.
+- **Enhanced codebase discovery** — Deep onboarding replaces shallow scanning for brownfield. Learns patterns, conventions, risk.
+- **Context-aware routing** — Suggests addressing health issues before building (failing tests, CVEs, tech debt).
+- **Quality gate integration** — Runs after EVERY skill. Mini-scorecard + aggregate at gates.
+- **Brownfield safety net** — Auto-activates for all brownfield projects in any mode.
+- **Session lifecycle hooks** — PHASE_COMPLETE, TASK_COMPLETE, GATE_DECISION, ERROR hooks throughout.
+- **Quality Dashboard final summary** — Replaces legacy text banner with comprehensive report.
+- **5 new common mistakes** added.
+
+### Changed — Phase Dispatchers
+- **BUILD phase** — Quality gate & regression checks after each task. Change manifest. Brownfield regression at completion.
+- **HARDEN phase** — Quality gate per task, quality scoring in summary, brownfield merge readiness check.
+
+### Changed — Memory Manager
+- **Active lifecycle hooks** — Orchestrator now calls memory at 6 lifecycle points (was spec-only).
+- **Context integration** — Memory + project profile provide full context without re-scanning.
+
+### Changed — Metadata
+- **Skill count** — 46 skills unchanged
+- **Protocol count** — 7 → 12 (added 5 new protocols)
+- **Version** — 6.1.0 → 7.0.0
 
 ## [5.2.0] — 2026-03-10
 

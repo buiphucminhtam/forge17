@@ -98,6 +98,14 @@ Context:
 Update task.md: T6b status → completed
 ```
 
+## Quality Gate per HARDEN Task
+
+After EACH harden task (T5, T6a, T6b), run the Universal Quality Gate Protocol (`skills/_shared/protocols/quality-gate.md`):
+
+1. **Per-skill quality gate** — validate findings structure, workspace artifacts, authority compliance
+2. **Session lifecycle hook** — call `TASK_COMPLETE(task_id, name, status, summary)`
+3. **Display mini-scorecard** per task
+
 ## Post-HARDEN: Remediation Preparation
 
 After all HARDEN tasks complete:
@@ -106,15 +114,26 @@ After all HARDEN tasks complete:
 3. Filter Critical/High severity findings
 4. If any Critical/High exist → T8 (Remediation in SHIP phase) receives the findings list
 5. Medium/Low → documented but do not block pipeline
-6. Print HARDEN summary:
+6. **Run aggregate quality scoring** — compute HARDEN phase quality score
+7. **Call session lifecycle hook** — `PHASE_COMPLETE("HARDEN", summary)`
+8. **Update quality metrics** — write to `.forge17/quality-metrics.json`
+9. Print HARDEN summary:
 ```
 ━━━ HARDEN Summary ━━━━━━━━━━━━━━━━━━━━━━
 ✓ QA: [N] tests passed, [M] findings
 ✓ Security: [N] findings ([M] Critical/High auto-fixed)
 ✓ Code Review: [N] findings
 Remediation needed: [X] Critical/High items
+Quality Score: [XX]/100 (Grade [A-F])
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+10. **Brownfield merge readiness check** (if brownfield project):
+    - Read `skills/_shared/protocols/brownfield-safety.md` → merge readiness assessment
+    - Verify full regression suite passes
+    - Verify all protected paths intact
+    - Verify quality score ≥ threshold
+    - If not ready → flag issues before proceeding to SHIP
 
 ## Handoff to SHIP
 

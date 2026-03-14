@@ -133,12 +133,27 @@ MEM0_PROJECT_ID=my-project        # namespace for multi-project
 MEM0_REDACT_SECRETS=true          # auto-redact API keys, passwords
 ```
 
-## Integration with Forge17 Pipeline
+## Integration with Forge17 Pipeline (v7.0)
 
-### Auto-hooks (when orchestrator supports it)
-1. **Pre-flight**: orchestrator calls `mem0-cli.py search <task>` before routing
-2. **Post-phase**: orchestrator calls `mem0-cli.py add <summary>` after each phase
-3. **Gate review**: orchestrator calls `mem0-cli.py search <decision>` at gates
+### Active Lifecycle Hooks
+
+The orchestrator now calls memory-manager at specific lifecycle points via `skills/_shared/protocols/session-lifecycle.md`:
+
+| Hook | Trigger | Memory Action |
+|------|---------|---------------|
+| `SESSION_START` | Pipeline begins | `search <project>` → retrieve top-5 context (max 800 tokens) |
+| `PHASE_COMPLETE` | After DEFINE/BUILD/HARDEN/SHIP/SUSTAIN | `add "Phase [name] completed: [summary]"` |
+| `TASK_COMPLETE` | After each T1-T11 task | `add "Task [id]: [summary]"` (decisions, blockers only) |
+| `GATE_DECISION` | After Gate 1/2/3 | `add "Gate [N] [decision]: [feedback]"` |
+| `SESSION_END` | Pipeline completes or interrupts | `add "Session [id]: [full summary]. Next: [steps]"` |
+| `ERROR` | Task failure/escalation | `add "BLOCKER: [task] failed: [details]"` |
+
+### Context Integration with Project Profile
+
+Memory works alongside `.forge17/project-profile.json`:
+- **Project Profile** = structural facts (stack, health, patterns) — always loaded
+- **Memory** = temporal facts (decisions, blockers, progress) — searched contextually
+- Together they provide full project context without re-scanning
 
 ### Manual usage
 Any skill can invoke memory commands directly:
@@ -169,5 +184,11 @@ forge17/
 │   └── mem0-cli.py           ← CLI tool
 ├── .memignore                ← exclusion patterns
 └── .forge17/
-    └── memory.db             ← SQLite store (auto-created)
+    ├── project-profile.json  ← project fingerprint (committed)
+    ├── code-conventions.md   ← detected patterns (committed)
+    ├── session-log.json      ← session history (gitignored)
+    ├── quality-history.json  ← quality trending (gitignored)
+    ├── quality-metrics.json  ← current session metrics (gitignored)
+    ├── memory.db             ← SQLite store (gitignored)
+    └── .gitignore            ← auto-generated
 ```
