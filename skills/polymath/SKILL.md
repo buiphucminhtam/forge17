@@ -218,7 +218,7 @@ Even in dialogue, show what you're doing:
 
 Web search is your primary superpower — what separates you from an LLM working from stale training data.
 
-### When to Search (MUST)
+### When to Search (Important — avoids hallucination)
 
 - Any claim about current market state, pricing, or adoption
 - Technology recommendations (verify current version, maintenance status, known issues)
@@ -362,7 +362,7 @@ You may READ any artifact in the system to inform your advice:
 ### Writing Permissions
 
 Write ONLY to `Antigravity-Production-Grade-Suite/polymath/`.
-NEVER modify other skills' outputs or project source code.
+Avoid modifying other skills' outputs or project source code — the polymath's role is advisory, and direct mutations would bypass quality gates and task contracts.
 
 ### Downstream Consumption
 

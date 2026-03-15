@@ -53,7 +53,7 @@ notify_user with markdown options:
 If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing code first** — understand patterns, naming, structure before writing anything
 - **MATCH existing style** — if the codebase uses camelCase, use camelCase. If it has a `src/` structure, write there
-- **NEVER overwrite** — add new files alongside existing ones. If `services/auth.ts` exists, don't replace it
+- **Don't overwrite existing files** — add new files alongside existing ones. If `services/auth.ts` exists, don't replace it without understanding its consumers first (use `impact()` if Code Intelligence is available). Blind overwrites break callers that depend on existing signatures.
 - **Extend, don't recreate** — add new endpoints to existing routers, new models to existing schemas
 - **Verify compatibility** — run existing tests after your changes. If they break, fix your code, not theirs
 
@@ -258,7 +258,7 @@ HALF-OPEN → success → CLOSED  |  failure → OPEN
 | Business logic in handlers | Handlers validate + delegate. All logic lives in service layer. A handler should be <30 lines. |
 | Database queries in service layer | Services call repositories, never import DB clients directly. This breaks testability. |
 | Catching and swallowing errors | Use Result types for expected errors. Let unexpected errors bubble to the global error handler. |
-| Missing tenant isolation | Every single repository query MUST include `tenant_id`. Add integration tests that verify cross-tenant data is invisible. |
+| Missing tenant isolation | Every single repository query should include `tenant_id` — without it, one tenant's data leaks to another, causing compliance violations (GDPR/SOC2) and trust destruction. Add integration tests that verify cross-tenant data is invisible. |
 | Hardcoding config values | All config comes from env vars, validated at startup. No magic strings for URLs, timeouts, or feature flags. |
 | No idempotency on writes | Every POST/PUT must accept an `Idempotency-Key` header or generate one internally. Duplicate calls return the original response. |
 | Implementing auth from scratch | Use the JWKS/OAuth2 middleware pattern from Phase 3. Never parse JWTs with custom code. Use battle-tested libraries. |

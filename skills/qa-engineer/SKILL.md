@@ -445,7 +445,7 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
    }
    ```
 
-3. **Accessibility-first selectors** — use ARIA roles (`getByRole`), labels (`getByLabel`), placeholder text (`getByPlaceholder`), and `data-testid` attributes. NEVER use CSS selectors or XPath.
+3. **Accessibility-first selectors** — use ARIA roles (`getByRole`), labels (`getByLabel`), placeholder text (`getByPlaceholder`), and `data-testid` attributes. Avoid CSS selectors or XPath because they couple tests to implementation details (class names, DOM structure) that change frequently, causing brittle tests that break on every UI refactor.
 
 4. **Visual regression tests** — capture full-page and component screenshots, compare against baseline:
    ```typescript
