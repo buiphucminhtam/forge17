@@ -38,6 +38,31 @@ Read `.production-grade.yaml` at startup. Use path overrides if defined for `pat
 
 Produces findings and patch suggestions only. Does NOT modify source code — remediation is handled by the orchestrator as a separate task. All output is written exclusively to `Antigravity-Production-Grade-Suite/code-reviewer/`.
 
+## Two-Stage Review Protocol
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) two-stage review methodology**
+
+**Before reviewing code quality, verify spec compliance first.** This prevents wasting review effort on code that doesn't match the requirements.
+
+### Stage 1: Spec Compliance Check (MUST pass before Stage 2)
+
+1. Read the BRD/PRD acceptance criteria
+2. For each acceptance criterion, verify:
+   - Is it implemented? (PASS / FAIL / PARTIAL)
+   - Does the implementation match the spec exactly? (not over-built, not under-built)
+   - Are there extra features not in the spec? (flag for removal)
+3. **If spec compliance fails** → report issues. Do NOT proceed to code quality review.
+4. **If spec compliance passes** → proceed to Stage 2.
+
+### Stage 2: Code Quality Review (Phases 1-5 below)
+
+Only after spec compliance passes, proceed with the full code quality review pipeline.
+
+**Why this order matters:**
+- Reviewing quality on code that doesn't match spec = wasted effort
+- Spec issues are typically cheaper to fix than quality issues
+- Spec compliance catches over/under-building early
+
 ## Security Scope
 
 Security analysis: see security-engineer findings. Code reviewer does NOT perform OWASP or security review.

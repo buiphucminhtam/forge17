@@ -62,6 +62,25 @@ A skill is **stuck** when ANY of these patterns are detected:
 | **Error cascade** | 3+ consecutive errors from different actions | STOP. Report: "Multiple failures suggest a systemic issue." |
 | **Token waste** | Investigation consuming >50% of expected budget with <25% progress | WARN user. Offer: continue or stop. |
 
+## Human Partner Signals
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) systematic debugging methodology**
+
+**Watch for these redirections from the user — they indicate the agent is off-track.** These signals should be treated as a STOP command, equivalent to stuck detection.
+
+| User Signal | What It Means | Required Action |
+|-------------|---------------|-----------------|
+| "Is that not happening?" | Agent assumed without verifying | STOP. Verify the assumption with evidence before proceeding. |
+| "Will it show us...?" | Agent skipped evidence gathering | Add diagnostic output. Don't proceed without data. |
+| "Stop guessing" | Agent is proposing fixes without understanding | STOP. Return to root cause investigation. |
+| "Ultrathink this" | Agent is treating symptoms, not fundamentals | Step back. Reconsider the problem from first principles. |
+| "We're stuck?" (frustrated) | Agent's approach isn't working | STOP current approach. Try a completely different strategy. |
+| "That's not what I asked" | Agent misunderstood the goal | Clarify the goal before taking any further action. |
+| "You already tried that" | Agent is in a loop | STOP immediately. Acknowledge the loop. Change approach entirely. |
+| *Any sign of frustration or impatience* | Agent is not being systematic enough | Acknowledge. Slow down. Show evidence trail. Ask what the user needs. |
+
+**When ANY of these signals appear:** Treat as if stuck detection triggered. Follow the Graceful Exit Format below.
+
 ## Graceful Exit Format
 
 When a skill must fail, it MUST produce a structured failure report:

@@ -166,3 +166,51 @@ Merge Arbiter validates delivery vs contract
 If valid → merge branch
 If invalid → return to CEO with failure reason
 ```
+
+## Bite-Sized Task Granularity
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) implementation plan methodology**
+
+When generating Task Contracts for implementation plans, each task should be decomposed into **bite-sized steps** of 2-5 minutes each:
+
+```
+Each step is ONE action:
+- "Write the failing test" — step
+- "Run it to make sure it fails" — step
+- "Implement the minimal code to make the test pass" — step
+- "Run the tests and make sure they pass" — step
+- "Commit" — step
+```
+
+### Step-Level Specificity
+
+Every step MUST include:
+- **Exact file paths** — not "update the config" but `services/auth/config.ts`
+- **Complete code** — not "add validation" but the actual validation code
+- **Exact commands** — not "run tests" but `npm test -- --filter auth`
+- **Expected output** — what the command should print on success/failure
+
+### Write for Zero Context
+
+Assume the worker has:
+- **Zero project context** — they don't know the codebase
+- **Questionable taste** — they won't make good aesthetic decisions
+- **No judgment** — they follow instructions literally
+- **Skill at coding** — they CAN code, they just don't know YOUR code
+
+This means: every instruction must be explicit, complete, and unambiguous.
+
+## Implementer Status Field
+
+Add `implementer_status` to the DELIVERY.json format. Workers MUST set this field:
+
+```json
+{
+  "implementer_status": "DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED",
+  "concerns": "Optional: describe doubts or observations",
+  "blocked_reason": "Required if BLOCKED: what prevents completion",
+  "missing_context": "Required if NEEDS_CONTEXT: what information is needed"
+}
+```
+
+See `parallel-dispatch/SKILL.md` → Implementer Status Protocol for handling each status.

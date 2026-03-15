@@ -106,6 +106,44 @@ cat Antigravity-Production-Grade-Suite/business-analyst/handoff/ba-package.md 2>
 
 Interview depth scales with engagement mode. Fewer questions if polymath context already covers some topics.
 
+### Socratic Interview Protocol
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) brainstorming methodology**
+
+**One question at a time.** Never overwhelm the CEO with multiple questions in a single message. Present one focused question, wait for the answer, then ask the next.
+
+**Anti-pattern: "This Is Too Simple To Need Requirements"**
+
+Every project gets a BRD. No exceptions:
+- "It's just a landing page" → still needs acceptance criteria
+- "Simple CRUD app" → still needs user stories and business rules
+- "Quick prototype" → still needs scope definition and out-of-scope list
+- "We already know what to build" → then it's fast to write down
+
+If the CEO resists, explain: "Writing it down takes 10 minutes. Building the wrong thing takes days."
+
+### Spec Review Loop
+
+After writing the BRD, dispatch a verification subagent to review:
+
+```
+Iteration 1: Write BRD → Dispatch spec reviewer → Fix issues
+Iteration 2: Updated BRD → Re-dispatch reviewer → Fix remaining issues
+...
+Max iterations: 5
+
+Spec reviewer checks:
+  - Acceptance criteria are testable (not vague)
+  - Business rules are unambiguous
+  - User stories follow standard format
+  - Edge cases are addressed
+  - Out-of-scope is defined
+  - No open questions remain without a plan to resolve
+
+If issues found: fix and re-review
+If clean after review: present to CEO for approval
+```
+
 ### Express Mode (2-3 questions)
 
 Ask ONLY what's absolutely needed to write a BRD:

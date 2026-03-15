@@ -207,25 +207,103 @@ echo "All workers completed."
 
 The CEO agent can also dispatch by reading each skill sequentially in separate Antigravity sessions, using the worktree paths as working directories.
 
-### Phase 5 — Result Collection & Validation
+### Phase 5 — Result Collection & Two-Stage Review
 
-After all workers complete:
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) two-stage review methodology**
+
+After all workers complete, perform a **two-stage review** for each task:
+
+**Stage 1: Spec Compliance Review (MUST pass before Stage 2)**
 
 ```
 For each task in the wave:
   1. Read DELIVERY.json from worktree
   2. If missing → mark as FAILED
-  3. Run: scripts/worktree-manager.sh validate <task_id>
-  4. Read skills/_shared/protocols/task-validator.md and execute full validation pipeline
-  5. Write VALIDATION.json in the worktree
+  3. Dispatch spec compliance reviewer subagent:
+     - Read CONTRACT.json acceptance criteria
+     - Compare every criterion against the actual delivery
+     - For each criterion: PASS / FAIL / PARTIAL
+     - Check for over-building (features not in spec → flag for removal)
+     - Check for under-building (missing requirements)
+  4. If spec compliance FAILS:
+     - Feed issues back to worker
+     - Worker fixes → re-submit DELIVERY.json
+     - Re-review (max 3 iterations)
+     - After 3 failures → escalate to CEO agent
+  5. If spec compliance PASSES → proceed to Stage 2
+```
 
-Status summary:
+**Stage 2: Code Quality Review (ONLY after spec compliance passes)**
+
+```
+For each task that passed Stage 1:
+  1. Run: scripts/worktree-manager.sh validate <task_id>
+  2. Read skills/_shared/protocols/task-validator.md and execute full validation
+  3. Dispatch code quality reviewer subagent:
+     - Check code structure, naming, error handling
+     - Check test coverage and test quality
+     - Check anti-hallucination checklist
+  4. If quality review has issues:
+     - Worker fixes → re-review (max 3 iterations)
+  5. Write VALIDATION.json in the worktree
+```
+
+**Why this order matters:**
+- Reviewing code quality on code that doesn't match the spec = wasted effort
+- Spec compliance catches over/under-building early (cheaper to fix)
+- Code quality review is more valuable after scope is confirmed correct
+
+**Status summary:**
+```
   ━━━ Parallel Dispatch: Wave 1 Results ━━━━━━━━━━
-  T3a (Backend):   ✓ PASS  — 5 services, 42 tests passed
-  T3b (Frontend):  ✓ PASS  — 8 pages, 28 tests passed
+  T3a (Backend):   ✓ PASS  — Spec ✓ Quality ✓ — 5 services, 42 tests
+  T3b (Frontend):  ✓ PASS  — Spec ✓ Quality ✓ — 8 pages, 28 tests
   T3c (Mobile):    ⊘ SKIP  — not required
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+### Model Selection Strategy
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) model selection methodology**
+
+Use the least powerful model that can handle each role to conserve cost and increase speed:
+
+| Task Complexity | Signals | Recommended Model |
+|----------------|---------|-------------------|
+| **Mechanical** | 1-2 files, clear spec, isolated function | Fast/cheap model (e.g., Flash) |
+| **Integration** | Multi-file coordination, pattern matching | Standard model |
+| **Architecture** | Design judgment, broad codebase understanding, review tasks | Most capable model |
+
+**Complexity signals:**
+- Touches 1-2 files with a complete spec → cheap model
+- Touches multiple files with integration concerns → standard model
+- Requires design judgment or broad codebase understanding → most capable model
+
+**Apply to subagent roles:**
+- Implementer subagents on mechanical tasks → cheap model
+- Spec compliance reviewer → standard model (needs judgment)
+- Code quality reviewer → most capable model (needs broad understanding)
+
+### Implementer Status Protocol
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) implementer status handling**
+
+Workers report one of four statuses in DELIVERY.json. Handle each appropriately:
+
+| Status | Meaning | Action |
+|--------|---------|--------|
+| **DONE** | Work completed successfully | Proceed to spec compliance review |
+| **DONE_WITH_CONCERNS** | Completed but implementer has doubts | Read concerns before proceeding. If about correctness/scope → address first. If observations ("file is large") → note and proceed. |
+| **NEEDS_CONTEXT** | Missing information not in CONTRACT.json | Provide missing context. Re-dispatch with same model. |
+| **BLOCKED** | Cannot complete the task | Assess the blocker (see below) |
+
+**Handling BLOCKED status:**
+1. If it's a **context problem** → provide more context, re-dispatch with same model
+2. If the task requires **more reasoning** → re-dispatch with a more capable model
+3. If the task is **too large** → break into smaller pieces and re-dispatch
+4. If the **plan itself is wrong** → escalate to CEO agent
+
+**Never** ignore an escalation or force the same model to retry without changes. If the worker said it's stuck, something needs to change.
 
 ### Phase 6 — Merge
 

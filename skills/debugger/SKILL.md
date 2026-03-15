@@ -117,6 +117,79 @@ Wait for all investigators. The hypothesis with the strongest evidence becomes t
 
 ---
 
+## The Iron Law of Debugging
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) systematic debugging methodology**
+
+```
+NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
+```
+
+If you haven't completed Phase 1, you **cannot propose fixes**. Period.
+
+**Violating the letter of this process is violating the spirit of debugging.**
+
+### Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
+| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
+| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
+| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
+| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
+| "One more fix attempt" (after 2+ failures) | 3+ failures = likely architectural problem. Question the pattern, don't fix again. |
+| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
+| "I don't fully understand but this might work" | This is the definition of guessing. STOP. Return to Phase 1. |
+
+### Real-World Impact
+
+| Approach | Time to Fix | First-Time Fix Rate | New Bugs Introduced |
+|----------|-------------|--------------------|--------------------|
+| **Systematic (follow this process)** | 15-30 minutes | ~95% | Near zero |
+| **Random fixes (guess and check)** | 2-3 hours of thrashing | ~40% | Common |
+
+### Red Flags — STOP and Return to Phase 1
+
+If you catch yourself thinking:
+- "Quick fix for now, investigate later"
+- "Just try changing X and see if it works"
+- "Add multiple changes, run tests"
+- "Skip the test, I'll manually verify"
+- "It's probably X, let me fix that"
+- "Here are the main problems: [lists fixes without investigation]"
+- Proposing solutions before tracing data flow
+- **"One more fix attempt" (when already tried 2+)**
+- **Each fix reveals new problem in different place**
+
+**ALL of these mean: STOP. Return to Phase 1.**
+
+**If 3+ fixes failed:** Question the architecture, not just the symptoms.
+
+### Human Partner Signals — Recognize User Frustration
+
+**Watch for these redirections from the user — they signal you are off-track:**
+
+| User Signal | What It Means | Your Action |
+|-------------|---------------|-------------|
+| "Is that not happening?" | You assumed without verifying | STOP. Go verify the assumption empirically. |
+| "Will it show us...?" | You should have added evidence gathering | Add diagnostic logging/output. Don't skip evidence. |
+| "Stop guessing" | You're proposing fixes without understanding | STOP. Return to Phase 1. Full investigation. |
+| "Ultrathink this" | You need to question fundamentals, not symptoms | Step back. Reconsider the entire problem from first principles. |
+| "We're stuck?" (frustrated tone) | Your approach isn't working | STOP current approach. Try a completely different angle. |
+| *Any sign of frustration* | You are not being systematic enough | Acknowledge. Return to Phase 1. Show your evidence trail. |
+
+**When you see any of these signals: STOP. Return to Phase 1.**
+
+### Supporting Techniques
+
+These techniques complement systematic debugging:
+- **Root-cause tracing** — Trace bugs backward through call stack to find original trigger
+- **Defense-in-depth** — Add validation at multiple layers after finding root cause
+- **Condition-based waiting** — Replace arbitrary timeouts with condition polling
+
+---
+
 ## Phase 1 — Triage & Symptom Collection
 
 **Goal:** Gather all available evidence about the bug before forming hypotheses.

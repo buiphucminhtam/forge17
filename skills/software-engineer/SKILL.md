@@ -57,6 +57,67 @@ If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists
 - **Extend, don't recreate** — add new endpoints to existing routers, new models to existing schemas
 - **Verify compatibility** — run existing tests after your changes. If they break, fix your code, not theirs
 
+## TDD Iron Law
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) TDD methodology**
+
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
+
+Write code before the test? **Delete it. Start over.**
+
+**No exceptions:**
+- Don't keep it as "reference"
+- Don't "adapt" it while writing tests
+- Don't look at it
+- Delete means delete
+
+Implement fresh from tests. Period.
+
+### Red-Green-Refactor Cycle
+
+Every implementation step follows this cycle:
+1. **RED** — Write a failing test that describes the desired behavior
+2. **Verify RED** — Run the test, confirm it fails for the right reason
+3. **GREEN** — Write the minimal code to make the test pass
+4. **Verify GREEN** — Run the test, confirm it passes
+5. **REFACTOR** — Clean up, ensure tests still pass
+6. **COMMIT** — Atomic commit with descriptive message
+
+### Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "I'll test after" | Tests passing immediately prove nothing. |
+| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
+| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
+| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
+| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
+| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
+| "Test hard = design unclear" | Listen to the test. Hard to test = hard to use. |
+| "TDD will slow me down" | TDD is faster than debugging in production. |
+| "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
+| "Existing code has no tests" | You're improving it. Add tests for existing code. |
+| "This is different because..." | It's not. Follow the process. |
+
+### Red Flags — STOP and Start Over
+
+If you catch yourself in any of these situations, **DELETE your code and start over with TDD:**
+- Code written before test
+- Test added after implementation
+- Test passes immediately (you never saw it fail)
+- Can't explain why the test failed
+- Rationalizing "just this once"
+- "I already manually tested it"
+- "Keep as reference" or "adapt existing code"
+- "TDD is dogmatic, I'm being pragmatic"
+
+**All of these mean: Delete code. Start over with TDD.**
+
+---
+
 ## Input Classification
 
 | Category | Inputs | Behavior if Missing |

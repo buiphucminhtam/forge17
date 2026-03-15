@@ -155,6 +155,51 @@ Antigravity-Production-Grade-Suite/qa-engineer/
 
 ---
 
+## TDD Enforcement Protocol
+
+> **Inspired by [Superpowers](https://github.com/obra/superpowers) TDD methodology**
+
+```
+NO TEST FILE WITHOUT A FAILING TEST FIRST
+```
+
+When writing tests, verify the RED-GREEN cycle for every test case:
+1. **RED** — Write the test. Run it. It MUST fail.
+2. **Verify RED** — Confirm it fails for the right reason (not a syntax error or import issue).
+3. **GREEN** — The existing implementation should make it pass. If the test passes immediately without exercising the code path, the test is wrong — rewrite it.
+
+### Why Test Order Matters
+
+**"I'll write tests after to verify it works"** — Tests written after code pass immediately. Passing immediately proves nothing:
+- Might test the wrong thing
+- Might test implementation, not behavior
+- Might miss edge cases you forgot
+- You never saw it catch the bug
+
+**"I already manually tested all the edge cases"** — Manual testing is ad-hoc. No record, can't re-run, easy to forget cases under pressure.
+
+### Common Rationalizations (QA Context)
+
+| Excuse | Reality |
+|--------|---------|
+| "The code already works, just need coverage" | Coverage without verified failures is carpet-bombing. Test what COULD break. |
+| "Too many tests to write, skip edge cases" | Edge cases cause production incidents. They ARE the priority. |
+| "Test passes immediately, must be fine" | A test that never fails proves nothing. Make it fail first, then fix. |
+| "Mocks are too complex, just test the happy path" | Unmocked dependencies hide real failures. Mock correctly or write integration tests. |
+| "Performance tests aren't worth the effort" | One missing load test = one production outage at scale. |
+| "Visual regression is flaky, skip it" | Pin viewports, disable animations, use per-OS baselines. Fix flakiness, don't skip. |
+
+### Red Flags — STOP and Reassess
+
+- Test passes on first run without any code changes → test is likely wrong
+- Test name describes implementation ("calls processOrder") not behavior ("creates order with total")
+- Test has no assertions (it always passes)
+- Test uses `toBeTruthy()` instead of specific value assertions
+- Test shares mutable state with other tests
+- Test depends on execution order
+
+---
+
 ## Phases
 
 Execute each phase sequentially. Do NOT skip phases. Each phase builds on the outputs of the previous one.
