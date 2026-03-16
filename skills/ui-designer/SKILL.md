@@ -96,28 +96,229 @@ docs/design/
 
 ---
 
+## Design Database
+
+This skill includes a comprehensive design database in `skills/ui-designer/data/`:
+
+| File | Records | Description |
+|------|---------|-------------|
+| `styles.csv` | 85 styles | Visual styles with keywords, colors, effects, best-for/not-for, CSS vars |
+| `colors.csv` | 161 palettes | Product-type color systems (Primary, Secondary, Accent, BG, FG, Card, Muted, Border, Destructive) |
+| `typography.csv` | 74 pairings | Font pairings with Google Fonts URLs, CSS imports, Tailwind configs |
+| `ui-reasoning.csv` | 162 rules | Context-aware design decisions with conditional logic and anti-patterns |
+| `ux-guidelines.csv` | 99 guidelines | UX anti-patterns with Do/Don't, code examples, severity ratings |
+| `style-references.csv` | 53 sites | Live reference websites per style for user comparison and inspiration |
+
+**ALWAYS read the relevant CSV file(s) before making design decisions.** Do not rely on memory — the databases are the source of truth.
+
+---
+
+## Design Reasoning Engine
+
+The reasoning engine selects the optimal design system by cross-referencing multiple databases. Follow this decision tree for every new design:
+
+### Step 1: Classify Product Type
+
+From the BRD, classify the product into one of these categories (matching `colors.csv` Product Type column):
+
+| Category | Examples |
+|----------|----------|
+| **SaaS** | SaaS (General), Micro SaaS, Productivity Tool, CRM, Design System |
+| **E-commerce** | E-commerce, E-commerce Luxury, Subscription Box, Marketplace (P2P) |
+| **Dashboard** | Financial Dashboard, Analytics Dashboard, Smart Home/IoT |
+| **Healthcare** | Healthcare App, Medical Clinic, Pharmacy, Dental, Mental Health |
+| **Creative** | Creative Agency, Portfolio/Personal, Photography Studio |
+| **Finance** | Fintech/Crypto, Banking, Insurance, Personal Finance |
+| **Education** | Educational App, Online Course, Language Learning, Kids Learning |
+| **Social** | Social Media, Dating App, Creator Economy, Community |
+| **Gaming** | Gaming, Casual Puzzle, Trivia, Card & Board, Arcade & Retro |
+| **Content** | News/Media, Magazine/Blog, Podcast Platform, Video Streaming |
+| **Services** | Legal, Real Estate, Restaurant, Hotel, Wedding/Event |
+| **Developer** | Developer Tool / IDE, Coding Bootcamp, Cybersecurity |
+| **Lifestyle** | Fitness/Gym, Meditation, Sleep Tracker, Plant Care, Travel |
+| **Utility** | Calculator, File Manager, Password Manager, Timer, Calendar |
+
+### Step 2: Look Up Color Palette
+
+Read `data/colors.csv` and find the matching Product Type row. Extract:
+
+```
+Primary, On Primary, Secondary, On Secondary, Accent, On Accent,
+Background, Foreground, Card, Card Foreground,
+Muted, Muted Foreground, Border, Destructive, On Destructive, Ring
+```
+
+**CRITICAL:** These palettes are pre-validated for WCAG contrast ratios. Use them as-is.
+
+### Step 3: Look Up UI Style
+
+Read `data/styles.csv` and find matching styles by:
+1. **Category** column (General, Landing Page, BI/Analytics, Mobile App)
+2. **Keywords** column — match product-type keywords
+3. **Best For** column — match use case
+
+Extract: `Color_Palette_Hint`, `Effects`, `Design_System_Variables`, `CSS_Keyword`, `AI_Prompt_Hint`
+
+### Step 4: Apply Reasoning Rules
+
+Read `data/ui-reasoning.csv` and find the matching `UI_Category`. Apply:
+
+| Field | What It Controls |
+|-------|-----------------|
+| `Recommended_Pattern` | Page layout pattern (Hero + Features, Data-Dense, Social Proof, etc.) |
+| `Style_Priority` | Primary visual style to use |
+| `Color_Mood` | Color psychology direction |
+| `Typography_Mood` | Typography character |
+| `Key_Effects` | CSS effects and animations |
+| `Decision_Rules` | Conditional logic (JSON): `if_ux_focused`, `if_data_heavy`, `if_luxury`, etc. |
+| `Anti_Patterns` | What NEVER to do for this product type |
+
+**Decision Rules** are conditional overrides:
+```json
+{"if_luxury": "switch-to-liquid-glass", "if_conversion_focused": "add-urgency-colors"}
+{"must_have": "real-time-updates", "must_have": "high-contrast"}
+{"if_pre_launch": "use-waitlist-pattern", "if_video_ready": "add-hero-video"}
+```
+
+### Step 5: Select Typography
+
+Read `data/typography.csv` and match by:
+1. **Mood/Style Keywords** — cross-reference with the style's keywords
+2. **Best For** — match product type
+3. **Category** — (Serif+Sans, Sans+Sans, Mono+Sans, Display+Sans, etc.)
+
+Extract: `Heading Font`, `Body Font`, `CSS Import`, `Tailwind Config`, `Notes`
+
+### Step 6: Validate Against UX Anti-Patterns
+
+Read `data/ux-guidelines.csv` and check:
+- All **HIGH severity** guidelines are satisfied
+- Product-type-specific anti-patterns from `ui-reasoning.csv` `Anti_Patterns` column are avoided
+- Platform-specific guidelines (Web, Mobile, All) are applied
+
+### Quick Reference: Style Selection Matrix
+
+| Product Vibe | Recommended Styles | Anti-Patterns |
+|-------------|-------------------|---------------|
+| **Trust & Authority** | Minimalism, Flat Design, Accessible & Ethical | Playful design, AI purple/pink gradients, Hidden credentials |
+| **Playful & Fun** | Claymorphism, Vibrant & Block-based, Micro-interactions | Dark modes, Complex jargon, Muted colors |
+| **Premium & Luxury** | Liquid Glass, Glassmorphism, 3D & Hyperrealism | Vibrant block-based, Fast animations, Cheap visuals |
+| **Technical & Data** | Dark Mode (OLED), Data-Dense, HUD/Sci-Fi FUI | Light mode default, Ornate design, Slow rendering |
+| **Calm & Wellness** | Neumorphism, Soft UI Evolution, Organic Biophilic | Bright neon, Motion-heavy, Dark mode |
+| **Bold & Creative** | Brutalism, Motion-Driven, Retro-Futurism | Corporate minimalism, Static assets, Generic layouts |
+| **Modern & Clean** | Flat Design, Swiss Modernism 2.0, Minimalism | Excessive decoration, Complex shadows, 3D effects |
+
+---
+
+### Style Proposal Protocol
+
+**MANDATORY:** Before finalizing a design direction, ALWAYS present **2-3 style options** to the user for selection. Never auto-select without user input (except in Express mode).
+
+#### How to Generate Options
+
+After running Steps 1-5 of the Reasoning Engine:
+1. Select the **top 3 matching styles** from `data/styles.csv` based on product type
+2. For each style, look up reference websites from `data/style-references.csv`
+3. Use `search_web` to find 1-2 additional live reference sites if needed
+4. Present options using the template below
+
+#### Presentation Template
+
+Present options to the user via `notify_user` in this format:
+
+```markdown
+## 🎨 Style Options for [Product Name]
+
+Based on your [product type] targeting [audience], here are 3 recommended design directions:
+
+### Option A: [Style Name] ⭐ Recommended
+| Attribute | Details |
+|-----------|---------|
+| **Visual Style** | [Brief description of the aesthetic] |
+| **Color Palette** | `Primary: #XXXX` · `Accent: #XXXX` · `BG: #XXXX` |
+| **Typography** | [Heading Font] + [Body Font] |
+| **Best For** | [Why this fits the product] |
+| **Trade-offs** | [Any limitations or considerations] |
+| **Reference Sites** | [Site 1](url) — [why notable] · [Site 2](url) — [why notable] |
+| **Fit Score** | ██████████ 9/10 |
+
+### Option B: [Style Name]
+| Attribute | Details |
+|-----------|---------|
+| ... (same structure) ... |
+| **Fit Score** | ████████░░ 8/10 |
+
+### Option C: [Style Name]
+| Attribute | Details |
+|-----------|---------|
+| ... (same structure) ... |
+| **Fit Score** | ███████░░░ 7/10 |
+
+### Comparison Matrix
+
+| Criteria | Option A | Option B | Option C |
+|----------|----------|----------|----------|
+| Visual Impact | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Accessibility (WCAG) | AA ✅ | AAA ✅ | AA ✅ |
+| Performance Impact | Low | Medium | High |
+| Development Complexity | Medium | Low | High |
+| Mobile Friendliness | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Unique / Trendy | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+```
+
+#### Fit Score Criteria
+
+Calculate the Fit Score (1-10) based on:
+
+| Factor | Weight | Scoring |
+|--------|--------|---------|
+| Product-type match | 30% | How well the style matches the product category from `ui-reasoning.csv` |
+| Audience alignment | 20% | Does the aesthetic match the target demographic expectations? |
+| Performance impact | 15% | Heavy effects (WebGL, blur) score lower for mobile-first products |
+| Accessibility | 15% | WCAG AA = baseline, AAA = bonus. Mandatory for healthcare/govt |
+| Development speed | 10% | Simpler styles score higher when timeline is tight |
+| Trend relevance | 10% | Is the style current (2024-2026) without being fleeting? |
+
+#### Mode-Specific Behavior
+
+| Engagement Mode | Behavior |
+|----------------|----------|
+| **Express** | Auto-select the highest Fit Score option. Report choice in output. |
+| **Standard** | Present 2 options (top + alternative). Ask user to pick. |
+| **Thorough** | Present 3 options with full comparison matrix. Wait for user selection. |
+| **Meticulous** | Present 3 options + ask if user wants to see more. Allow mixing elements from multiple options. |
+
+---
+
 ## Phases
 
-### Phase 1 — UX Research & Design Brief
+### Phase 1 — UX Research & Design Brief (with Reasoning Engine)
 
-**Goal:** Understand the target audience, define the design aesthetic, and create a design brief that guides all subsequent design decisions.
+**Goal:** Understand the target audience, define the design aesthetic using the Design Reasoning Engine, and create a data-driven design brief.
 
 **Actions:**
 1. Read BRD — extract user personas, key user stories, feature requirements
-2. Identify the app type: SaaS dashboard, consumer mobile, e-commerce, landing page, internal tool
-3. Search for 3-5 competitor/reference designs via web search
-4. Define design aesthetic:
-
-| Aesthetic | Best For | Characteristics |
-|-----------|----------|----------------|
-| **Modern Minimal** | SaaS, productivity tools | Clean lines, ample whitespace, subtle shadows, monochrome + 1 accent |
-| **Glassmorphism** | Creative tools, modern dashboards | Frosted glass, blur effects, gradient backgrounds, transparency |
-| **Material 3** | Enterprise, mobile-first | Rounded corners, elevation system, dynamic color from seed |
-| **Neubrutalism** | Creative/agency, gen-z products | Bold borders, raw shapes, high contrast |
-| **Soft/Neumorphism** | Minimal apps, calculators | Soft inset/outset shadows, monochrome |
-| **Corporate Clean** | B2B, fintech, healthcare | Conservative palette, high readability, trust signals |
-
-5. Write `design-brief.md` with: target audience, aesthetic direction, design principles (3-5), accessibility target (WCAG AA minimum), responsive breakpoints
+2. **Classify product type** using the taxonomy above
+3. **Run the Design Reasoning Engine** (Steps 1-6):
+   - Read `data/colors.csv` → extract product-type color palette
+   - Read `data/styles.csv` → select matching visual style(s)
+   - Read `data/ui-reasoning.csv` → apply decision rules and get anti-patterns
+   - Read `data/typography.csv` → select font pairing
+   - Read `data/ux-guidelines.csv` → validate against UX anti-patterns
+4. **Present Style Options** (via Style Proposal Protocol):
+   - Generate 2-3 options with Fit Scores
+   - Look up reference sites from `data/style-references.csv`
+   - Present comparison matrix to user → wait for selection
+5. Search for 3-5 competitor/reference designs via web search
+6. Write `design-brief.md` with:
+   - Target audience and product classification
+   - **User's selected style** with reasoning and alternatives considered
+   - Color palette (from database) with any brand overrides
+   - Typography selection (from database) with Google Fonts import
+   - Design principles (3-5)
+   - Accessibility target (WCAG AA minimum)
+   - Anti-patterns to avoid (from reasoning rules)
+   - Responsive breakpoints
 
 **Output:** `Antigravity-Production-Grade-Suite/ui-designer/design-brief.md`
 
