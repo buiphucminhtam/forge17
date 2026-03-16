@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.3.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-7.4.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-47-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-14-00CED1.svg" alt="Protocols" />
@@ -44,6 +44,14 @@ If Forgewright helps you ship faster, you can support the project here:
 ## Release Timeline
 
 ```
+2026-03-16  v7.4  ●━━━ UI Design Database & Reasoning Engine —
+                  │     85 visual styles, 161 WCAG-validated color palettes,
+                  │     74 font pairings (Google Fonts + Tailwind configs),
+                  │     162 contextual reasoning rules, 99 UX anti-patterns.
+                  │     Style Proposal Protocol: 2-3 scored options with
+                  │     reference websites (Linear, Stripe, Spotify, Apple...).
+                  │     53 curated reference sites for style comparison.
+                  │
 2026-03-15  v7.3  ●━━━ Code Intelligence & Skill Quality —
                   │     GitNexus integration: AST → knowledge graph → MCP tools
                   │     (impact analysis, call chains, community clustering).
@@ -119,7 +127,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/buiphucminhtam/forgewr
 
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forgewright.git .antigravity/plugins/production-grade
-git add .gitmodules .antigravity/ && git commit -m "feat: add forgewright v7.3"
+git add .gitmodules .antigravity/ && git commit -m "feat: add forgewright v7.4"
 ```
 
 ### Option C: Standalone Clone
@@ -215,7 +223,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 | **sre** | SLOs, error budgets, chaos engineering, runbooks, capacity planning |
 | **data-scientist** | LLM optimization, A/B testing, data pipelines, prompt engineering |
 | **technical-writer** | API docs, dev guides, Docusaurus, changelog generation |
-| **ui-designer** | Design tokens, wireframes, component inventory, a11y guidelines, brand system |
+| **ui-designer** | Design tokens, wireframes, component inventory, a11y guidelines, brand system. **Design Database:** 85 styles, 161 palettes, 74 font pairings, reasoning engine, Style Proposal Protocol with reference websites |
 | **mobile-engineer** | React Native / Flutter, navigation, native integrations, app store prep |
 | **mobile-tester** | Plug-and-play AI testing on Android/iOS real devices via Midscene.js |
 | **api-designer** | REST/GraphQL API design, endpoints, error taxonomy |
@@ -405,6 +413,7 @@ CEO Agent (Orchestrator)
 | **XR platforms** | Quest, Vision Pro, WebXR, PCVR |
 | **Research Intelligence** | NotebookLM MCP — zero-hallucination, citation-backed |
 | **Code Intelligence** | GitNexus knowledge graph — impact analysis, call chains, community clustering, pre-commit risk |
+| **Design Database** | 85 styles, 161 WCAG palettes, 74 font pairings, 162 reasoning rules, 53 reference websites — data-driven style proposals |
 | **Smart Test Selection** | Phase 0: auto-assess target → recommend Playwright / Midscene / Page Agent |
 | **Vision Testing** | Midscene.js — AI-powered, cross-platform (web + Android + iOS) |
 | **Go-to-Market** | SEO, AEO/GEO, copywriting, campaigns, funnel CRO, A/B testing |
