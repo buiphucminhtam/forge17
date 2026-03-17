@@ -1,10 +1,10 @@
 # Forge17 — Production Grade AI Pipeline
 
-> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forge17's 47 specialized skills.
+> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forge17's 48 specialized skills.
 
 ## What is Forge17?
 
-Forge17 is an adaptive orchestrator with **47 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forge17 is an adaptive orchestrator with **48 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
@@ -39,6 +39,7 @@ Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the pr
 | "Build a Roblox experience" | Game Build | Game Designer → Roblox Engineer |
 | "Build a VR app..." | XR Build | XR Engineer (+ Game Build pipeline if game-like) |
 | "Build AI feature / RAG..." | AI Build | AI Engineer + Prompt Engineer + Data Scientist |
+| "Scrape/crawl website" | AI Build | Web Scraper + AI Engineer (if RAG) |
 | "Analyze requirements..." | Analyze | Business Analyst (elicit, evaluate, validate) |
 
 ## Available Workflows
@@ -63,7 +64,7 @@ If a newer version exists, mention it briefly: *"Forge17 update available (vX.X.
 
 ## Skills Directory
 
-All 47 skills are in the `skills/` directory:
+All 48 skills are in the `skills/` directory:
 
 | Skill | Location |
 |-------|----------|
@@ -103,6 +104,8 @@ All 47 skills are in the `skills/` directory:
 | **Growth** | |
 | Growth Marketer | `skills/growth-marketer/SKILL.md` |
 | Conversion Optimizer | `skills/conversion-optimizer/SKILL.md` |
+| **Data Acquisition** | |
+| Web Scraper | `skills/web-scraper/SKILL.md` |
 | **Game Development** | |
 | Game Designer | `skills/game-designer/SKILL.md` |
 | Unity Engineer | `skills/unity-engineer/SKILL.md` |
@@ -153,7 +156,7 @@ Forge17 maintains project state in the `.forgewright/` directory:
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **forgewright** (255 symbols, 383 relationships, 20 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **forgewright** (256 symbols, 383 relationships, 20 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

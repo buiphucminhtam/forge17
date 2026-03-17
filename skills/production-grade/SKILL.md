@@ -52,14 +52,14 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 | **Harden** | "review", "audit", "secure", "harden", "before launch", "production ready" (on EXISTING code) | Security + QA + Code Review (sequential) → Remediation |
 | **Ship** | "deploy", "CI/CD", "containerize", "infrastructure", "terraform", "docker" | DevOps → SRE |
 | **Debug** | "debug", "fix bug", "broken", "investigate", "not working", "error", "trace", "crashes" | Debugger (→ Software/Frontend Engineer for fix) |
-| **AI Build** | "AI feature", "chatbot", "RAG", "embeddings", "LLM", "agent", "prompt", "AI-powered" | AI Engineer + Prompt Engineer + Data Scientist + Architect (scoped) → BE/FE |
+| **AI Build** | "AI feature", "chatbot", "RAG", "embeddings", "LLM", "agent", "prompt", "AI-powered", "scrape", "crawl website" | AI Engineer + Prompt Engineer + Data Scientist + Web Scraper (if web data) + Architect (scoped) → BE/FE |
 | **Migrate** | "migrate", "upgrade", "migration", "database change", "schema change", "refactor DB", "move to" | Database Engineer + Software Engineer → QA |
 | **Test** | "write tests", "test coverage", "test this", "add tests" | QA |
 | **Review** | "review my code", "code review", "code quality", "check my code" | Code Reviewer |
 | **Architect** | "design", "architecture", "API design", "data model", "tech stack", "how should I structure" | Solution Architect |
 | **Document** | "document", "write docs", "API docs", "README" | Technical Writer |
 | **Explore** | "explain", "understand", "help me think", "what should I", "I'm not sure" | Polymath |
-| **Research** | "research", "deep research", "find sources", "analyze topic", "investigate [domain]" | Polymath (research mode) + NotebookLM MCP (optional) |
+| **Research** | "research", "deep research", "find sources", "analyze topic", "investigate [domain]" | Polymath (research mode) + NotebookLM MCP (optional) + crawl4ai (optional, for JS-rendered sites) |
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | Performance Engineer + SRE + Code Reviewer |
 | **Design** | "design UI", "wireframes", "design system", "color palette", "UX flow" | UX Researcher → UI Designer |
 | **Mobile** | "mobile app", "React Native", "Flutter", "iOS", "Android" | BA (if gaps detected) → Mobile Engineer (+ PM scoped, Architect scoped if needed) |
@@ -194,19 +194,20 @@ Thinking partner. Single skill.
 
 ### Research Mode
 
-Deep, grounded research on any topic. Polymath + NotebookLM MCP (optional enhancement).
+Deep, grounded research on any topic. Polymath + NotebookLM MCP (optional) + crawl4ai (optional).
 
 1. Read `skills/polymath/SKILL.md` and invoke in **research mode**
 2. **Phase 1 — Web Discovery:** Polymath runs broad `search_web` sweeps (3-5 parallel) to gather relevant URLs and initial understanding
-3. **Phase 2 — NotebookLM Enhancement (optional):**
+3. **Phase 1.5 — Deep Crawling (optional):** If crawl4ai is installed and `read_url_content` fails on key URLs (JS-rendered, anti-bot), use Polymath's Crawl4AI Deep Research pattern. Security: library-only, URL validation, output sanitization. See `skills/web-scraper/SKILL.md`.
+4. **Phase 2 — NotebookLM Enhancement (optional):**
    - Check if NotebookLM MCP tools are available (`server_info()`)
    - If available: create notebook → add source URLs → run deep research → iterative querying → generate report
    - If unavailable: skip — Polymath synthesizes from web search alone (still effective)
    - Follow `workflows/deep-research.md` for detailed steps
-4. **Phase 3 — Synthesize:** Combine all findings into grounded research report with citations, trade-offs, and recommendations
-5. When ready, offer handoff to relevant mode (Feature, Architect, Full Build, etc.)
+5. **Phase 3 — Synthesize:** Combine all findings into grounded research report with citations, trade-offs, and recommendations
+6. When ready, offer handoff to relevant mode (Feature, Architect, Full Build, etc.)
 
-**0 gates.** Polymath manages dialogue. NotebookLM is an enhancement layer, not a requirement.
+**0 gates.** Polymath manages dialogue. NotebookLM and crawl4ai are enhancement layers, not requirements.
 
 ### Optimize Mode
 
@@ -314,7 +315,10 @@ Which skills do you need? (list the numbers separated by commas)
 38. **Growth Marketer** — Launch strategy, content, channels, SEO
 39. **Conversion Optimizer** — CRO, funnel analysis, A/B testing, retention
 
-40. **Chat about this** — Free-form input
+--- Data Acquisition ---
+40. **Web Scraper** — Secure web crawling (crawl4ai), URL validation, output sanitization, CSS/LLM extraction
+
+41. **Chat about this** — Free-form input
 ```
 
 Execute selected skills in dependency order. If user picks conflicting skills, resolve via the authority hierarchy.

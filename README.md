@@ -4,8 +4,8 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.4.0-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/skills-47-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/version-7.5.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/skills-48-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-14-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/vibe-coded_%F0%9F%8E%B5-ff69b4.svg" alt="Vibe Coded" />
@@ -14,13 +14,14 @@
 <p align="center">
   <img src="https://img.shields.io/badge/🎮_Game_Dev-Unity_·_Unreal_·_Godot_·_Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/🔬_Research-NotebookLM_MCP-00A67E.svg" alt="Research" />
+  <img src="https://img.shields.io/badge/🕷️_Scraping-Crawl4AI_Secure-2EA44F.svg" alt="Web Scraping" />
   <img src="https://img.shields.io/badge/🧪_Testing-Midscene_·_Page_Agent-FF6B35.svg" alt="Testing" />
   <img src="https://img.shields.io/badge/📈_Growth-Marketing_·_CRO-E91E63.svg" alt="Growth" />
   <img src="https://img.shields.io/badge/⚡_Parallel-Git_Worktrees-orange.svg" alt="Parallel" />
   <img src="https://img.shields.io/badge/🧠_Code_Intelligence-GitNexus-4B0082.svg" alt="Code Intelligence" />
 </p>
 
-<h3 align="center">47 AI Skills · 19 Modes · 14 Protocols · Full Lifecycle Pipeline</h3>
+<h3 align="center">48 AI Skills · 19 Modes · 14 Protocols · Full Lifecycle Pipeline</h3>
 
 <p align="center">
   <strong>Research → Design → Build → Test → Secure → Deploy → Market → Grow</strong><br />
@@ -44,6 +45,13 @@ If Forgewright helps you ship faster, you can support the project here:
 ## Release Timeline
 
 ```
+2026-03-17  v7.5  ●━━━ Web Scraper Skill (Crawl4AI) —
+                  │     Security-first web scraping: 10 hard security rules,
+                  │     URL validation (SSRF/LFI defense), output sanitization
+                  │     (prompt injection defense), CSS-first extraction strategy.
+                  │     Library-only mode (no Docker API). Integrated into
+                  │     Polymath Research + AI Build pipeline. 48 total skills.
+                  │
 2026-03-16  v7.4  ●━━━ UI Design Database & Reasoning Engine —
                   │     85 visual styles, 161 WCAG-validated color palettes,
                   │     74 font pairings (Google Fonts + Tailwind configs),
@@ -127,7 +135,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/buiphucminhtam/forgewr
 
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forgewright.git .antigravity/plugins/production-grade
-git add .gitmodules .antigravity/ && git commit -m "feat: add forgewright v7.4"
+git add .gitmodules .antigravity/ && git commit -m "feat: add forgewright v7.5"
 ```
 
 ### Option C: Standalone Clone
@@ -195,7 +203,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 
 ---
 
-## 47 Skills — Organized by Division
+## 48 Skills — Organized by Division
 
 ### 🧠 Orchestrator & Meta (5)
 
@@ -239,6 +247,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 | **ai-engineer** | MLOps, model serving, fine-tuning, RAG optimization, evaluation frameworks, cost tracking |
 | **performance-engineer** | Load testing (k6), profiling, Core Web Vitals, bottleneck analysis, Lighthouse CI |
 | **data-engineer** | ETL/ELT pipelines, medallion architecture, dbt, data quality, Airflow/Dagster |
+| **web-scraper** | Security-first web crawling (crawl4ai), URL validation, SSRF defense, output sanitization, CSS/LLM extraction, deep crawling |
 
 ### ♿ Accessibility & UX (2)
 
@@ -406,7 +415,7 @@ CEO Agent (Orchestrator)
 
 | Metric | Detail |
 |--------|--------|
-| **47 specialized skills** | Each with sole authority over its domain |
+| **48 specialized skills** | Each with sole authority over its domain |
 | **19 execution modes** | Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze** |
 | **6-phase pipeline** | DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW |
 | **4 game engines** | Unity, Unreal Engine, Godot, Roblox |
@@ -556,7 +565,7 @@ Each domain has one authority. No overlap, no contradictions.
 ## FAQ
 
 **How many skills does Forgewright have?**
-47 specialized skills covering requirements analysis, software engineering, game development (Unity, Unreal, Godot, Roblox), XR (AR/VR/MR), AI/ML, data engineering, accessibility, UX research, and go-to-market.
+48 specialized skills covering requirements analysis, software engineering, game development (Unity, Unreal, Godot, Roblox), XR (AR/VR/MR), AI/ML, data engineering, web scraping, accessibility, UX research, and go-to-market.
 
 **Can it build complete games?**
 Yes. The Game Build mode orchestrates game-specific skills: Game Designer → Engine Engineer → Level Designer → Narrative → Technical Art → Audio → QA. Supports Unity, Unreal Engine, Godot, and Roblox.
@@ -576,7 +585,7 @@ No. Playwright is the primary CI testing tool. Midscene is optional for visual Q
 **What languages are supported?**
 TypeScript, Go, Python, Rust, Java, C++ (Unreal), C# (Unity), GDScript (Godot), Luau (Roblox).
 
-**Do I need all 47 skills?**
+**Do I need all 48 skills?**
 No. The orchestrator only activates what you need. A backend API may use 8 skills. A full game may use 20+. The BA skill only activates when information gaps are detected.
 
 **What is Code Intelligence?**
@@ -623,7 +632,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>Forgewright — 47 AI skills. 19 modes. 14 protocols. Code Intelligence. SaaS to AAA games. One prompt. ⭐</strong>
+  <strong>Forgewright — 48 AI skills. 19 modes. 14 protocols. Code Intelligence. SaaS to AAA games. One prompt. ⭐</strong>
 </p>
 <p align="center">
   <em>Understand relationships, not just files. Validate with zero assumptions. Research with zero hallucinations. Build games across 4 engines. Ship with quality scoring. Grow with data.</em>

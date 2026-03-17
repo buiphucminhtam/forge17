@@ -315,6 +315,45 @@ ELSE:
 
 See `workflows/deep-research.md` for the complete workflow reference.
 
+### Crawl4AI Deep Research (Optional)
+
+When crawl4ai is installed (`pip show crawl4ai`), you gain deep crawl capability for sites that `read_url_content` cannot handle (JS-rendered, anti-bot, multi-page documentation).
+
+**When to use:**
+- Target has dynamic JS-rendered content (read_url_content returns empty/broken content)
+- Need full site documentation crawling (multi-page, max depth 3)
+- Target has anti-bot protection (Cloudflare, Akamai, etc.)
+
+**Security-First Pattern:**
+1. **Validate ALL URLs** before crawling — use web-scraper URL validation (scheme check + private IP block)
+2. **Markdown extraction ONLY** — never enable LLM extraction for research (prompt injection risk)
+3. **Sanitize ALL output** — call `sanitize_crawled_content()` before feeding to NotebookLM or LLM synthesis
+4. **Safety limits** — max_depth=3, max_pages=20 to prevent runaway crawls
+5. **Library mode ONLY** — never use crawl4ai Docker API (SSRF vulnerability unpatched)
+
+**Enhanced Research Pipeline:**
+```
+Web Discovery (search_web) → collect URLs
+    ↓
+For each URL:
+    IF read_url_content succeeds → use directly
+    ELIF crawl4ai installed → secure_crawl(url, query) → sanitized Markdown
+    ELSE → skip, note in research gaps
+    ↓
+Sanitized content → NotebookLM sources OR direct synthesis
+```
+
+**Graceful Fallback:**
+```
+IF crawl4ai installed AND URL validation passes:
+    Use deep crawl → sanitize → synthesize
+ELSE:
+    Use standard read_url_content (always works)
+    ← Still effective, just without JS rendering and anti-bot bypass
+```
+
+See `skills/web-scraper/SKILL.md` for the full secure crawling reference.
+
 ---
 
 ## Modes

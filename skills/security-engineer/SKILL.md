@@ -245,6 +245,49 @@ User Input → [PII Masking Layer] → LLM API → [Response Unmask] → User Ou
 
 ---
 
+## Web Scraping Security (Crawl4AI)
+
+**Applies when auditing code that uses crawl4ai or any web scraping library with browser automation.**
+
+### Known CVE History
+
+| CVE | Severity | Status | Description |
+|-----|----------|--------|-------------|
+| CVE-2026-26216 | Critical | Fixed v0.8.0 | RCE via hooks `__import__` in Docker API |
+| CVE-2026-26217 | High | Fixed v0.8.0 | LFI via `file://` URLs in Docker API |
+| CVE-2025-28197 | Medium | **UNPATCHED** | SSRF via `async_dispatcher.py` |
+
+### Audit Checklist
+
+| Check | What to Look For | Severity if Missing |
+|-------|-----------------|---------------------|
+| **Library mode only** | Code must NOT use Docker API, REST endpoints, or remote crawl4ai services | Critical |
+| **URL validation** | All URLs validated before crawling — scheme check + private IP block (SSRF) | Critical |
+| **Hooks disabled** | `CRAWL4AI_HOOKS_ENABLED` never set to `true`, no hooks in any crawl call | Critical |
+| **Output sanitization** | Crawled content sanitized (strip HTML comments, hidden text, zero-width chars) before LLM/RAG | High |
+| **Rate limiting** | Crawl rate capped (≤5 req/sec), robots.txt respected | Medium |
+| **Browser isolation** | No persistent context (`use_persistent_context=False`), no `user_data_dir` | Medium |
+| **Dependency audit** | `pip-audit` clean — no known CVEs in crawl4ai dependency tree | High |
+| **Schema validation** | LLM extraction output validated against Pydantic schema, reject unexpected formats | High |
+
+### Red Flags in Code Review
+
+```
+❌ crawl4ai Docker API deployed with CRAWL4AI_HOOKS_ENABLED=true
+❌ crawler.arun(url=user_input)  # no URL validation
+❌ result.markdown → llm.chat(result.markdown)  # unsanitized to LLM
+❌ BrowserConfig(ignore_https_errors=True)  # allows MITM
+❌ BrowserConfig(use_persistent_context=True, user_data_dir="/data")  # state leakage
+
+✅ validate_url(url); result = await crawler.arun(url=url)
+✅ clean = sanitize_crawled_content(result.markdown.fit_markdown)
+✅ BrowserConfig(headless=True, ignore_https_errors=False, use_persistent_context=False)
+```
+
+See `skills/web-scraper/SKILL.md` for the full secure integration reference.
+
+---
+
 ## Common Mistakes
 
 | Mistake | Fix |
