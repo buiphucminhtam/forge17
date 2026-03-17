@@ -106,8 +106,9 @@ This skill includes a comprehensive design database in `skills/ui-designer/data/
 | `colors.csv` | 161 palettes | Product-type color systems (Primary, Secondary, Accent, BG, FG, Card, Muted, Border, Destructive) |
 | `typography.csv` | 74 pairings | Font pairings with Google Fonts URLs, CSS imports, Tailwind configs |
 | `ui-reasoning.csv` | 162 rules | Context-aware design decisions with conditional logic and anti-patterns |
-| `ux-guidelines.csv` | 99 guidelines | UX anti-patterns with Do/Don't, code examples, severity ratings |
+| `ux-guidelines.csv` | 114 guidelines | UX anti-patterns + AI Tells with Do/Don't, code examples, severity ratings |
 | `style-references.csv` | 53 sites | Live reference websites per style for user comparison and inspiration |
+| `creative-patterns.csv` | 48 patterns | Advanced UI patterns (navigation, layout, cards, scroll, gallery, typography, micro-interactions, bento) with motion levels and implementation hints |
 
 **ALWAYS read the relevant CSV file(s) before making design decisions.** Do not rely on memory — the databases are the source of truth.
 
@@ -264,6 +265,14 @@ Based on your [product type] targeting [audience], here are 3 recommended design
 | Development Complexity | Medium | Low | High |
 | Mobile Friendliness | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
 | Unique / Trendy | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+### Recommended Control Dials
+
+| Dial | Setting | Rationale |
+|------|---------|-----------|
+| DESIGN_VARIANCE | [1-10] | [Why this level for this product] |
+| MOTION_INTENSITY | [1-10] | [Why this level for this product] |
+| VISUAL_DENSITY | [1-10] | [Why this level for this product] |
 ```
 
 #### Fit Score Criteria
@@ -290,6 +299,49 @@ Calculate the Fit Score (1-10) based on:
 
 ---
 
+## Control Dials (Design Intensity)
+
+After style selection, set these 3 dials to calibrate the design intensity. These values are passed to the Frontend Engineer as part of the handoff.
+
+### DESIGN_VARIANCE (1-10)
+How experimental the layout is.
+- **1-3:** Clean, centered, standard grids. Safe and conventional.
+- **4-7:** Overlapping elements, varied sizes, asymmetric white-space.
+- **8-10:** Highly asymmetric, unconventional, very modern layouts.
+
+### MOTION_INTENSITY (1-10)
+How much animation there is.
+- **1-3:** Almost none. Simple hover color changes.
+- **4-7:** Fade-ins, smooth scrolling, stagger reveals.
+- **8-10:** Magnetic effects, spring physics, scroll-triggered animations, parallax.
+
+### VISUAL_DENSITY (1-10)
+How much content fits on one screen.
+- **1-3:** Big and spacious. One element at a time. Luxury feel.
+- **4-7:** Normal spacing. Like a typical app or website.
+- **8-10:** Dense and compact. Dashboards, data-heavy interfaces.
+
+### Dial Presets by Product Type
+
+| Product Type | DESIGN_VARIANCE | MOTION_INTENSITY | VISUAL_DENSITY |
+|-------------|----------------|-----------------|----------------|
+| SaaS Dashboard | 3-4 | 3-4 | 7-8 |
+| Landing Page | 6-8 | 5-7 | 3-5 |
+| E-commerce | 3-5 | 3-4 | 6-7 |
+| Creative Agency | 8-10 | 7-9 | 2-4 |
+| Healthcare | 2-3 | 2-3 | 4-6 |
+| Fintech | 3-5 | 3-4 | 5-7 |
+| Portfolio | 7-9 | 6-8 | 2-4 |
+| Developer Tool | 3-4 | 2-3 | 7-9 |
+| Gaming | 7-9 | 7-9 | 5-7 |
+| Mobile App | 4-6 | 4-6 | 5-7 |
+
+**Rule:** When MOTION_INTENSITY > 5, read `data/creative-patterns.csv` and select appropriate patterns whose `Motion_Level` matches the dial setting. Filter by `Best_For` to ensure product-type fit.
+
+**Performance Rule:** When MOTION_INTENSITY > 7, mandate `prefers-reduced-motion` media query checks and ensure all perpetual animations are memoized (React.memo) and isolated in micro-components.
+
+---
+
 ## Phases
 
 ### Phase 1 — UX Research & Design Brief (with Reasoning Engine)
@@ -308,16 +360,18 @@ Calculate the Fit Score (1-10) based on:
 4. **Present Style Options** (via Style Proposal Protocol):
    - Generate 2-3 options with Fit Scores
    - Look up reference sites from `data/style-references.csv`
-   - Present comparison matrix to user → wait for selection
+   - Present comparison matrix to user → wait for user selection
 5. Search for 3-5 competitor/reference designs via web search
-6. Write `design-brief.md` with:
+6. **Set Control Dials** — recommend DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY based on product type (use Dial Presets table as starting point)
+7. Write `design-brief.md` with:
    - Target audience and product classification
    - **User's selected style** with reasoning and alternatives considered
+   - **Control Dial settings** with rationale for each
    - Color palette (from database) with any brand overrides
    - Typography selection (from database) with Google Fonts import
    - Design principles (3-5)
    - Accessibility target (WCAG AA minimum)
-   - Anti-patterns to avoid (from reasoning rules)
+   - Anti-patterns to avoid (from reasoning rules + AI Tells)
    - Responsive breakpoints
 
 **Output:** `Antigravity-Production-Grade-Suite/ui-designer/design-brief.md`
@@ -508,17 +562,26 @@ Define elevation system (sm, md, lg, xl) and corner radius scale.
 - **ease-in**: Elements leaving (modal closing)
 - **ease-in-out**: Position changes (sidebar collapse/expand)
 - **spring**: Playful interactions (toggle switches, drag-and-drop)
+- **spring physics** (MOTION_INTENSITY > 5): type: "spring", stiffness: 100, damping: 20
 
 ### Hover Effects
 - Cards: translateY(-2px) + shadow increase
 - Buttons: background darken 10% (primary), background lighten (ghost)
 - Links: underline transition (width 0% → 100%)
 - Table rows: background subtle highlight
+- **Magnetic pull** (MOTION_INTENSITY > 5): Buttons pull toward cursor via useMotionValue
 
 ### Focus States
 - All interactive elements: 2px solid outline with 2px offset
 - Color: primary-400 (light mode), primary-300 (dark mode)
 - Never remove focus outline — it's an accessibility requirement
+
+### Creative Patterns (from creative-patterns.csv)
+When MOTION_INTENSITY > 5, select creative patterns from `data/creative-patterns.csv`:
+- Filter by `Motion_Level` ≤ current MOTION_INTENSITY dial setting
+- Filter by `Best_For` matching current product type
+- Filter by `Complexity` appropriate for timeline
+- List selected patterns in interaction-patterns.md with implementation notes
 ```
 
 3. **Handoff Notes** for Frontend Engineer:
