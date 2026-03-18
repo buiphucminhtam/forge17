@@ -4,7 +4,7 @@
 
 ## When to Run
 
-- **First time** Forge17 is invoked in a project (no `.forgewright/project-profile.json` exists)
+- **First time** Forgewright is invoked in a project (no `.forgewright/project-profile.json` exists)
 - **On explicit `/onboard`** command from user
 - **When manual changes detected** (session-lifecycle protocol detects drift)
 - **Skip if** `.forgewright/project-profile.json` exists AND is less than 24 hours old AND no git changes since last onboarding

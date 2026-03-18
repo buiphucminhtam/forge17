@@ -169,10 +169,10 @@ docker-compose.dev.yml             # Full local dev stack
 Makefile                           # Root-level dev commands
 ```
 
-### Workspace Output (`Antigravity-Production-Grade-Suite/software-engineer/`)
+### Workspace Output (`.forgewright/software-engineer/`)
 
 ```
-Antigravity-Production-Grade-Suite/software-engineer/
+.forgewright/software-engineer/
 ├── implementation-plan.md
 ├── progress.md
 └── logs/

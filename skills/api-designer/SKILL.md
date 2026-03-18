@@ -11,17 +11,17 @@ description: >
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -32,7 +32,7 @@ description: >
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing API patterns first** — understand current URL structure, naming conventions, error format
 - **MATCH existing conventions** — if they use camelCase, don't switch to snake_case
 - **BACKWARD COMPATIBLE** — new endpoints only. Never break existing consumers
@@ -298,7 +298,7 @@ docs/api/
 
 ### Workspace
 ```
-Antigravity-Production-Grade-Suite/api-designer/
+.forgewright/api-designer/
 ├── domain-model.md           # Entity relationship analysis
 ├── resource-inventory.md     # URL inventory with methods
 └── design-decisions.md       # API design rationale

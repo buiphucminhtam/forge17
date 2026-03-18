@@ -14,17 +14,17 @@ tags: [unity, c-sharp, scriptable-objects, dots, game-development, editor-tools,
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -35,7 +35,7 @@ tags: [unity, c-sharp, scriptable-objects, dots, game-development, editor-tools,
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing Unity project** — detect render pipeline, input system, existing SO patterns, folder structure
 - **MATCH existing architecture** — if they use singletons, don't force SO-first. Migrate gradually.
 - **ADD alongside existing systems** — don't restructure their hierarchy
@@ -53,9 +53,9 @@ This skill runs AFTER the Game Designer (GDD + mechanic specs) in Game Build mod
 
 | Input | Status | What Unity Engineer Needs |
 |-------|--------|--------------------------|
-| `Antigravity-Production-Grade-Suite/game-designer/` | Critical | GDD, mechanic specs, state machines, balance tables |
-| `Antigravity-Production-Grade-Suite/game-designer/mechanics/` | Critical | Per-mechanic specs with timing, edge cases |
-| `Antigravity-Production-Grade-Suite/game-designer/economy/` | Degraded | Economy design for game data |
+| `.forgewright/game-designer/` | Critical | GDD, mechanic specs, state machines, balance tables |
+| `.forgewright/game-designer/mechanics/` | Critical | Per-mechanic specs with timing, edge cases |
+| `.forgewright/game-designer/economy/` | Degraded | Economy design for game data |
 | Level Designer output | Optional | Level requirements (if Level Designer has run) |
 | Technical Artist output | Optional | Shader/VFX requirements |
 
@@ -168,7 +168,7 @@ Assets/
 ├── Packages/                        # Unity Package Manager
 └── ProjectSettings/
 
-Antigravity-Production-Grade-Suite/unity-engineer/
+.forgewright/unity-engineer/
 ├── architecture.md                  # Architecture decisions and patterns used
 ├── so-schema.md                     # ScriptableObject schema documentation
 ├── editor-tools.md                  # Custom Editor tool documentation

@@ -94,7 +94,7 @@ Execute levels in order. Each level has a severity that determines whether to ST
 
 ```
 1. Output maps to requirement
-   - IF BRD exists (Antigravity-Production-Grade-Suite/product-manager/BRD/):
+   - IF BRD exists (.forgewright/product-manager/BRD/):
      - Check that skill output addresses at least one acceptance criterion
      - Unmapped output → INFO (logged, not blocking)
 
@@ -104,7 +104,7 @@ Execute levels in order. Each level has a severity that determines whether to ST
      - No test files → WARN: "Implementation without corresponding tests"
 
 3. Documentation exists
-   - Workspace artifacts written to Antigravity-Production-Grade-Suite/<skill>/
+   - Workspace artifacts written to .forgewright/<skill>/
    - If workspace directory empty → WARN: "No workspace artifacts produced"
 ```
 

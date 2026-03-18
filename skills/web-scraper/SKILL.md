@@ -14,7 +14,7 @@ tags: [web-scraping, crawl4ai, data-extraction, security, crawler, rag, research
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.

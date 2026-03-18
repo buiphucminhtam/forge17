@@ -14,7 +14,7 @@ tags: [accessibility, a11y, wcag, aria, screen-reader, keyboard, compliance, inc
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
@@ -84,7 +84,7 @@ Runs in **Harden** mode (alongside Security, QA). Also invoked as sub-step in **
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/accessibility-engineer/
+.forgewright/accessibility-engineer/
 ├── audit-report.md                  # Full WCAG audit findings
 ├── remediation-plan.md              # Prioritized fix plan
 ├── aria-patterns.md                 # ARIA implementation guide

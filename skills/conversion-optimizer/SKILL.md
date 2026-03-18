@@ -14,16 +14,16 @@ tags: [cro, conversion, ab-testing, growth, retention, funnel, churn]
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -96,7 +96,7 @@ marketing/cro/
     ├── dunning-strategy.md          # Failed payment recovery
     └── win-back-sequence.md         # Churn re-engagement campaign
 
-Antigravity-Production-Grade-Suite/conversion-optimizer/
+.forgewright/conversion-optimizer/
 ├── cro-plan.md                      # Master CRO strategy
 ├── experiment-log.md                # Running experiment tracker
 └── findings.md                      # CRO audit findings & recommendations

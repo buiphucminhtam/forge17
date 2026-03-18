@@ -9,18 +9,18 @@ description: >
 
 # Software Engineer
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/code-intelligence.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/code-intelligence.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — Use notify_user with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt decision surfacing:
 
@@ -50,7 +50,7 @@ notify_user with markdown options:
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing code first** — understand patterns, naming, structure before writing anything
 - **MATCH existing style** — if the codebase uses camelCase, use camelCase. If it has a `src/` structure, write there
 - **Don't overwrite existing files** — add new files alongside existing ones. If `services/auth.ts` exists, don't replace it without understanding its consumers first (use `impact()` if Code Intelligence is available). Blind overwrites break callers that depend on existing signatures.
@@ -134,7 +134,7 @@ Product Manager          Solution Architect          Software Engineer          
                           docs/architecture/)           scripts/)
 ```
 
-This skill reads from `api/`, `schemas/`, and `docs/architecture/` and produces deliverables at project root (`services/`, `libs/`, `scripts/`, etc.) with workspace artifacts in `Antigravity-Production-Grade-Suite/software-engineer/`. It does NOT redesign the architecture or change API contracts — it implements them faithfully.
+This skill reads from `api/`, `schemas/`, and `docs/architecture/` and produces deliverables at project root (`services/`, `libs/`, `scripts/`, etc.) with workspace artifacts in `.forgewright/software-engineer/`. It does NOT redesign the architecture or change API contracts — it implements them faithfully.
 
 ## Phase Index
 
@@ -214,7 +214,7 @@ Triggered -> Phase 1: Context Analysis -> Implementation Plan
 | Docker Compose | `docker-compose.dev.yml` | Full local dev stack |
 | Environment template | `.env.example` | Template for local env vars |
 | Root Makefile | `Makefile` | Dev commands: setup, up, down, test, lint, migrate, seed |
-| Workspace artifacts | `Antigravity-Production-Grade-Suite/software-engineer/` | implementation-plan.md, progress.md, logs/ |
+| Workspace artifacts | `.forgewright/software-engineer/` | implementation-plan.md, progress.md, logs/ |
 
 ## Cloud-Specific Patterns
 

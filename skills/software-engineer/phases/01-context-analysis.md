@@ -62,7 +62,7 @@ Use notify_user for anything not covered in the architect's output (batch into 1
 
 Before moving to Phase 2:
 - All mandatory inputs have been read and parsed
-- Implementation Plan document is written to `Antigravity-Production-Grade-Suite/software-engineer/implementation-plan.md`
+- Implementation Plan document is written to `.forgewright/software-engineer/implementation-plan.md`
 - User has approved the plan via notify_user
 - Ambiguities have been resolved or documented with chosen defaults
 

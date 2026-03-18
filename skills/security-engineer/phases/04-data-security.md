@@ -2,16 +2,16 @@
 
 ## Objective
 
-Inventory every piece of sensitive data in the system, verify encryption at rest and in transit, and validate regulatory compliance posture. security-engineer is the SOLE AUTHORITY on PII inventory, data classification, and GDPR/CCPA compliance assessment at the application layer. No other skill performs PII audits or compliance mapping. Generate all outputs in `Antigravity-Production-Grade-Suite/security-engineer/data-security/`.
+Inventory every piece of sensitive data in the system, verify encryption at rest and in transit, and validate regulatory compliance posture. security-engineer is the SOLE AUTHORITY on PII inventory, data classification, and GDPR/CCPA compliance assessment at the application layer. No other skill performs PII audits or compliance mapping. Generate all outputs in `.forgewright/security-engineer/data-security/`.
 
 ## Context Bridge
 
-Read Phase 3 outputs from `Antigravity-Production-Grade-Suite/security-engineer/auth-review/`. Token management findings feed directly into data security -- tokens are sensitive data. Also reference Phase 2 code audit findings for A02 (Cryptographic Failures) as the starting point for encryption analysis.
+Read Phase 3 outputs from `.forgewright/security-engineer/auth-review/`. Token management findings feed directly into data security -- tokens are sensitive data. Also reference Phase 2 code audit findings for A02 (Cryptographic Failures) as the starting point for encryption analysis.
 
 ## Inputs
 
-- Phase 2 code audit -- `Antigravity-Production-Grade-Suite/security-engineer/code-audit/` (A02 findings)
-- Phase 3 auth review -- `Antigravity-Production-Grade-Suite/security-engineer/auth-review/`
+- Phase 2 code audit -- `.forgewright/security-engineer/code-audit/` (A02 findings)
+- Phase 3 auth review -- `.forgewright/security-engineer/auth-review/`
 - Data schemas -- `schemas/` (ERD, migrations, data models)
 - Implementation code -- data access layers, ORM models, API response serializers
 - Infrastructure configs -- database encryption settings, backup configs
@@ -143,7 +143,7 @@ Audit how the codebase handles secrets:
 
 ## Output Deliverables
 
-Write all outputs to `Antigravity-Production-Grade-Suite/security-engineer/data-security/`:
+Write all outputs to `.forgewright/security-engineer/data-security/`:
 
 | File | Contents |
 |------|----------|

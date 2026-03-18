@@ -14,7 +14,7 @@ tags: [ux, research, usability, personas, journey-mapping, interviews, heuristic
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
@@ -95,7 +95,7 @@ Runs in **Design** mode before UI Designer. Also invoked at start of **Full Buil
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/ux-researcher/
+.forgewright/ux-researcher/
 ├── research-plan.md                 # Research questions, methods, participants
 ├── personas/                        # Data-driven user personas
 ├── journey-maps/                    # User journey maps

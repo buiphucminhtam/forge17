@@ -14,8 +14,8 @@ tags: [ai, ml, mlops, model-serving, fine-tuning, rag, agents, evaluation, llm]
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
@@ -115,7 +115,7 @@ Data → Preprocessing → Training/Fine-tuning → Evaluation → Registry → 
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/ai-engineer/
+.forgewright/ai-engineer/
 ├── model-selection.md               # Model benchmarks and selection rationale
 ├── architecture.md                  # AI system architecture
 ├── rag-pipeline.md                  # RAG design (if applicable)

@@ -1,8 +1,8 @@
 ---
-description: Show Forge17 pipeline reference, available modes, and skill list
+description: Show Forgewright pipeline reference, available modes, and skill list
 ---
 
-# Forge17 Pipeline Reference
+# Forgewright Pipeline Reference
 
 ## Pipeline Phases
 

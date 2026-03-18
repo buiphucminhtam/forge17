@@ -9,17 +9,17 @@ description: >
 
 # Frontend Engineer
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Protocol Fallback** (if protocol files are not loaded): Never ask open-ended questions — Use notify_user with predefined options and "Chat about this" as the last option. Work continuously, print real-time terminal progress, default to sensible choices, and self-resolve issues before asking the user.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt decision surfacing:
 
@@ -34,7 +34,7 @@ Read engagement mode and adapt decision surfacing:
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing frontend first** — understand the framework, component patterns, styling approach, state management
 - **MATCH existing stack** — if they use Vue, don't create React. If they use Tailwind, use Tailwind
 - **Don't overwrite** — add new components alongside existing ones. Blind overwrites break consumers that import from the existing paths.
@@ -142,7 +142,7 @@ Triggered -> Phase 1: UI/UX Analysis -> Phase 2: Design System
 | Tests | `frontend/tests/` | Component, page, hook, e2e, a11y tests |
 | Storybook | `frontend/storybook/` | Component documentation and visual testing |
 | Config | `frontend/` root | package.json, tsconfig, tailwind, eslint, playwright, lighthouse |
-| Workspace | `Antigravity-Production-Grade-Suite/frontend-engineer/` | Analysis docs, performance budget, progress notes |
+| Workspace | `.forgewright/frontend-engineer/` | Analysis docs, performance budget, progress notes |
 
 ## Common Mistakes
 

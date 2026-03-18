@@ -2,16 +2,16 @@
 
 ## Objective
 
-Audit every dependency in the project for known vulnerabilities, license risk, maintenance health, and supply chain integrity. Generate a Software Bill of Materials and evaluate the full dependency tree -- not just direct dependencies. security-engineer is the SOLE AUTHORITY on application-layer dependency security analysis. DevOps handles container image CVE scanning at the infrastructure layer; this phase covers library and package vulnerabilities. Generate all outputs in `Antigravity-Production-Grade-Suite/security-engineer/supply-chain/`.
+Audit every dependency in the project for known vulnerabilities, license risk, maintenance health, and supply chain integrity. Generate a Software Bill of Materials and evaluate the full dependency tree -- not just direct dependencies. security-engineer is the SOLE AUTHORITY on application-layer dependency security analysis. DevOps handles container image CVE scanning at the infrastructure layer; this phase covers library and package vulnerabilities. Generate all outputs in `.forgewright/security-engineer/supply-chain/`.
 
 ## Context Bridge
 
-Read Phase 4 outputs from `Antigravity-Production-Grade-Suite/security-engineer/data-security/`. Data security findings may reveal dependencies that handle encryption or PII processing -- these deserve elevated scrutiny in the supply chain audit. Also reference Phase 2 code audit A06 (Vulnerable and Outdated Components) for any dependency flags already raised.
+Read Phase 4 outputs from `.forgewright/security-engineer/data-security/`. Data security findings may reveal dependencies that handle encryption or PII processing -- these deserve elevated scrutiny in the supply chain audit. Also reference Phase 2 code audit A06 (Vulnerable and Outdated Components) for any dependency flags already raised.
 
 ## Inputs
 
-- Phase 2 code audit -- `Antigravity-Production-Grade-Suite/security-engineer/code-audit/` (A06 findings)
-- Phase 4 data security -- `Antigravity-Production-Grade-Suite/security-engineer/data-security/`
+- Phase 2 code audit -- `.forgewright/security-engineer/code-audit/` (A06 findings)
+- Phase 4 data security -- `.forgewright/security-engineer/data-security/`
 - Dependency manifests -- `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `requirements.txt`, `Pipfile.lock`, `poetry.lock`, `go.mod`, `go.sum`, `Cargo.toml`, `Cargo.lock`, `pom.xml`, `build.gradle`
 - Lockfiles -- verify they exist and are committed to version control
 - CI/CD configs -- `.github/workflows/`, `Jenkinsfile`, `.gitlab-ci.yml` (action versions, plugin versions)
@@ -103,7 +103,7 @@ For frontend/client-side code:
 
 ## Output Deliverables
 
-Write all outputs to `Antigravity-Production-Grade-Suite/security-engineer/supply-chain/`:
+Write all outputs to `.forgewright/security-engineer/supply-chain/`:
 
 | File | Contents |
 |------|----------|

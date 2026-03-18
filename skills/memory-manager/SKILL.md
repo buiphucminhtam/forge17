@@ -25,7 +25,7 @@ description: >
 |----------|----------|-------------|
 | **decisions** | "Chose PostgreSQL because..." | 10 |
 | **architecture** | "Using Next.js + Prisma + PostgreSQL" | 8 |
-| **project** | "Forge17 v7.1 — 47 skills, 19 modes" | 8 |
+| **project** | "Forgewright v7.1 — 47 skills, 19 modes" | 8 |
 | **blockers** | "Waiting on API key from vendor" | 7 |
 | **session** | "Session completed: built auth module" | 6 |
 | **tasks** | "BUILD complete: 3 services, 142 tests pass" | 5 |
@@ -128,7 +128,7 @@ MEM0_REDACT_SECRETS=true          # auto-redact API keys, passwords
 MEM0_DISABLED=false               # set true to skip all ops
 ```
 
-## Integration with Forge17 Pipeline
+## Integration with Forgewright Pipeline
 
 ### Active Lifecycle Hooks
 

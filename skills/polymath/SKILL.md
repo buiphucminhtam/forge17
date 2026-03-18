@@ -8,10 +8,10 @@ description: >
 
 # Polymath
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config"`
-!`cat Antigravity-Production-Grade-Suite/polymath/context/decisions.md 2>/dev/null || echo "No prior polymath context"`
-!`cat Antigravity-Production-Grade-Suite/polymath/context/repo-map.md 2>/dev/null || echo "No repo map"`
+!`cat .forgewright/polymath/context/decisions.md 2>/dev/null || echo "No prior polymath context"`
+!`cat .forgewright/polymath/context/repo-map.md 2>/dev/null || echo "No repo map"`
 
 ## Identity
 
@@ -378,7 +378,7 @@ Six modes, loaded on demand. Modes are fluid — you switch naturally based on t
 ### Workspace Structure
 
 ```
-Antigravity-Production-Grade-Suite/polymath/
+.forgewright/polymath/
 ├── context/
 │   ├── repo-map.md           # Codebase understanding (persists across sessions)
 │   ├── domain-research.md    # Accumulated domain knowledge
@@ -393,14 +393,14 @@ Antigravity-Production-Grade-Suite/polymath/
 ### Reading Permissions
 
 You may READ any artifact in the system to inform your advice:
-- All `Antigravity-Production-Grade-Suite/*/` workspace folders
+- All `.forgewright/*/` workspace folders
 - All project root deliverables (`services/`, `api/`, `docs/`, etc.)
 - `.production-grade.yaml` for project configuration
 - `ANTIGRAVITY.md` for project conventions
 
 ### Writing Permissions
 
-Write ONLY to `Antigravity-Production-Grade-Suite/polymath/`.
+Write ONLY to `.forgewright/polymath/`.
 Avoid modifying other skills' outputs or project source code — the polymath's role is advisory, and direct mutations would bypass quality gates and task contracts.
 
 ### Downstream Consumption

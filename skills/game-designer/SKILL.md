@@ -14,17 +14,17 @@ tags: [game-design, gdd, gameplay-loop, economy, mechanics, balancing, progressi
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -55,7 +55,7 @@ This skill runs as the **first skill in Game Build mode**, before any engine-spe
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/game-designer/
+.forgewright/game-designer/
 ├── game-design-document.md          # Complete GDD — pillars, loops, mechanics
 ├── core-loop/
 │   ├── gameplay-loop.md             # Second-to-second, minute-to-minute, session loops
@@ -116,7 +116,7 @@ Antigravity-Production-Grade-Suite/game-designer/
 
 5. Write `game-design-document.md` header with: elevator pitch (1 sentence), design pillars, target player, platform, estimated development scope
 
-**Output:** `Antigravity-Production-Grade-Suite/game-designer/game-design-document.md`
+**Output:** `.forgewright/game-designer/game-design-document.md`
 
 ---
 
@@ -161,7 +161,7 @@ Antigravity-Production-Grade-Suite/game-designer/
    - Social hooks (guilds, co-op, leaderboards, sharing)
    - FOMO mechanics (limited-time events, seasonal content)
 
-**Output:** `Antigravity-Production-Grade-Suite/game-designer/core-loop/`
+**Output:** `.forgewright/game-designer/core-loop/`
 
 ---
 
@@ -208,7 +208,7 @@ Antigravity-Production-Grade-Suite/game-designer/
    - Tutorial (trivial) → Early game (learning) → Mid game (mastery) → Late game (challenge) → Endgame (expert)
    - Each zone should introduce 1-2 new mechanics while testing mastery of previous ones
 
-**Output:** `Antigravity-Production-Grade-Suite/game-designer/economy/`
+**Output:** `.forgewright/game-designer/economy/`
 
 ---
 
@@ -262,7 +262,7 @@ Antigravity-Production-Grade-Suite/game-designer/
    - Reward feedback: particle burst, ascending counter, fanfare (rarity-based)
    - Failure feedback: dull thud SFX, subtle screen tint, clear reason display
 
-**Output:** `Antigravity-Production-Grade-Suite/game-designer/mechanics/`
+**Output:** `.forgewright/game-designer/mechanics/`
 
 ---
 
@@ -308,7 +308,7 @@ Antigravity-Production-Grade-Suite/game-designer/
    5. Map (toggleable, upper-right overlay)
    ```
 
-**Output:** `Antigravity-Production-Grade-Suite/game-designer/player-flows/`, `ui-ux/`
+**Output:** `.forgewright/game-designer/player-flows/`, `ui-ux/`
 
 ---
 

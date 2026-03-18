@@ -12,7 +12,7 @@ description: >
 
 !`git status 2>/dev/null || echo "No git repo detected"`
 !`cat ANTIGRAVITY.md 2>/dev/null || echo "No ANTIGRAVITY.md found"`
-!`ls Antigravity-Production-Grade-Suite/ 2>/dev/null || echo "No existing workspace"`
+!`ls .forgewright/ 2>/dev/null || echo "No existing workspace"`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config file — defaults apply"`
 
 ## Overview
@@ -118,7 +118,7 @@ For non-Full-Build modes, use the lightweight execution flows below. For Full Bu
 ## Mode Execution (Non-Full-Build)
 
 All modes share these behaviors:
-- Bootstrap workspace: `mkdir -p Antigravity-Production-Grade-Suite/.protocols/ Antigravity-Production-Grade-Suite/.orchestrator/`
+- Bootstrap workspace: `mkdir -p skills/_shared/protocols/ .forgewright/`
 - Write shared protocols (same as Full Build step 3)
 - Read `.production-grade.yaml` for path overrides
 - Read existing workspace state if present
@@ -496,11 +496,11 @@ Project: [extracted from user's message]
 
 2. **Bootstrap workspace:**
 ```bash
-mkdir -p Antigravity-Production-Grade-Suite/.protocols/
-mkdir -p Antigravity-Production-Grade-Suite/.orchestrator/
+mkdir -p skills/_shared/protocols/
+mkdir -p .forgewright/
 ```
 
-3. **Write shared protocols** to `Antigravity-Production-Grade-Suite/.protocols/`:
+3. **Write shared protocols** to `skills/_shared/protocols/`:
 
 | Protocol File | Content |
 |---------------|---------|
@@ -574,7 +574,7 @@ Read these from the plugin's `skills/_shared/protocols/` directory and copy them
 
    d. **Write `.production-grade.yaml`** from discovered structure — map `paths.*` to actual directories found.
 
-   e. **Set brownfield context** — write to `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md`:
+   e. **Set brownfield context** — write to `.forgewright/codebase-context.md`:
    ```markdown
    # Codebase Context
    Mode: brownfield
@@ -614,7 +614,7 @@ How deeply should the pipeline involve you in decisions?
 4. **Meticulous** — Maximum depth. Approve each ADR individually. Review every agent output. Full control.
 ```
 
-Write the choice to `Antigravity-Production-Grade-Suite/.orchestrator/settings.md`:
+Write the choice to `.forgewright/settings.md`:
 ```markdown
 # Pipeline Settings
 Engagement: [express|standard|thorough|meticulous]
@@ -773,7 +773,7 @@ Notify user via notify_user with the analysis:
 
 **Step 5b-7: Save Decision**
 
-Append to `Antigravity-Production-Grade-Suite/.orchestrator/settings.md`:
+Append to `.forgewright/settings.md`:
 ```markdown
 Execution: [parallel|sequential]
 Max_Workers: 4
@@ -783,16 +783,16 @@ Estimated_Time_Parallel: [N]min
 Risk_Level: [LOW|MEDIUM|HIGH]
 ```
 
-Write analysis report to `Antigravity-Production-Grade-Suite/.orchestrator/scope-analysis.md` for future reference.
+Write analysis report to `.forgewright/scope-analysis.md` for future reference.
 
 When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-dispatch skill (`skills/parallel-dispatch/SKILL.md`) to spawn git worktrees, distribute Task Contracts, and merge results. When **Sequential** is selected, the pipeline behaves as before.
 
-6. **Detect existing workspace & load memory** — if `Antigravity-Production-Grade-Suite/.orchestrator/` has prior state, use session-lifecycle resume protocol. If `.forgewright/session-log.json` has interrupted state, offer resume. Otherwise offer clean start via notify_user.
+6. **Detect existing workspace & load memory** — if `.forgewright/` has prior state, use session-lifecycle resume protocol. If `.forgewright/session-log.json` has interrupted state, offer resume. Otherwise offer clean start via notify_user.
    - **Memory load:** Run `python3 scripts/mem0-cli.py search "<project-name> <user-request-keywords>" --limit 5 --format compact` to retrieve relevant project context. Inject results into your context for this session.
    - If no results or memory is empty, run `python3 scripts/mem0-cli.py refresh` once to bootstrap memory from project files.
 
 7. **Polymath pre-flight check:**
-   - If `Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ Polymath context loaded — skipping redundant discovery`
+   - If `.forgewright/polymath/handoff/context-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ Polymath context loaded — skipping redundant discovery`
    - If no polymath context, assess the user's request for knowledge gaps:
      - **Vague scope** (no specific problem domain), **no constraints** (scale, budget, team), **complex domain with no domain language**, **contradictory signals**
      - If gaps detected → read `skills/polymath/SKILL.md` and follow its instructions for pre-flight consultation before proceeding. The polymath will research, clarify with the user, and write a context package when ready.
@@ -800,7 +800,7 @@ When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-disp
    - If user explicitly requests to skip polymath ("just build it", clear detailed spec) → proceed immediately.
 
 7.5. **BA pre-flight check (after Polymath, before PM):**
-   - If `Antigravity-Production-Grade-Suite/business-analyst/handoff/ba-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ BA package loaded — requirements pre-validated`
+   - If `.forgewright/business-analyst/handoff/ba-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ BA package loaded — requirements pre-validated`
    - If no BA package, assess the user's request for information completeness using 6W1H:
      - Score each requirement against: Who, What, Why, Where, When, Which, How
      - If average score < 6/7 → read `skills/business-analyst/SKILL.md` and follow its instructions. BA will elicit, evaluate, validate, and produce `ba-package.md`.
@@ -815,7 +815,7 @@ When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-disp
 
 9. **Create task tracking:**
 
-Create a `task.md` file in `Antigravity-Production-Grade-Suite/.orchestrator/` with all 13 tasks and their statuses. Track dependencies and completion.
+Create a `task.md` file in `.forgewright/` with all 13 tasks and their statuses. Track dependencies and completion.
 
 10. **Begin Phase 1** — read `phases/define.md` and start immediately. Do NOT ask "should I proceed?"
    - **Memory save (session start):** Run `python3 scripts/mem0-cli.py add "Session started: [mode] mode for [brief request]. Engagement: [level]" --category session`
@@ -850,7 +850,7 @@ Call these hooks at the appropriate lifecycle points:
 
 ## User Experience Protocol
 
-Follow the shared UX Protocol at `Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md`. Key rules:
+Follow the shared UX Protocol at `skills/_shared/protocols/ux-protocol.md`. Key rules:
 1. **Don't** ask open-ended questions — always use notify_user with predefined numbered options (open-ended questions stall the pipeline because the model can't proceed without parsing free-text responses)
 2. **"Chat about this"** always last option
 3. **Recommended option first** with `(Recommended)` suffix
@@ -1041,7 +1041,7 @@ Provide context: architecture files, BRD, workspace paths, etc.
 
 ## Conflict Resolution
 
-Follow the shared protocol at `Antigravity-Production-Grade-Suite/.protocols/conflict-resolution.md`.
+Follow the shared protocol at `skills/_shared/protocols/conflict-resolution.md`.
 
 | Artifact | Sole Authority | Others Must NOT |
 |----------|---------------|-----------------|
@@ -1080,12 +1080,12 @@ When HARDEN skills find Critical/High issues:
 | T11: Tech Writer | ALL workspace + project | `docs/` | `technical-writer/` |
 | T12: Skill Maker | ALL workspace | `skills/` | `skill-maker/` |
 
-**Deliverables** go to project root (respecting `.production-grade.yaml` path overrides). **Workspace artifacts** go to `Antigravity-Production-Grade-Suite/<skill-name>/`.
+**Deliverables** go to project root (respecting `.production-grade.yaml` path overrides). **Workspace artifacts** go to `.forgewright/<skill-name>/`.
 
 ## Workspace Architecture
 
 ```
-Antigravity-Production-Grade-Suite/
+.forgewright/
 ├── .protocols/              # Shared protocols (written at bootstrap)
 ├── .orchestrator/           # Pipeline state via task.md
 ├── product-manager/         # BRD, research
@@ -1177,7 +1177,7 @@ Also display the legacy summary for backward compatibility:
 ║  SHIP:    ✓ Docker ✓ CI/CD ✓ Terraform ✓ SRE approved       ║
 ║  SUSTAIN: ✓ Docs ✓ Skills (<N> created) ✓ Learnings captured ║
 ║                                                              ║
-║  Workspace: Antigravity-Production-Grade-Suite/              ║
+║  Workspace: .forgewright/              ║
 ║  Config: .production-grade.yaml                              ║
 ║  Report: .forgewright/quality-report-{session}.json              ║
 ╚══════════════════════════════════════════════════════════════╝

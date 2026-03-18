@@ -1,8 +1,8 @@
 ---
-description: Check for and install Forge17 updates
+description: Check for and install Forgewright updates
 ---
 
-# Update Forge17
+# Update Forgewright
 
 ## Steps
 
@@ -36,7 +36,7 @@ cat .antigravity/plugins/production-grade/VERSION
 6. Stage and commit the update:
 ```bash
 git add .antigravity/plugins/production-grade
-git commit -m "chore: update Forge17 to $(cat .antigravity/plugins/production-grade/VERSION)"
+git commit -m "chore: update Forgewright to $(cat .antigravity/plugins/production-grade/VERSION)"
 ```
 
 ## Notes

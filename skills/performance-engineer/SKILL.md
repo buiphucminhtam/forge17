@@ -14,7 +14,7 @@ tags: [performance, load-testing, profiling, optimization, latency, core-web-vit
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
@@ -113,7 +113,7 @@ export const options = {
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/performance-engineer/
+.forgewright/performance-engineer/
 ├── baseline-report.md               # Current performance baseline
 ├── profiling-results.md             # Bottleneck analysis
 ├── load-test/

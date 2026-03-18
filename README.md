@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/skills-48-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
-  <img src="https://img.shields.io/badge/vibe-coded_%F0%9F%8E%B5-ff69b4.svg" alt="Vibe Coded" />
+  <a href="https://github.com/buiphucminhtam/forgewright/stargazers"><img src="https://img.shields.io/github/stars/buiphucminhtam/forgewright?style=social" alt="Stars" /></a>
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
 </p>
 
 <p align="center">
-  <sub>Formerly Forge17. Built from <a href="https://github.com/nagisanzenin/claude-code-production-grade-plugin">claude-code-production-grade-plugin</a>, <a href="https://github.com/ComposioHQ/awesome-claude-skills">awesome-claude-skills</a>, and <a href="https://github.com/msitarzewski/agency-agents">agency-agents</a>. Entirely vibe coded 🎵</sub>
+  <sub>Built on <a href="https://github.com/nagisanzenin/claude-code-production-grade-plugin">claude-code-production-grade-plugin</a>, <a href="https://github.com/ComposioHQ/awesome-claude-skills">awesome-claude-skills</a>, and <a href="https://github.com/msitarzewski/agency-agents">agency-agents</a>. Iteratively tested and improved across real projects.</sub>
 </p>
 
 ---
@@ -161,7 +161,7 @@ Then say: *"Build a production-grade SaaS for [your idea]"* — or *"Build a gam
 
 ## For Antigravity Users
 
-Forgewright is self-discovering. Once installed, Antigravity reads `AGENTS.md` on every new chat and automatically routes your requests through the 47-skill pipeline.
+Forgewright is self-discovering. Once installed, Antigravity reads `AGENTS.md` on every new chat and automatically routes your requests through the 48-skill pipeline.
 
 **Available workflows:**
 
@@ -291,7 +291,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW
 ```
 
-You give a high-level vision. 47 specialized skills handle everything else.
+You give a high-level vision. 48 specialized skills handle everything else.
 
 ### The Pipeline
 
@@ -677,7 +677,7 @@ Each domain has one authority. No overlap, no contradictions.
 ## Examples
 
 ```bash
-# Greenfield SaaS (full pipeline, 47 skills)
+# Greenfield SaaS (full pipeline, 48 skills)
 "Build a production-grade SaaS for multi-vendor e-commerce
  with seller dashboards, buyer marketplace, and payment processing."
 

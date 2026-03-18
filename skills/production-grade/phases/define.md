@@ -5,7 +5,7 @@ This phase manages tasks T1 (Product Manager), T1.5 (UI Designer, conditional), 
 ## Pre-Flight
 
 Read `.production-grade.yaml` for path overrides:
-- `paths.brd` → BRD output location (default: `Antigravity-Production-Grade-Suite/product-manager/BRD/`)
+- `paths.brd` → BRD output location (default: `.forgewright/product-manager/BRD/`)
 - `paths.api_contracts` → API contract location (default: `api/openapi/*.yaml`)
 - `paths.adrs` → ADR location (default: `docs/architecture/architecture-decision-records/`)
 - `paths.architecture_docs` → Architecture docs (default: `docs/architecture/`)
@@ -20,9 +20,9 @@ Update task.md: T0.5 status → in_progress
 
 Read skills/business-analyst/SKILL.md and follow its instructions.
 Context:
-- Read polymath context from: Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md
-- Read codebase context from: Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md
-- Write BA outputs to: Antigravity-Production-Grade-Suite/business-analyst/
+- Read polymath context from: .forgewright/polymath/handoff/context-package.md
+- Read codebase context from: .forgewright/codebase-context.md
+- Write BA outputs to: .forgewright/business-analyst/
 - Key output: handoff/ba-package.md (feeds into PM)
 ```
 
@@ -48,10 +48,10 @@ Read skills/product-manager/SKILL.md and follow its instructions.
 ```
 
 The product-manager skill will:
-1. **Check for BA package** — if `Antigravity-Production-Grade-Suite/business-analyst/handoff/ba-package.md` exists, use it to reduce CEO interview
+1. **Check for BA package** — if `.forgewright/business-analyst/handoff/ba-package.md` exists, use it to reduce CEO interview
 2. Research domain via search_web (skip if BA or Polymath already researched)
 3. Conduct CEO interview (depth reduced if BA package covers gaps)
-4. Write BRD to `Antigravity-Production-Grade-Suite/product-manager/BRD/`
+4. Write BRD to `.forgewright/product-manager/BRD/`
 5. Outputs: `brd.md`, `research-notes.md`, `constraints.md`
 
 **On completion:**
@@ -80,9 +80,9 @@ Update task.md: T1.5 status → in_progress
 
 Read skills/ui-designer/SKILL.md and follow its instructions.
 Context:
-- Read BRD from: Antigravity-Production-Grade-Suite/product-manager/BRD/
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
-- Write design specs to: Antigravity-Production-Grade-Suite/ui-designer/
+- Read BRD from: .forgewright/product-manager/BRD/
+- Read protocols from: skills/_shared/protocols/
+- Write design specs to: .forgewright/ui-designer/
 - Write design tokens to: docs/design/design-tokens.json
 - Outputs: design-brief.md, wireframes/, design-tokens.md, component-inventory.md, interaction-patterns.md
 
@@ -99,13 +99,13 @@ Read skills/solution-architect/SKILL.md and follow its instructions.
 ```
 
 The solution-architect skill will:
-1. Read BRD from `Antigravity-Production-Grade-Suite/product-manager/BRD/`
-2. Read design specs from `Antigravity-Production-Grade-Suite/ui-designer/` (if T1.5 ran)
+1. Read BRD from `.forgewright/product-manager/BRD/`
+2. Read design specs from `.forgewright/ui-designer/` (if T1.5 ran)
 3. Design architecture: ADRs, tech stack, system design
 4. Design API contracts (OpenAPI 3.1), data model (ERD), migrations
 5. Generate project scaffold
 6. Write deliverables to **project root**: `api/`, `schemas/`, `docs/architecture/`
-7. Write workspace artifacts to `Antigravity-Production-Grade-Suite/solution-architect/`
+7. Write workspace artifacts to `.forgewright/solution-architect/`
 
 **On completion:**
 ```
@@ -121,7 +121,7 @@ Present Gate 2 using the orchestrator's gate pattern. On approval, proceed to BU
 After Gate 2 approval:
 1. Verify architecture outputs exist at project root (`api/`, `schemas/`, `docs/architecture/`)
 2. If T1.5 ran, verify design outputs exist (`docs/design/design-tokens.json`)
-3. Log decisions to `Antigravity-Production-Grade-Suite/.orchestrator/decisions-log.md`
+3. Log decisions to `.forgewright/decisions-log.md`
 4. Read `phases/build.md` and begin BUILD phase
 
 ## Failure Handling

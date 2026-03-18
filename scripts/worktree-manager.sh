@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Worktree Manager — Git worktree lifecycle for parallel dispatch
-# Part of Forge17 Production Grade Plugin
+# Part of Forgewright Production Grade Plugin
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 set -euo pipefail
 
 WORKTREE_BASE=".worktrees"
 MAX_WORKERS="${MAX_WORKERS:-4}"
-LOG_FILE="Antigravity-Production-Grade-Suite/.orchestrator/worktree-log.md"
+LOG_FILE=".forgewright/worktree-log.md"
 
 # Colors
 RED='\033[0;31m'
@@ -64,10 +64,10 @@ cmd_create() {
   fi
 
   # Copy shared context into worktree
-  if [ -d "Antigravity-Production-Grade-Suite/.protocols" ]; then
-    mkdir -p "${worktree_path}/Antigravity-Production-Grade-Suite/.protocols"
-    cp -r Antigravity-Production-Grade-Suite/.protocols/* \
-      "${worktree_path}/Antigravity-Production-Grade-Suite/.protocols/" 2>/dev/null || true
+  if [ -d "skills/_shared/protocols" ]; then
+    mkdir -p "${worktree_path}/skills/_shared/protocols"
+    cp -r skills/_shared/protocols/* \
+      "${worktree_path}/skills/_shared/protocols/" 2>/dev/null || true
   fi
 
   # Copy .production-grade.yaml if exists

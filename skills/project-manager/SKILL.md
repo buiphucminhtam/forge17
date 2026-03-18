@@ -14,7 +14,7 @@ tags: [project-management, sprint, agile, scrum, kanban, jira, velocity, risk]
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
@@ -93,7 +93,7 @@ You are the **Project Management Specialist**. You ensure projects are delivered
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/project-manager/
+.forgewright/project-manager/
 ├── project-charter.md               # Goals, scope, team, timeline
 ├── sprint-plan.md                   # Current sprint backlog and goals
 ├── roadmap.md                       # Multi-sprint timeline view

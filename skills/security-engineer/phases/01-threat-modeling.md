@@ -2,7 +2,7 @@
 
 ## Objective
 
-Perform STRIDE threat analysis for every service in the system, map the complete attack surface, define trust boundaries, and annotate data flow diagrams with threat overlays. Generate all outputs in `Antigravity-Production-Grade-Suite/security-engineer/threat-model/`. The security-engineer is the SOLE AUTHORITY on STRIDE threat modeling -- no other skill performs this analysis.
+Perform STRIDE threat analysis for every service in the system, map the complete attack surface, define trust boundaries, and annotate data flow diagrams with threat overlays. Generate all outputs in `.forgewright/security-engineer/threat-model/`. The security-engineer is the SOLE AUTHORITY on STRIDE threat modeling -- no other skill performs this analysis.
 
 ## Context Bridge
 
@@ -15,7 +15,7 @@ Read Phase 0 (Reconnaissance) outputs. You should already know every service, it
 - Data schemas -- `schemas/` (ERD, migrations, data flow diagrams)
 - Implementation code -- `services/`, `frontend/` (controllers, middleware, routes)
 - Infrastructure configs -- `infrastructure/` (Terraform, K8s manifests)
-- Prior pipeline artifacts -- any existing `Antigravity-Production-Grade-Suite/` outputs from other skills
+- Prior pipeline artifacts -- any existing `.forgewright/` outputs from other skills
 
 If any inputs are missing, note the gap and flag it as an incomplete audit area in the output.
 
@@ -93,7 +93,7 @@ Sort by risk score descending. Critical and High items become priority inputs fo
 
 ## Output Deliverables
 
-Write all outputs to `Antigravity-Production-Grade-Suite/security-engineer/threat-model/`:
+Write all outputs to `.forgewright/security-engineer/threat-model/`:
 
 | File | Contents |
 |------|----------|

@@ -75,7 +75,7 @@ overrides:
 
 ## Expected Output
 ```
-Antigravity-Production-Grade-Suite/security-engineer/
+.forgewright/security-engineer/
 ├── threat-model/          # STRIDE analysis
 ├── code-audit/            # OWASP findings
 ├── auth-review/           # Auth flow analysis

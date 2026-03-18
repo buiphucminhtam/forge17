@@ -15,17 +15,17 @@ tags: [mobile, react-native, flutter, ios, android, cross-platform, app-store]
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -36,7 +36,7 @@ tags: [mobile, react-native, flutter, ios, android, cross-platform, app-store]
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing mobile project** — detect framework (RN, Flutter, Kotlin, Swift), existing navigation library, state management
 - **MATCH existing patterns** — if they use React Navigation, don't introduce go_router. If they use Zustand, use Zustand
 - **ADD screens alongside existing ones** — don't restructure their navigation tree
@@ -66,9 +66,9 @@ This skill runs in parallel with Frontend Engineer (BUILD phase, Wave A). It sha
 
 | Input | Status | What Mobile Engineer Needs |
 |-------|--------|--------------------------|
-| `Antigravity-Production-Grade-Suite/product-manager/` | Critical | User stories with mobile-specific requirements |
-| `Antigravity-Production-Grade-Suite/solution-architect/` | Critical | API contracts, authentication flow, data models |
-| `Antigravity-Production-Grade-Suite/ui-designer/` | Critical | Design tokens, wireframes, component inventory |
+| `.forgewright/product-manager/` | Critical | User stories with mobile-specific requirements |
+| `.forgewright/solution-architect/` | Critical | API contracts, authentication flow, data models |
+| `.forgewright/ui-designer/` | Critical | Design tokens, wireframes, component inventory |
 | `api/` (OpenAPI specs) | Critical | API endpoints for mobile client generation |
 | `libs/shared/` | Degraded | Shared types, validation schemas, constants |
 | `frontend/` | Optional | Reference for web UI patterns, shared API client |
@@ -134,7 +134,7 @@ mobile/
 ├── tsconfig.json
 └── babel.config.js
 
-Antigravity-Production-Grade-Suite/mobile-engineer/
+.forgewright/mobile-engineer/
 ├── architecture.md                 # Mobile architecture decisions
 ├── platform-notes.md               # iOS/Android specific considerations
 └── store-preparation.md            # App store submission checklist
@@ -377,7 +377,7 @@ Execute sequentially: Build feature screens (detail, settings, modals). Write to
 **Output:**
 - Build configs at `mobile/eas.json`, `mobile/app.json`
 - Tests at `mobile/__tests__/` or `mobile/test/`
-- Store preparation at `Antigravity-Production-Grade-Suite/mobile-engineer/store-preparation.md`
+- Store preparation at `.forgewright/mobile-engineer/store-preparation.md`
 
 ---
 

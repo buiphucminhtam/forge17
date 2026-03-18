@@ -117,7 +117,7 @@ Use this workflow to add AI-powered, vision-based testing to any project. Midsce
 
 A typical E2E flow with 10 vision steps costs **~$0.01-0.05** per run.
 
-## Integration with Forge17 Skills
+## Integration with Forgewright Skills
 
 | Skill | How Midscene Helps |
 |-------|--------------------|

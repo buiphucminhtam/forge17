@@ -14,16 +14,16 @@ tags: [narrative, dialogue, branching, lore, character-voice, ink, yarn, storyte
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -51,7 +51,7 @@ Runs AFTER Game Designer (design pillars, mechanics) and alongside Level Designe
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/narrative-designer/
+.forgewright/narrative-designer/
 ├── story-bible.md                   # World, history, factions, rules
 ├── narrative-structure.md           # Acts, beats, branching overview
 ├── characters/

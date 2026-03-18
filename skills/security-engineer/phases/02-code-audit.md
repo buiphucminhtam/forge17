@@ -2,15 +2,15 @@
 
 ## Objective
 
-Systematically audit the entire codebase against the OWASP Top 10. security-engineer is the SOLE AUTHORITY on OWASP code review -- no other skill performs OWASP analysis. Every finding must reference specific files, lines, and code patterns. Generate all outputs in `Antigravity-Production-Grade-Suite/security-engineer/code-audit/`.
+Systematically audit the entire codebase against the OWASP Top 10. security-engineer is the SOLE AUTHORITY on OWASP code review -- no other skill performs OWASP analysis. Every finding must reference specific files, lines, and code patterns. Generate all outputs in `.forgewright/security-engineer/code-audit/`.
 
 ## Context Bridge
 
-Read Phase 1 outputs from `Antigravity-Production-Grade-Suite/security-engineer/threat-model/` before beginning. The STRIDE analysis and attack surface map tell you WHERE to focus. Start with endpoints and code paths that scored Critical or High in the threat matrix.
+Read Phase 1 outputs from `.forgewright/security-engineer/threat-model/` before beginning. The STRIDE analysis and attack surface map tell you WHERE to focus. Start with endpoints and code paths that scored Critical or High in the threat matrix.
 
 ## Inputs
 
-- Phase 1 threat model -- `Antigravity-Production-Grade-Suite/security-engineer/threat-model/`
+- Phase 1 threat model -- `.forgewright/security-engineer/threat-model/`
 - Implementation code -- `services/`, `frontend/` (controllers, middleware, data access layers, utilities)
 - API specs -- `api/` (OpenAPI, gRPC proto) for expected behavior comparison
 - Test suites -- `tests/` for coverage gap analysis
@@ -138,7 +138,7 @@ Every finding MUST reference a specific file and line number. Generic findings (
 
 ## Output Deliverables
 
-Write all outputs to `Antigravity-Production-Grade-Suite/security-engineer/code-audit/`:
+Write all outputs to `.forgewright/security-engineer/code-audit/`:
 
 | File | Contents |
 |------|----------|

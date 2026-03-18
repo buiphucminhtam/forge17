@@ -8,7 +8,7 @@ Generate and maintain a `CHANGELOG.md` at the project root following [Keep a Cha
 
 - Git commit history (`git log --oneline --since="last tag"`)
 - Previous `CHANGELOG.md` (if exists — append, don't overwrite)
-- `Antigravity-Production-Grade-Suite/product-manager/` — business context for user-facing language
+- `.forgewright/product-manager/` — business context for user-facing language
 - Git tags — existing release versions for continuity
 
 ## Actions
@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 4. Generate Release Notes
 
-For tagged releases, also generate a GitHub-flavored release note at `Antigravity-Production-Grade-Suite/technical-writer/release-notes/v{version}.md`:
+For tagged releases, also generate a GitHub-flavored release note at `.forgewright/technical-writer/release-notes/v{version}.md`:
 - Summary paragraph (2-3 sentences)
 - Highlights (top 3 features)
 - Full changelog (same as CHANGELOG.md entry)
@@ -96,7 +96,7 @@ For tagged releases, also generate a GitHub-flavored release note at `Antigravit
 
 ```
 CHANGELOG.md                                           # Project root
-Antigravity-Production-Grade-Suite/technical-writer/
+.forgewright/technical-writer/
     release-notes/
         v{version}.md                                  # Per-release notes
 ```

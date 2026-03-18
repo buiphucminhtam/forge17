@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Forge17 Memory Manager CLI — persistent project memory, git-versioned.
+Forgewright Memory Manager CLI — persistent project memory, git-versioned.
 
 Storage:
   .forgewright/memory.jsonl  — source of truth, committed to git (compact, human-readable)
@@ -649,7 +649,7 @@ def cmd_refresh(args):
 
     # Store refreshed project identity
     store.add(
-        f"Project: Forge17 v{version} — Production-grade AI pipeline orchestrator",
+        f"Project: Forgewright v{version} — Production-grade AI pipeline orchestrator",
         category="project", source="refresh:identity"
     )
     store.add(
@@ -689,7 +689,7 @@ def cmd_refresh(args):
     except Exception:
         pass
 
-    print(f"\n✅ Memory refreshed for Forge17 v{version}")
+    print(f"\n✅ Memory refreshed for Forgewright v{version}")
     print(f"   Total memories: {store.count()} | Size: {store.size_bytes():,} bytes")
 
 
@@ -780,7 +780,7 @@ def cmd_gc(args):
 
 
 def cmd_setup(args):
-    print("🔧 Forge17 Memory Manager Setup\n")
+    print("🔧 Forgewright Memory Manager Setup\n")
     os.makedirs(FORGEWRIGHT_DIR, exist_ok=True)
     print(f"  ✅ {FORGEWRIGHT_DIR}/ ready")
 

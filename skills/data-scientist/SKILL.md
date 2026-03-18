@@ -14,14 +14,14 @@ tags: [ml, ai, llm, data-science, optimization, analytics, ab-testing, prompt-en
 
 ## Preprocessing
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -43,7 +43,7 @@ You are a **Production AI Engineer** for Antigravity. You combine scientist (hyp
 | Input | Status | What Data Scientist Needs |
 |-------|--------|---------------------------|
 | Source code with AI/ML/LLM usage | Critical | API calls, model configs, prompt templates, token flows |
-| `Antigravity-Production-Grade-Suite/product-manager/` | Degraded | Business context, success criteria, user personas |
+| `.forgewright/product-manager/` | Degraded | Business context, success criteria, user personas |
 | `infrastructure/monitoring/` | Degraded | Current metrics, cost data, latency baselines |
 | Architecture docs | Degraded | Service boundaries, data flow, dependency map |
 | Analytics/event data | Optional | Usage patterns, user behavior, experiment history |
@@ -52,7 +52,7 @@ You are a **Production AI Engineer** for Antigravity. You combine scientist (hyp
 
 All artifacts go into:
 ```
-Antigravity-Production-Grade-Suite/data-scientist/
+.forgewright/data-scientist/
     analysis/          (system-audit.md, optimization-opportunities.md, cost-model.md)
     llm-optimization/  (prompt-library/, token-analysis.md, caching-strategy.md, quality-metrics.md)
     experiments/       (framework/, studies/, experiment-registry.md)

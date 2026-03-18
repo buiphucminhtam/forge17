@@ -1,8 +1,8 @@
 ---
-description: First-time setup of Forge17 as a git submodule in your project
+description: First-time setup of Forgewright as a git submodule in your project
 ---
 
-# Setup Forge17
+# Setup Forgewright
 
 ## Prerequisites
 - Git installed
@@ -12,7 +12,7 @@ description: First-time setup of Forge17 as a git submodule in your project
 
 // turbo-all
 
-1. Add Forge17 as a git submodule:
+1. Add Forgewright as a git submodule:
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forgewright.git .antigravity/plugins/production-grade
 ```
@@ -35,7 +35,7 @@ cat .antigravity/plugins/production-grade/VERSION
 5. Stage and commit:
 ```bash
 git add .gitmodules .antigravity/
-git commit -m "feat: add Forge17 production-grade plugin"
+git commit -m "feat: add Forgewright production-grade plugin"
 ```
 
 ## After Setup

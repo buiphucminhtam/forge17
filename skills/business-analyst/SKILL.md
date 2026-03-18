@@ -16,17 +16,17 @@ tags: [business-analysis, requirements, elicitation, feasibility, stakeholder, c
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 Read engagement mode and adapt elicitation depth:
 
@@ -83,9 +83,9 @@ This is the single most important rule for this skill. Violations cause failed p
 Before starting elicitation, check for existing context in parallel:
 
 ```bash
-cat Antigravity-Production-Grade-Suite/polymath/handoff/context-package.md 2>/dev/null
-cat Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md 2>/dev/null
-cat Antigravity-Production-Grade-Suite/business-analyst/handoff/ba-package.md 2>/dev/null
+cat .forgewright/polymath/handoff/context-package.md 2>/dev/null
+cat .forgewright/product-manager/BRD/brd.md 2>/dev/null
+cat .forgewright/business-analyst/handoff/ba-package.md 2>/dev/null
 ```
 
 If context exists, reduce elicitation to cover ONLY uncovered gaps. Do not re-ask what's already established.
@@ -169,7 +169,7 @@ Everything in Thorough, PLUS:
 - Conflict potential assessment between stakeholders
 
 ### Output
-Write to `Antigravity-Production-Grade-Suite/business-analyst/stakeholder-analysis.md`:
+Write to `.forgewright/business-analyst/stakeholder-analysis.md`:
 ```markdown
 # Stakeholder Analysis
 
@@ -392,7 +392,7 @@ notify_user:
 ```
 
 ### Output
-Write to `Antigravity-Production-Grade-Suite/business-analyst/elicitation/`:
+Write to `.forgewright/business-analyst/elicitation/`:
 - `interview-notes-{date}.md` — Structured notes from each interview round
 - `process-map-as-is.md` — Current business process (if applicable)
 - `process-map-to-be.md` — Desired business process
@@ -504,7 +504,7 @@ notify_user:
 ```
 
 ### Output
-Write to `Antigravity-Production-Grade-Suite/business-analyst/evaluation/`:
+Write to `.forgewright/business-analyst/evaluation/`:
 - `critical-review.md` — All findings from Red Team analysis
 - `conflict-register.md` — Contradictions and resolutions
 - `feasibility-assessment.md` — Feasibility matrix for all requirements
@@ -581,7 +581,7 @@ notify_user:
 
 ### Handoff Package
 
-When the gate passes, generate `Antigravity-Production-Grade-Suite/business-analyst/handoff/ba-package.md`:
+When the gate passes, generate `.forgewright/business-analyst/handoff/ba-package.md`:
 
 ```markdown
 # BA Analysis Package — [Project/Feature Name]
@@ -628,7 +628,7 @@ When the gate passes, generate `Antigravity-Production-Grade-Suite/business-anal
 
 ## Config Paths
 
-Read `.production-grade.yaml` at startup. Use `paths.ba` if defined to override the default output location. Default: `Antigravity-Production-Grade-Suite/business-analyst/`.
+Read `.production-grade.yaml` at startup. Use `paths.ba` if defined to override the default output location. Default: `.forgewright/business-analyst/`.
 
 ## Pipeline Integration
 
@@ -644,12 +644,12 @@ Read `.production-grade.yaml` at startup. Use `paths.ba` if defined to override 
 
 ### Reading Permissions
 You may READ any artifact to inform your analysis:
-- All `Antigravity-Production-Grade-Suite/*/` workspace folders
+- All `.forgewright/*/` workspace folders
 - All project root deliverables
 - `.production-grade.yaml` for project configuration
 
 ### Writing Permissions
-Write ONLY to `Antigravity-Production-Grade-Suite/business-analyst/`.
+Write ONLY to `.forgewright/business-analyst/`.
 Avoid modifying other skills' outputs or project source code — the BA's role is information validation, and direct mutations would bypass quality gates and task contracts.
 
 ---
@@ -657,7 +657,7 @@ Avoid modifying other skills' outputs or project source code — the BA's role i
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/business-analyst/
+.forgewright/business-analyst/
 ├── stakeholder-analysis.md          # Power/Interest matrix, communication plan
 ├── elicitation/
 │   ├── interview-notes-{date}.md    # Structured interview notes per round

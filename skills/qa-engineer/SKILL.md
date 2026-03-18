@@ -11,17 +11,17 @@ description: >
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -32,7 +32,7 @@ description: >
 
 ## Brownfield Awareness
 
-If `Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md` exists and mode is `brownfield`:
+If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 - **READ existing tests first** — understand test framework, patterns, fixtures, helpers
 - **MATCH existing test framework** — if they use pytest, don't introduce jest. If they use Vitest, use Vitest
 - **ADD tests alongside existing ones** — don't restructure their test directory
@@ -55,7 +55,7 @@ This skill runs AFTER the Software Engineer and Frontend Engineer skills have co
 - **`api/`, `schemas/`, `docs/architecture/`** — API contracts (OpenAPI/AsyncAPI specs), data models, sequence diagrams
 - **BRD or PRD** — Acceptance criteria, user stories, business rules, edge cases
 
-The QA Engineer does NOT modify source code. It generates test files and test infrastructure to `tests/` at the project root, and test documentation (test plan, reports) to `Antigravity-Production-Grade-Suite/qa-engineer/`.
+The QA Engineer does NOT modify source code. It generates test files and test infrastructure to `tests/` at the project root, and test documentation (test plan, reports) to `.forgewright/qa-engineer/`.
 
 ### Graceful Degradation
 
@@ -68,7 +68,7 @@ At startup, check whether `frontend/` (or `paths.frontend` from config) exists. 
 
 ## Output Structure
 
-This skill produces output in two locations: test deliverables (code, configs, fixtures) at `tests/` in the project root, and workspace artifacts (test plan, reports, findings) in `Antigravity-Production-Grade-Suite/qa-engineer/`. Never write test files into `services/` or `frontend/` directly.
+This skill produces output in two locations: test deliverables (code, configs, fixtures) at `tests/` in the project root, and workspace artifacts (test plan, reports, findings) in `.forgewright/qa-engineer/`. Never write test files into `services/` or `frontend/` directly.
 
 ### Project Root Output (`tests/`)
 
@@ -144,10 +144,10 @@ tests/
     └── thresholds.json                # Per-service and global coverage gates
 ```
 
-### Workspace Output (`Antigravity-Production-Grade-Suite/qa-engineer/`)
+### Workspace Output (`.forgewright/qa-engineer/`)
 
 ```
-Antigravity-Production-Grade-Suite/qa-engineer/
+.forgewright/qa-engineer/
 ├── test-plan.md                        # Master test plan with traceability matrix
 ├── coverage-report.md                  # Coverage analysis and findings
 └── findings.md                         # QA findings and recommendations
@@ -309,7 +309,7 @@ Wait for all 5 agents to complete, then run Phase 7 (Test Infrastructure) sequen
    - Visual regression tests auto-select Midscene if canvas detected
    - CI pipeline configured for the recommended stack
 
-**Output:** Write `Antigravity-Production-Grade-Suite/qa-engineer/technique-assessment.md`
+**Output:** Write `.forgewright/qa-engineer/technique-assessment.md`
 
 **Skip rules:**
 - If `qa-engineer/technique-assessment.md` already exists and target hasn't changed → skip, reuse
@@ -338,7 +338,7 @@ Wait for all 5 agents to complete, then run Phase 7 (Test Infrastructure) sequen
 6. Identify performance-sensitive endpoints for load testing.
 7. Define coverage thresholds per service (lines, branches, functions).
 
-**Output:** Write `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` with the following sections:
+**Output:** Write `.forgewright/qa-engineer/test-plan.md` with the following sections:
 - **Scope** — What is being tested, what is explicitly out of scope
 - **Test Strategy** — Test pyramid approach, which test types cover which risk areas
 - **Traceability Matrix** — Table mapping AC-ID to test case IDs, test type, and priority
@@ -529,7 +529,7 @@ Write `docker-compose.test.yml` and `setup.ts` to `tests/integration/`.
    ```
    - Run axe scan on every page
    - Fail on any WCAG 2.1 AA violations
-   - Generate accessibility report to `Antigravity-Production-Grade-Suite/qa-engineer/a11y-report.md`
+   - Generate accessibility report to `.forgewright/qa-engineer/a11y-report.md`
 
 7. **Network mocking** — for external API calls, use `page.route()` to mock responses:
    ```typescript
@@ -849,7 +849,7 @@ Invoked for dedicated performance analysis without full QA pipeline.
 
 Before marking the skill as complete, verify:
 
-- [ ] `Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md` has a traceability matrix covering every BRD acceptance criterion
+- [ ] `.forgewright/qa-engineer/test-plan.md` has a traceability matrix covering every BRD acceptance criterion
 - [ ] Every service in `services/` has corresponding unit tests in `tests/unit/`
 - [ ] Every repository/data-access module has integration tests with real database containers
 - [ ] Every API endpoint has at least one contract test validating its schema
@@ -866,7 +866,7 @@ Before marking the skill as complete, verify:
 - [ ] **(Playwright)** Visual regression baselines are generated and committed
 - [ ] **(Playwright)** Every page passes `@axe-core/playwright` WCAG 2.1 AA scan
 - [ ] **(Playwright)** Auth fixture reuses session state across tests
-- [ ] **(Playwright)** `Antigravity-Production-Grade-Suite/qa-engineer/a11y-report.md` is generated
+- [ ] **(Playwright)** `.forgewright/qa-engineer/a11y-report.md` is generated
 - [ ] **(Midscene)** `@midscene/web` installed and model configured in `.env`
 - [ ] **(Midscene)** Vision-based E2E tests written for critical user flows at `tests/e2e/vision/`
 - [ ] **(Midscene)** Natural language assertions validate visual UI state

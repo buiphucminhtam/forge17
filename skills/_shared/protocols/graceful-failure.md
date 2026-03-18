@@ -127,7 +127,7 @@ When a skill must fail, it MUST produce a structured failure report:
 Every skill MUST include in its Protocols section:
 
 ```
-!`cat Antigravity-Production-Grade-Suite/.protocols/graceful-failure.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/graceful-failure.md 2>/dev/null || true`
 ```
 
 And follow these rules:

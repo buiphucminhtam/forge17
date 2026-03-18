@@ -8,11 +8,11 @@ Enforce these boundaries strictly:
 - **security-engineer** is SOLE authority on OWASP Top 10, STRIDE, PII, encryption
 - **code-reviewer** does architecture conformance, code quality, performance — does NOT perform security review
 - **code-reviewer** is READ-ONLY — produces findings and patch files, does NOT modify source code
-- See `Antigravity-Production-Grade-Suite/.protocols/conflict-resolution.md` for full authority table
+- See `skills/_shared/protocols/conflict-resolution.md` for full authority table
 
 ## Execution Mode Check
 
-Read `Antigravity-Production-Grade-Suite/.orchestrator/settings.md` to determine execution mode.
+Read `.forgewright/settings.md` to determine execution mode.
 
 **If `Execution: parallel`:**
 
@@ -49,10 +49,10 @@ Update task.md: T5 status → in_progress
 Read skills/qa-engineer/SKILL.md and follow its instructions.
 Context:
 - Read implementation: services/, frontend/ (if exists), api/
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Read .production-grade.yaml for paths.tests and paths.services.
 - Write tests to project root: tests/
-- Write workspace artifacts to: Antigravity-Production-Grade-Suite/qa-engineer/
+- Write workspace artifacts to: .forgewright/qa-engineer/
 - Run integration, e2e, and performance tests.
 - Distinguish test bugs (fix immediately) from implementation bugs (log as findings).
 
@@ -69,9 +69,9 @@ Context:
 - SOLE authority on OWASP, STRIDE, PII, encryption.
 - No other skill performs security review. This is YOUR exclusive domain.
 - Read all implementation code: services/, frontend/, infrastructure/
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Perform STRIDE threat modeling + OWASP Top 10 audit + dependency scan.
-- Write findings to: Antigravity-Production-Grade-Suite/security-engineer/
+- Write findings to: .forgewright/security-engineer/
 - Auto-fix Critical/High issues with regression tests.
 - Document Medium/Low for remediation plan.
 
@@ -90,9 +90,9 @@ Context:
 - Cross-reference: "See security-engineer findings for security context."
 - Read architecture: docs/architecture/, api/
 - Read implementation: services/, frontend/
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Review: SOLID/DRY/KISS, performance, N+1 queries, resource leaks, test quality.
-- Write findings to: Antigravity-Production-Grade-Suite/code-reviewer/
+- Write findings to: .forgewright/code-reviewer/
 - READ-ONLY: produce findings only, do NOT modify source code.
 
 Update task.md: T6b status → completed

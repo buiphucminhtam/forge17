@@ -1,10 +1,10 @@
-# Forge17 — Production Grade AI Pipeline
+# Forgewright — Production Grade AI Pipeline
 
-> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forge17's 48 specialized skills.
+> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 48 specialized skills.
 
-## What is Forge17?
+## What is Forgewright?
 
-Forge17 is an adaptive orchestrator with **48 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forgewright is an adaptive orchestrator with **48 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
@@ -62,7 +62,7 @@ Current version: read VERSION file
 Remote version: compare with https://github.com/buiphucminhtam/forgewright
 ```
 
-If a newer version exists, mention it briefly: *"Forge17 update available (vX.X.X → vY.Y.Y). Run `/update` to upgrade."*
+If a newer version exists, mention it briefly: *"Forgewright update available (vX.X.X → vY.Y.Y). Run `/update` to upgrade."*
 
 ## Skills Directory
 
@@ -149,7 +149,7 @@ Optional: create `.production-grade.yaml` at project root to customize paths, pr
 
 ## Project State (v7.0)
 
-Forge17 maintains project state in the `.forgewright/` directory:
+Forgewright maintains project state in the `.forgewright/` directory:
 - `project-profile.json` — Project fingerprint, health, patterns, risk (committed)
 - `code-conventions.md` — Detected coding patterns for consistency (committed)
 - `session-log.json` — Session history and resume state (gitignored)

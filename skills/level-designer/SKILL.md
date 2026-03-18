@@ -14,17 +14,17 @@ tags: [level-design, encounters, pacing, blockout, environmental-storytelling, w
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -45,7 +45,7 @@ This skill runs AFTER Game Designer and AFTER Unity/Unreal Engineer (needs prefa
 
 | Input | Status | What Level Designer Needs |
 |-------|--------|--------------------------|
-| `Antigravity-Production-Grade-Suite/game-designer/` | Critical | Core loop, difficulty curve, mechanic specs, enemy types |
+| `.forgewright/game-designer/` | Critical | Core loop, difficulty curve, mechanic specs, enemy types |
 | Engine engineer prefab/actor catalog | Degraded | Available building blocks for level assembly |
 | Narrative Designer output | Optional | Story beats to place in levels |
 | Technical Artist output | Optional | Visual themes, art budget per level |
@@ -53,7 +53,7 @@ This skill runs AFTER Game Designer and AFTER Unity/Unreal Engineer (needs prefa
 ## Output Structure
 
 ```
-Antigravity-Production-Grade-Suite/level-designer/
+.forgewright/level-designer/
 ├── level-plan.md                   # Overall level structure and progression
 ├── levels/
 │   ├── level-01-tutorial.md        # Per-level design document

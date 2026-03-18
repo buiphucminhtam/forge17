@@ -7,12 +7,12 @@ Load this mode when the user wants to understand the big picture of what was bui
 Read broadly before presenting — parallel reads across the entire workspace:
 
 ```
-Read("Antigravity-Production-Grade-Suite/product-manager/BRD/brd.md")
-Read("Antigravity-Production-Grade-Suite/solution-architect/working-notes.md")
-Read("Antigravity-Production-Grade-Suite/qa-engineer/test-plan.md")
-Read("Antigravity-Production-Grade-Suite/security-engineer/...")
-Read("Antigravity-Production-Grade-Suite/code-reviewer/review-report.md")
-Read("Antigravity-Production-Grade-Suite/sre/...")
+Read(".forgewright/product-manager/BRD/brd.md")
+Read(".forgewright/solution-architect/working-notes.md")
+Read(".forgewright/qa-engineer/test-plan.md")
+Read(".forgewright/security-engineer/...")
+Read(".forgewright/code-reviewer/review-report.md")
+Read(".forgewright/sre/...")
 Glob("services/**/*")
 Glob("frontend/**/*")
 Glob("docs/**/*")
@@ -20,8 +20,8 @@ Glob("docs/**/*")
 
 Also read polymath's own context:
 ```
-Read("Antigravity-Production-Grade-Suite/polymath/context/decisions.md")
-Read("Antigravity-Production-Grade-Suite/polymath/context/domain-research.md")
+Read(".forgewright/polymath/context/decisions.md")
+Read(".forgewright/polymath/context/domain-research.md")
 ```
 
 ## Synthesis Frameworks

@@ -103,7 +103,7 @@ Use this workflow when you need thorough, grounded research on any topic — tec
 - **Fallback always:** If NotebookLM is unavailable, Phase 1 alone provides solid research
 - **Free tier limit:** ~50 queries/day — plan queries efficiently
 
-## Integration with Forge17 Skills
+## Integration with Forgewright Skills
 
 | Skill | How Research Helps |
 |-------|--------------------|

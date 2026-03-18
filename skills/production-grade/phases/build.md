@@ -10,7 +10,7 @@ Read `.production-grade.yaml` to determine:
 - `project.architecture` → monolith vs microservices (affects containerization)
 - `paths.services`, `paths.frontend`, `paths.mobile`, `paths.shared_libs` → output locations
 
-Read `Antigravity-Production-Grade-Suite/.orchestrator/settings.md` to determine execution mode.
+Read `.forgewright/settings.md` to determine execution mode.
 
 ## Execution Mode Check
 
@@ -50,10 +50,10 @@ Update task.md: T3a status → in_progress
 Read skills/software-engineer/SKILL.md and follow its instructions.
 Context:
 - Read architecture from: api/, schemas/, docs/architecture/
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Read .production-grade.yaml for paths and preferences.
 - Write services to project root: services/, libs/shared/
-- Write workspace artifacts to: Antigravity-Production-Grade-Suite/software-engineer/
+- Write workspace artifacts to: .forgewright/software-engineer/
 - TDD enforced: write test → watch fail → implement → watch pass → refactor.
 
 Update task.md: T3a status → completed
@@ -69,13 +69,13 @@ Update task.md: T3b status → in_progress
 Read skills/frontend-engineer/SKILL.md and follow its instructions.
 Context:
 - Read API contracts from: api/
-- Read BRD user stories from: Antigravity-Production-Grade-Suite/product-manager/BRD/
-- Read design specs from: Antigravity-Production-Grade-Suite/ui-designer/ (if T1.5 ran)
+- Read BRD user stories from: .forgewright/product-manager/BRD/
+- Read design specs from: .forgewright/ui-designer/ (if T1.5 ran)
 - Read design tokens from: docs/design/design-tokens.json (if T1.5 ran)
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Read .production-grade.yaml for framework and styling preferences.
 - Write frontend to project root: frontend/
-- Write workspace artifacts to: Antigravity-Production-Grade-Suite/frontend-engineer/
+- Write workspace artifacts to: .forgewright/frontend-engineer/
 
 Update task.md: T3b status → completed
 ```
@@ -95,13 +95,13 @@ Update task.md: T3c status → in_progress
 Read skills/mobile-engineer/SKILL.md and follow its instructions.
 Context:
 - Read API contracts from: api/
-- Read BRD user stories from: Antigravity-Production-Grade-Suite/product-manager/BRD/
-- Read design specs from: Antigravity-Production-Grade-Suite/ui-designer/ (if T1.5 ran)
+- Read BRD user stories from: .forgewright/product-manager/BRD/
+- Read design specs from: .forgewright/ui-designer/ (if T1.5 ran)
 - Read design tokens from: docs/design/design-tokens.json (if T1.5 ran)
-- Read protocols from: Antigravity-Production-Grade-Suite/.protocols/
+- Read protocols from: skills/_shared/protocols/
 - Read .production-grade.yaml for mobile framework and preferences.
 - Write mobile to project root: mobile/
-- Write workspace artifacts to: Antigravity-Production-Grade-Suite/mobile-engineer/
+- Write workspace artifacts to: .forgewright/mobile-engineer/
 
 Update task.md: T3c status → completed
 ```
@@ -119,7 +119,7 @@ Context:
 - Read architecture from: docs/architecture/
 - Read .production-grade.yaml for paths and preferences.
 - Write Dockerfiles per service, docker-compose.yml at project root.
-- Write workspace artifacts to: Antigravity-Production-Grade-Suite/devops/containers/
+- Write workspace artifacts to: .forgewright/devops/containers/
 - Validate: docker build succeeds for each service, docker-compose up starts all.
 
 Update task.md: T4 status → completed

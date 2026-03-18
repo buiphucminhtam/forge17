@@ -12,19 +12,19 @@ description: >
 
 ## Protocols
 
-!`cat Antigravity-Production-Grade-Suite/.protocols/ux-protocol.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/input-validation.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/tool-efficiency.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/graceful-failure.md 2>/dev/null || true`
-!`cat Antigravity-Production-Grade-Suite/.protocols/code-intelligence.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/graceful-failure.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/code-intelligence.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/codebase-context.md 2>/dev/null || true`
+!`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads. Use view_file_outline before full Read.
 
 ## Engagement Mode
 
-!`cat Antigravity-Production-Grade-Suite/.orchestrator/settings.md 2>/dev/null || echo "No settings — using Standard"`
+!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
 
 | Mode | Behavior |
 |------|----------|
@@ -405,7 +405,7 @@ git bisect good <last-known-good-commit>
 
 ### Workspace Output
 ```
-Antigravity-Production-Grade-Suite/debugger/
+.forgewright/debugger/
 ├── investigation-report.md      # Full investigation trail
 ├── root-cause-analysis.md       # Root cause + fix summary
 └── evidence/                    # Collected evidence (logs, states, diffs)

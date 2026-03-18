@@ -13,7 +13,7 @@ Generate comprehensive API documentation from OpenAPI/AsyncAPI specs and source 
 | Auth middleware | `services/*/src/middleware/auth*` | Authentication methods, token formats |
 | Error handler | `services/*/src/middleware/error*` | Error codes, HTTP status mappings |
 | Rate limit config | `services/*/src/middleware/rate-limit*` | Rate tiers, limit values |
-| Content inventory | `Antigravity-Production-Grade-Suite/technical-writer/content-inventory.md` | Phase 1 gap analysis results |
+| Content inventory | `.forgewright/technical-writer/content-inventory.md` | Phase 1 gap analysis results |
 
 ## 2.2 — Authentication Documentation
 
