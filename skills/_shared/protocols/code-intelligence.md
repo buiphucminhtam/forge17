@@ -104,9 +104,51 @@ IF index is stale (>24h old):
 - `cypher()` — variable, use sparingly
 - `rename()` — slow (writes files), always use `dry_run: true` first
 
-## Re-indexing
+## Auto-Reindex (Session Lifecycle Integration)
 
-The index should be refreshed when:
+GitNexus auto-reindexes at two lifecycle points — **no user action required:**
+
+### At Session Start (Step 3.5)
+
+```
+IF .gitnexus/ exists:
+  commits_since_last_index = git rev-list --count HEAD ^<last_indexed_commit>
+  
+  IF commits_since > 0 OR index_age > 1 hour:
+    Run: npx gitnexus analyze 2>/dev/null
+    Log result (success or fallback to stale)
+  ELSE:
+    Use existing fresh index
+```
+
+### At Session End (Step 5)
+
+```
+IF .gitnexus/ exists:
+  Run: npx gitnexus analyze 2>/dev/null
+  This ensures NEXT session starts with fresh index
+```
+
+### Why Both?
+
+| Hook | Purpose |
+|------|----------|
+| Session Start | Catches manual changes user made between sessions (hotfixes, other tools) |
+| Session End | Catches all changes made BY this session (new files, refactors) |
+
+### Fail-Safe
+
+If `npx gitnexus analyze` fails at any point:
+1. Log warning — do NOT block pipeline
+2. Use stale index (stale > nothing)
+3. Add `⚠ stale` badge to any Code Intelligence output
+4. Retry at next lifecycle hook
+
+> **Key principle:** Auto-reindex is best-effort. Pipeline NEVER blocks on Code Intelligence failures.
+
+## Manual Re-indexing
+
+In addition to auto-reindex, manual re-indexing may be needed:
 - **After major refactoring** — run `gitnexus analyze --force`
 - **After adding new files/services** — run `gitnexus analyze` (incremental)
 - **Stale index warning** — run `gitnexus analyze`
@@ -148,8 +190,8 @@ export GITNEXUS_LLM_MODEL=gpt-4o-mini
 
 ## Integration with Existing Protocols
 
+- **session-lifecycle.md:** Step 3.5 (Session Start) checks freshness + auto-reindex; Step 5 (Session End) re-indexes after changes
 - **project-onboarding.md:** Phase 1.5 creates the initial index
-- **session-lifecycle.md:** Session start checks index freshness
 - **quality-gate.md:** Quality gate can use `detect_changes()` as additional validation signal
 - **graceful-failure.md:** All CI tool failures follow graceful failure protocol
 - **brownfield-safety.md:** `impact()` analysis feeds into brownfield risk assessment

@@ -58,6 +58,30 @@ ELSE:
   Log: "✓ Conventions loaded (memory not configured)"
 ```
 
+### Step 3.5 — Check Code Intelligence Freshness
+
+```
+IF .gitnexus/ directory exists AND gitnexus CLI available:
+  Check index freshness:
+    last_indexed = .gitnexus/metadata.json → indexed_at
+    commits_since = git rev-list --count HEAD ^<last_indexed_commit>
+  
+  IF commits_since > 0 OR index_age > 1 hour:
+    Log: "⧖ Code Intelligence index stale — auto-reindexing"
+    Run: npx gitnexus analyze 2>/dev/null
+    IF success:
+      Log: "✓ Code Intelligence refreshed ([N] symbols, [M] relationships)"
+    ELSE:
+      Log: "⚠ Code Intelligence reindex failed — using stale index"
+      Continue with existing index (stale > nothing)
+  ELSE:
+    Log: "✓ Code Intelligence index fresh"
+
+ELSE IF project-profile.json → code_intelligence.indexed == false:
+  Log: "ℹ Code Intelligence not set up — run 'npx gitnexus analyze' for deep code understanding"
+  Continue without Code Intelligence (graceful degradation)
+```
+
 ### Step 4 — Detect Manual Changes
 
 ```
@@ -157,7 +181,17 @@ Called when pipeline completes OR when session is explicitly ended.
 4. Refresh project identity:
    Run: python3 scripts/mem0-cli.py refresh
 
-5. Update project profile:
+5. Auto-reindex Code Intelligence:
+   IF .gitnexus/ exists AND gitnexus CLI available:
+     Run: npx gitnexus analyze 2>/dev/null
+     IF success:
+       Log: "✓ Code Intelligence reindexed for next session"
+     ELSE:
+       Log: "⚠ Code Intelligence reindex failed — will retry at next session start"
+   This ensures the NEXT session starts with a fresh index reflecting
+   all code changes made during this session.
+
+6. Update project profile:
    .forgewright/project-profile.json → forge17.last_session = session_id, total_sessions++
 ```
 
