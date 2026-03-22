@@ -15,8 +15,14 @@ Forgewright is an adaptive orchestrator with **49 AI skills** that covers the en
 1. **Read `skills/production-grade/SKILL.md`** — this is the orchestrator that routes to all skills
 2. **Classify the request** into one of 19 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**)
 3. **Follow the pipeline** as defined in the orchestrator
+4. **PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 8.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
 
 Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the production-grade skill classify and route.
+
+> **⚠️ MANDATORY: Plan Quality Loop**
+> Every skill invocation MUST follow: **PLAN → SCORE → META-EVALUATE → CHECK ≥8 → EXECUTE**.
+> If score < 8.0: **LEARN (identify weak criteria) → RESEARCH (search for solutions) → IMPROVE SKILL (append lessons to SKILL.md) → RE-PLAN**.
+> Max 3 iterations. No skill may skip this. Read `skills/_shared/protocols/plan-quality-loop.md` for full rubric.
 
 ## Quick Reference
 
