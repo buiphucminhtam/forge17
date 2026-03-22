@@ -39,7 +39,7 @@
     "project_run_script": {
       "enabled": true,
       "source": "package.json",
-      "description": "Run arbitrary npm script"
+      "description": "Run npm scripts (validated against package.json allowlist)"
     },
     "project_git_status": {
       "enabled": true,
@@ -49,25 +49,7 @@
     "project_write_file": {
       "enabled": true,
       "source": "filesystem",
-      "description": "Write or overwrite workspace files"
-    },
-    "project_run_tests": {
-      "enabled": {{hasTestCommand}},
-      "source": "project-profile",
-      "command": "{{testCommand}}",
-      "description": "Run project tests"
-    },
-    "project_lint": {
-      "enabled": {{hasLintCommand}},
-      "source": "project-profile",
-      "command": "{{lintCommand}}",
-      "description": "Run project linter"
-    },
-    "project_build": {
-      "enabled": {{hasBuildCommand}},
-      "source": "project-profile",
-      "command": "{{buildCommand}}",
-      "description": "Run project build"
+      "description": "Write or overwrite workspace files (max 512KB, path-validated)"
     }
   },
   "resources": {

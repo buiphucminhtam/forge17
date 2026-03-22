@@ -29,6 +29,8 @@ process.chdir(PROJECT_ROOT);
 
 // ─── Helpers ────────────────────────────────────────────────────
 
+const WRITE_MAX_BYTES = 512 * 1024; // 512 KB max per write
+
 function validatePath(relativePath: string): void {
   if (relativePath.includes("..")) {
     throw new Error("Path traversal (..) is not allowed.");
@@ -37,8 +39,20 @@ function validatePath(relativePath: string): void {
   if (normalized.startsWith(".git") || normalized.includes("/.git")) {
     throw new Error("Access to .git directory is forbidden.");
   }
-  if (normalized === ".env" || normalized.endsWith("/.env")) {
+  const basename = normalized.split("/").pop() || "";
+  if (basename === ".env" || basename.startsWith(".env.")) {
     throw new Error("Access to .env files is forbidden.");
+  }
+}
+
+function getDetectedScripts(): string[] {
+  try {
+    const pkgPath = join(PROJECT_ROOT, "package.json");
+    if (!existsSync(pkgPath)) return [];
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+    return Object.keys(pkg.scripts || {});
+  } catch {
+    return [];
   }
 }
 
@@ -202,7 +216,7 @@ server.tool(
 
 server.tool(
   "project_write_file",
-  "Write or overwrite a file in the project workspace.",
+  "Write or overwrite a file in the project workspace. Max 512KB per write.",
   {
     path: z.string().describe("Relative path from project root"),
     content: z.string().describe("Full content to write to the file"),
@@ -210,10 +224,13 @@ server.tool(
   async ({ path, content }) => {
     try {
       validatePath(path);
+      if (Buffer.byteLength(content, "utf-8") > WRITE_MAX_BYTES) {
+        throw new Error(`Content exceeds ${WRITE_MAX_BYTES} byte limit.`);
+      }
       const fullPath = join(PROJECT_ROOT, path);
       mkdirSync(dirname(fullPath), { recursive: true });
       writeFileSync(fullPath, content, "utf-8");
-      return { content: [{ type: "text", text: `Successfully wrote payload to ${path}` }] };
+      return { content: [{ type: "text", text: `✓ Wrote ${Buffer.byteLength(content)} bytes to ${path}` }] };
     } catch (e: any) {
       return { content: [{ type: "text", text: `Failed to write file: ${e.message}` }] };
     }
@@ -236,12 +253,16 @@ server.tool(
 
 server.tool(
   "project_run_script",
-  "Run any npm script defined in package.json (e.g. 'dev', 'start', 'typecheck').",
+  "Run an npm script from those defined in package.json. Only scripts detected at generation time are allowed.",
   {
-    script: z.string().describe("The npm script name to run"),
+    script: z.string().describe("The npm script name to run (must exist in package.json)"),
   },
   async ({ script }) => {
     try {
+      const allowed = getDetectedScripts();
+      if (allowed.length > 0 && !allowed.includes(script)) {
+        return { content: [{ type: "text", text: `Script "${script}" not found in package.json. Available: ${allowed.join(", ")}` }] };
+      }
       const output = execSync(`npm run ${script}`, {
         cwd: PROJECT_ROOT,
         encoding: "utf-8",
@@ -255,74 +276,9 @@ server.tool(
   }
 );
 
-{{#if hasTestCommand}}
-server.tool(
-  "project_run_tests",
-  "Run the project's test suite via detected standard command.",
-  {
-    filter: z.string().optional().describe("Optional test filter/pattern"),
-  },
-  async ({ filter }) => {
-    try {
-      const filterArg = filter ? ` -- ${filter}` : "";
-      const output = execSync(`{{testCommand}}${filterArg}`, {
-        cwd: PROJECT_ROOT,
-        encoding: "utf-8",
-        timeout: 120000,
-        stdio: ["pipe", "pipe", "pipe"],
-      });
-      return { content: [{ type: "text", text: output }] };
-    } catch (error: any) {
-      return { content: [{ type: "text", text: error.stdout || error.message }] };
-    }
-  }
-);
-{{/if}}
-
-{{#if hasLintCommand}}
-server.tool(
-  "project_lint",
-  "Run the project's linter via detected standard command.",
-  {
-    path: z.string().optional().describe("Optional specific path to lint"),
-  },
-  async ({ path }) => {
-    try {
-      const pathArg = path ? ` ${path}` : "";
-      const output = execSync(`{{lintCommand}}${pathArg}`, {
-        cwd: PROJECT_ROOT,
-        encoding: "utf-8",
-        timeout: 60000,
-        stdio: ["pipe", "pipe", "pipe"],
-      });
-      return { content: [{ type: "text", text: output }] };
-    } catch (error: any) {
-      return { content: [{ type: "text", text: error.stdout || error.message }] };
-    }
-  }
-);
-{{/if}}
-
-{{#if hasBuildCommand}}
-server.tool(
-  "project_build",
-  "Run the project build via detected standard command.",
-  {},
-  async () => {
-    try {
-      const output = execSync(`{{buildCommand}}`, {
-        cwd: PROJECT_ROOT,
-        encoding: "utf-8",
-        timeout: 120000,
-        stdio: ["pipe", "pipe", "pipe"],
-      });
-      return { content: [{ type: "text", text: output }] };
-    } catch (error: any) {
-      return { content: [{ type: "text", text: error.stdout || error.message }] };
-    }
-  }
-);
-{{/if}}
+// NOTE: project_run_tests, project_lint, project_build are intentionally NOT
+// separate tools. Use project_run_script with the appropriate script name
+// (e.g. "test", "lint", "build") instead. This avoids tool redundancy.
 
 // ─── Resources ──────────────────────────────────────────────────
 

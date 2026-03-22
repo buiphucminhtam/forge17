@@ -48,42 +48,35 @@ Create `.forgewright/mcp-server/` directory with the following structure:
 
 ```
 .forgewright/mcp-server/
-├── server.ts              # Entry point
-├── tools/
-│   ├── query.ts           # GitNexus concept search
-│   ├── context.ts         # Symbol 360° view
-│   ├── impact.ts          # Blast radius analysis
-│   ├── detect-changes.ts  # Pre-commit risk check
-│   ├── navigate.ts        # File/function navigation
-│   └── search.ts          # ripgrep text search
-├── resources/
-│   ├── profile.ts         # project-profile.json
-│   ├── architecture.ts    # GitNexus cluster data
-│   └── conventions.ts     # code-conventions.md
-├── prompts/
-│   ├── debug.ts           # Debugging template
-│   ├── review.ts          # Code review template
-│   └── plan.ts            # Feature planning template
-├── utils/
-│   └── gitnexus.ts        # GitNexus CLI wrapper
-├── package.json
-├── tsconfig.json
-└── mcp-config.json        # Tool/resource registry
+├── server.ts              # Single-file entry — all tools, resources, prompts
+├── package.json           # Dependencies: @modelcontextprotocol/sdk, gitnexus, zod
+├── tsconfig.json          # TypeScript config
+└── mcp-config.json        # Tool/resource registry (which are enabled)
 ```
+
+> **Scope note:** The server is a single monolithic file. This is intentional — it avoids import resolution complexity in auto-generated code and keeps the attack surface small.
 
 ### Step 3 — Configure Based on Project
 
 The generated server is **customized** per project:
 
 ```
-IF project has test command → enable project_run_tests tool
-IF project has lint command → enable project_lint tool
-IF project has build command → enable project_build tool
-IF GitNexus has processes → enable project://processes/{name} resources
-IF code-conventions.md exists → enable project://conventions resource
+ALWAYS enabled:
+  → 4 GitNexus graph tools (query, context, impact, detect_changes)
+  → 2 filesystem tools (navigate, search)
+  → 3 action tools (write_file, git_status, run_script)
+  → 3 resources (profile, architecture, conventions)
+  → 3 prompts (debug, review, plan)
+
+Scope guardrails:
+  → project_write_file: max 512KB, path traversal blocked, .env/.git blocked
+  → project_run_script: only scripts listed in package.json are allowed
+  → project_navigate: path traversal and .env/.git access blocked
 ```
 
 Write `mcp-config.json` documenting which tools/resources are active.
+
+> **Explicitly out of scope:** Separate `project_run_tests`, `project_lint`, `project_build` tools are NOT generated — `project_run_script` subsumes them to avoid tool redundancy.
 
 ### Step 4 — Install Dependencies
 
@@ -139,7 +132,7 @@ Add to `project-profile.json`:
   "mcp_server": {
     "generated": true,
     "path": ".forgewright/mcp-server/",
-    "tools_count": 6,
+    "tools_count": 9,
     "resources_count": 3,
     "prompts_count": 3,
     "transport": "stdio",
@@ -160,8 +153,8 @@ Add to `project-profile.json`:
 | `project_detect_changes` | `{ scope?: string }` | Pre-commit risk assessment |
 | `project_navigate` | `{ path: string, line?: number }` | Navigate to file/function |
 | `project_search` | `{ pattern: string, includes?: string[] }` | ripgrep text search |
-| `project_write_file` | `{ path: string, content: string }` | Write or overwrite files in the workspace |
-| `project_run_script` | `{ script: string }` | Run arbitrary npm scripts |
+| `project_write_file` | `{ path: string, content: string }` | Write files (max 512KB, path-validated) |
+| `project_run_script` | `{ script: string }` | Run npm scripts (allowlisted from package.json) |
 | `project_git_status` | `{}` | Get current git status |
 
 ### Resources
