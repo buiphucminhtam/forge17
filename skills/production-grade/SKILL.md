@@ -864,7 +864,7 @@ After EVERY skill completes (in any mode — Full Build, Feature, Harden, etc.),
 
 1. **Per-skill validation:** Level 1 (Build), Level 2 (Regression), Level 3 (Standards), Level 4 (Traceability)
 2. **Score computation:** 0-100 quality score per skill output
-3. **Threshold enforcement:** Score < `quality.block_score` (default 60) → STOP. Score < `quality.minimum_score` (default 70) → WARN at next gate.
+3. **Threshold enforcement:** Score < `quality.block_score` (default 60) → STOP. Score < `quality.minimum_score` (default 80) → WARN at next gate.
 4. **Display mini-scorecard** after each skill in task_boundary status
 5. **Aggregate scorecard** displayed at each strategic gate
 
@@ -1166,7 +1166,7 @@ Every skill execution follows:
 2. **Quality gate** — run `skills/_shared/protocols/quality-gate.md` after each skill output. Score must meet threshold.
 3. **Validation loop** — `while not valid: fix(errors); validate()`
 4. **Self-debug** — read errors, identify root cause. After 3 failures: stop and report.
-5. **Quality bar** — no TODOs, no stubs. All code compiles. All tests pass. Quality score ≥ 70.
+5. **Quality bar** — no TODOs, no stubs. All code compiles. All tests pass. Quality score ≥ 80.
 6. **TDD enforced** — write test first, watch fail, implement, watch pass, refactor.
 7. **Convention compliance** — read `.forgewright/code-conventions.md` (if brownfield) and match existing patterns.
 

@@ -17,8 +17,8 @@ set -euo pipefail
 #   --help           Show this help
 #
 # Exit codes:
-#   0 = PASS (score >= 70)
-#   1 = WARN (score 60-69)
+#   0 = PASS (score >= 80)
+#   1 = WARN (score 60-79)
 #   2 = BLOCK (score < 60 or critical failure)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -382,7 +382,7 @@ fi
 # ── Exit code ──────────────────────────────────────────
 if [[ $TOTAL_SCORE -lt 60 ]]; then
   exit 2  # BLOCK
-elif [[ $TOTAL_SCORE -lt 70 ]]; then
+elif [[ $TOTAL_SCORE -lt 80 ]]; then
   exit 1  # WARN
 else
   exit 0  # PASS

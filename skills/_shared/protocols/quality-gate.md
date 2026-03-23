@@ -156,14 +156,13 @@ Total: sum of all points
 |-------|-------|--------|
 | 90-100 | A | ✓ Proceed immediately |
 | 80-89 | B | ✓ Proceed with minor warnings logged |
-| 70-79 | C | ⚠ Proceed but flag to user at next gate |
-| 60-69 | D | ⚠ Pause — show quality report, ask user to continue or fix |
+| 60-79 | C | ⚠ Pause — show quality report, ask user to continue or fix |
 | 0-59 | F | ✗ Stop — unacceptable quality, must remediate |
 
 **Configurable in `.production-grade.yaml`:**
 ```yaml
 quality:
-  minimum_score: 70          # default: warn below this
+  minimum_score: 80          # default: pass threshold (aligned with plan-quality-loop 8.0/10)
   block_score: 60            # default: stop below this
   strict_mode: false         # if true: Level 3 violations also block
   skip_regression: false     # if true: skip Level 2 (not recommended)
