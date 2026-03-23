@@ -65,7 +65,7 @@ Not all skills need the same plan depth. Scale the plan to the task:
 ```yaml
 # Default (configurable in .production-grade.yaml)
 planQuality:
-  threshold: 8.0        # minimum score to proceed
+  threshold: 9.0        # minimum score to proceed
   maxIterations: 3       # safety cap
   researchOnImprove: true  # search for reference cases
 ```
@@ -85,7 +85,7 @@ After scoring, display concisely:
 │ Testability:      0.50  ████████░░░░░░░░░░░ ⚠   │
 │ Impact assess:    0.50  ████████░░░░░░░░░░░ ⚠   │
 │ ──────────────────────────────────────────────── │
-│ Total: 7.25/10  │  Threshold: 8.0  │  ❌ IMPROVE │
+│ Total: 7.25/10  │  Threshold: 9.0  │  ❌ IMPROVE │
 │ Weak: Specificity, Testability, Impact           │
 └──────────────────────────────────────────────────┘
 ```
@@ -121,7 +121,7 @@ After the 5 checks, assign a confidence level:
 ```
 ┌─ Plan Quality: [Phase Name] ─── Iteration [N] ──┐
 │ [... criteria scores ...]                        │
-│ Total: 8.25/10  │  Threshold: 8.0  │  ✅ PASS    │
+│ Total: 9.25/10  │  Threshold: 9.0  │  ✅ PASS    │
 │ Scoring Confidence: HIGH ✓                       │
 │ (All 5 checks passed — evidence-based, no bias)  │
 └──────────────────────────────────────────────────┘
