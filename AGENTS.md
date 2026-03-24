@@ -1,10 +1,10 @@
 # Forgewright — Production Grade AI Pipeline
 
-> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 49 specialized skills.
+> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 50 specialized skills.
 
 ## What is Forgewright?
 
-Forgewright is an adaptive orchestrator with **49 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forgewright is an adaptive orchestrator with **50 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
@@ -73,7 +73,7 @@ If a newer version exists, mention it briefly: *"Forgewright update available (v
 
 ## Skills Directory
 
-All 49 skills are in the `skills/` directory:
+All 50 skills are in the `skills/` directory:
 
 | Skill | Location |
 |-------|----------|
@@ -129,6 +129,7 @@ All 49 skills are in the `skills/` directory:
 | Level Designer | `skills/level-designer/SKILL.md` |
 | Narrative Designer | `skills/narrative-designer/SKILL.md` |
 | Technical Artist | `skills/technical-artist/SKILL.md` |
+| Game Asset & VFX | `skills/game-asset-vfx/SKILL.md` |
 | Game Audio Engineer | `skills/game-audio-engineer/SKILL.md` |
 | Unity Shader Artist | `skills/unity-shader-artist/SKILL.md` |
 | Unity Multiplayer | `skills/unity-multiplayer/SKILL.md` |
