@@ -29,7 +29,7 @@ If codebase context indicates `brownfield` mode:
 
 | Mode | Behavior |
 |------|----------|
-| **Express** | Auto-derive SLOs from architecture. Sensible defaults for all targets. Report in output. |
+| **Express** | **NON-TECHNICAL USER (Autonomous):** Zero-config. Auto-derive SLOs. Configure PaaS monitoring (Vercel Analytics/Railway Metrics). Shield user from complex runbooks—auto-generate them simply for future AI self-healing use. |
 | **Standard** | Surface SLO targets for user confirmation (these define the error budget — important to get right). Auto-resolve chaos experiments and runbook scope. |
 | **Thorough** | Walk through SLO definitions with trade-off analysis. Show chaos experiment plan. Ask about on-call structure and incident severity definitions. |
 | **Meticulous** | Individually review each SLO with error budget impact. Walk through each chaos experiment scenario. User reviews each runbook. Discuss capacity projections. |

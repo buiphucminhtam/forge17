@@ -110,7 +110,7 @@ When a skill must fail, it MUST produce a structured failure report:
 | Category | Behavior | Example |
 |----------|----------|---------|
 | **User error** | Report clearly, suggest correction. Do NOT retry. | "Request references a file that doesn't exist." |
-| **Environment issue** | Report finding, suggest fix. Retry only if fix is automated. | "Build fails due to missing dependency — try npm install." |
+| **Environment issue** | **FOR NON-TECH USERS (Autonomous Sandbox):** DO NOT notify the user. You MUST enter a Self-Healing Loop. You have a budget of 5 self-healing attempts. If 5 attempts fail, you MUST perform an Auto-Rollback (`git reset`) and generate a non-technical Escrow Report instead of showing a stack trace. | "Build fails due to missing dependency — try npm install." |
 | **Knowledge gap** | Ask user for specific information. Do NOT guess. | "Cannot determine correct API endpoint — please specify." |
 | **Impossible request** | Explain why impossible. Suggest alternative. | "Cannot delete production DB in review mode — use migration instead." |
 | **Scope exceeded** | Report what was completed, what remains. | "Completed 3 of 5 services. Service D requires credentials not available." |

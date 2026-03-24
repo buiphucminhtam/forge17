@@ -157,6 +157,7 @@ All modes share these behaviors:
 - Apply coding-level adaptation from `.production-grade.yaml` (see above)
 - Apply sensitive file protection protocol for all file operations
 - **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 8.0 before any work begins
+- **Asynchronous Heartbeat:** Periodically emit human-readable status updates (e.g., "Running tests...", "Applying self-healing fix 2/5...") so the user knows the AI is working and hasn't frozen.
 - Engagement mode: ask ONLY if mode involves 3+ skills. For 1-2 skill modes, use Standard engagement + Sequential execution.
 
 ### Feature Mode

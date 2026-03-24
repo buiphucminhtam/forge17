@@ -24,7 +24,7 @@ description: >
 
 | Mode | Behavior |
 |------|----------|
-| **Express** | Fully autonomous. Use architecture's cloud choice. Sensible defaults for all infra. Report decisions in output. |
+| **Express** | **NON-TECHNICAL USER (Autonomous):** Zero-config. Default to Vercel (Frontend) and Railway (Backend/DB) for instant PaaS deployment. Auto-generate `vercel.json` or `railway.toml`. DO NOT ask for infra choices. |
 | **Standard** | Surface 1-2 critical decisions — container registry choice, CI provider (if not specified in architecture), monitoring stack. |
 | **Thorough** | Surface all major decisions. Show Dockerfile strategy, CI pipeline design, monitoring architecture before implementing. Ask about deployment strategy (blue-green, canary, rolling). |
 | **Meticulous** | Surface every decision. Walk through each Terraform module. Review CI pipeline stages. User approves monitoring alert thresholds. |
@@ -40,6 +40,8 @@ If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
 ## Overview
 
 Full DevOps pipeline generator: from infrastructure design to production-ready deployment with monitoring and security. Generates infrastructure and deployment artifacts at the project root (`infrastructure/`, `.github/workflows/`, Dockerfiles) with planning notes in `.forgewright/devops/`.
+
+> **Zero-Touch Deployments (Non-Tech Mode):** If running for a non-technical user (Express Mode), bypass heavy infrastructure (Terraform/K8s) immediately. Generate direct Vercel/Railway configurations and GitHub Actions auto-deploy workflows. Let the PaaS handle the heavy lifting.
 
 ## Config Paths
 

@@ -94,6 +94,9 @@ After scoring, display concisely:
 
 **After every score, the evaluator MUST evaluate its own scoring.** This prevents lazy scoring, inflated scores, and inconsistent standards.
 
+**DETERMINISTIC VERIFICATION (MANDATORY FOR NON-TECH USERS):**
+Subjective LLM scoring is insufficient for non-technical users. Whenever scoring an **Execution Plan**, you MUST generate and execute a deterministic verification script (e.g., testing syntax, checking dependencies, or running a compilation dry-run) via the terminal before finalizing the score. If the deterministic dry-run fails, `Feasibility` and `Testability` scores drop to 0 automatically.
+
 ### Self-Evaluation Checklist (5 checks)
 
 After producing a score, answer these questions honestly:

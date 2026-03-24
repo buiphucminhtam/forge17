@@ -145,6 +145,15 @@ Called after each strategic gate.
    Run: python3 scripts/mem0-cli.py add "Gate [N] [decision]: [feedback summary]" --category decisions
 ```
 
+### Hook: HEARTBEAT(task_id, status_message)
+
+Called periodically during long-running tasks, especially within the Self-Healing Execution loop.
+
+```
+1. Emit a continuous stream of human-readable status updates to the user (e.g., via notify_user or ephemeral logging) to prevent the "Blackbox Effect" anxiety.
+2. Example: "Attempting to rebuild database container (Attempt 2/5)..."
+```
+
 ### Hook: ERROR(task_id, error_type, details)
 
 Called when a task fails or escalates.
