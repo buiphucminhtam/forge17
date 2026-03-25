@@ -88,6 +88,13 @@ cmd_install() {
     git submodule add -b "$BRANCH" "$REPO_URL" "$SUBMODULE_PATH"
     git submodule update --init --recursive
 
+    echo ""
+    print_info "Initializing Code Intelligence (GitNexus)..."
+    npx --yes gitnexus analyze || print_warn "GitNexus analysis failed, skipping."
+    
+    print_info "Generating project MCP server..."
+    bash "$SUBMODULE_PATH/scripts/mcp-generate.sh" || print_warn "MCP generation failed, skipping."
+
     local version
     version=$(get_local_version)
 
@@ -97,12 +104,12 @@ cmd_install() {
     echo -e "  ${BOLD}Skills location:${NC}  $SUBMODULE_PATH/skills/"
     echo -e "  ${BOLD}Skill count:${NC}      18 skills (17 domain + parallel dispatch)"
     echo -e "  ${BOLD}Pipeline:${NC}         DEFINE → BUILD → HARDEN → SHIP → SUSTAIN"
-    echo -e "  ${BOLD}Parallel:${NC}         Git worktree-based parallel execution"
+    echo -e "  ${BOLD}Intelligence:${NC}     GitNexus indexed + MCP server active"
     echo ""
     echo -e "  ${BOLD}Next steps:${NC}"
-    echo -e "  1. Commit the submodule: ${CYAN}git add .gitmodules $SUBMODULE_PATH && git commit -m 'feat: add forgewright v$version'${NC}"
-    echo -e "  2. Install Code Intelligence (optional): ${CYAN}npm install -g gitnexus${NC}"
-    echo -e "  3. Start building: ${CYAN}\"Build a production-grade SaaS for [your idea]\"${NC}"
+    echo -e "  1. Commit the setup: ${CYAN}git add . && git commit -m 'feat: add forgewright v$version'${NC}"
+    echo -e "  2. Start building: ${CYAN}\"Build a production-grade SaaS for [your idea]\"${NC}"
+    echo -e "  3. Analyze project (optional): ${CYAN}Run /onboard to analyze stack & setup profiles${NC}"
     echo -e "  4. Check for updates: ${CYAN}./setup.sh status${NC}"
     echo ""
 }
