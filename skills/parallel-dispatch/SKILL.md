@@ -145,6 +145,49 @@ Example:
   scripts/worktree-manager.sh create T3c parallel/T3c-mobile
 ```
 
+### Phase 3.5 — Context Isolation (DeerFlow Pattern)
+
+> Inspired by DeerFlow 2.0's sub-agent context isolation. Each worker operates in a sealed context scope to prevent information leakage and reduce token overhead.
+
+```
+Context Isolation Rules:
+
+  EACH WORKER RECEIVES (scoped context):
+    ✅ Its CONTRACT.json (task-specific inputs/outputs/constraints)
+    ✅ Its SKILL.md (skill instructions only)
+    ✅ Shared API contracts (api/, schemas/ — read-only)
+    ✅ .forgewright/code-conventions.md (pattern consistency)
+    ✅ Compressed pipeline summary (from Summarization middleware ⑤)
+       → Max 2K tokens, covering completed phase decisions only
+
+  EACH WORKER DOES NOT RECEIVE:
+    ❌ Other workers' DELIVERY.json or work output
+    ❌ Full session-log.json history
+    ❌ Memory entries unrelated to their contracted scope
+    ❌ Quality reports from other skills
+    ❌ Full conversation history (replaced by compressed summary)
+    ❌ Other skills' SKILL.md files
+
+  LEAD AGENT (CEO) RECEIVES after merge:
+    ✅ All workers' DELIVERY.json (synthesized)
+    ✅ All VALIDATION.json reports
+    ✅ Merge conflict log (if any)
+    ✅ Full pipeline context (not compressed)
+
+  Context Size Budget per Worker:
+    CONTRACT.json:          ~2K tokens
+    SKILL.md:               ~5K tokens
+    Shared contracts:       ~3K tokens
+    Code conventions:       ~1K tokens
+    Pipeline summary:       ~2K tokens
+    ─────────────────────────────
+    Total injected context: ~13K tokens (vs ~70K without isolation)
+```
+
+Guardrail middleware (④) enforces context isolation at the tool level:
+- Workers attempting to read files outside their contract inputs → WARN
+- Workers attempting to write outside their contract outputs → DENY
+
 ### Phase 4 — Worker Dispatch
 
 Spawn Gemini CLI instances for each worktree. Each worker runs in its own shell process:

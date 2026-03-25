@@ -99,7 +99,7 @@ ELSE:
 
 ## Session Save (Automatic Hooks)
 
-The orchestrator calls these hooks at specific lifecycle points.
+The orchestrator calls these hooks at specific lifecycle points. All hooks are executed by the **Middleware Chain** (see `middleware-chain.md`) — specifically by Middleware ⑧ (TaskTracking) and ⑨ (Memory).
 
 ### Hook: PHASE_COMPLETE(phase_name, summary)
 
@@ -162,6 +162,97 @@ Called when a task fails or escalates.
 1. Update session-log.json → errors.append({ task_id, error_type, details, occurred_at })
 2. If error_type == "escalation": save to memory as blocker
 ```
+
+## Event-Driven Task Tracking (DeerFlow Pattern)
+
+> Inspired by DeerFlow 2.0's `task_started/running/completed` event system. Provides structured, machine-readable progress tracking beyond text-based task.md updates.
+
+### Structured Events
+
+All events are emitted by Middleware ⑧ (TaskTracking) and stored in `session-log.json`:
+
+```json
+{
+  "events": [
+    {
+      "type": "SKILL_STARTED",
+      "skill_id": "software-engineer",
+      "mode": "feature",
+      "phase": "BUILD",
+      "timestamp": "2026-03-25T11:00:00Z"
+    },
+    {
+      "type": "SKILL_RUNNING",
+      "skill_id": "software-engineer",
+      "progress_pct": 60,
+      "current_step": "Writing service layer (3/5 files)",
+      "files_touched": 3,
+      "timestamp": "2026-03-25T11:15:00Z"
+    },
+    {
+      "type": "SKILL_COMPLETED",
+      "skill_id": "software-engineer",
+      "quality_score": 87,
+      "files_created": 5,
+      "files_modified": 2,
+      "tests_passed": 12,
+      "duration_ms": 42300,
+      "timestamp": "2026-03-25T11:42:30Z"
+    },
+    {
+      "type": "GATE_PENDING",
+      "gate_number": 2,
+      "skills_completed": ["product-manager", "solution-architect"],
+      "timestamp": "2026-03-25T12:00:00Z"
+    },
+    {
+      "type": "GATE_DECIDED",
+      "gate_number": 2,
+      "decision": "approved",
+      "feedback": "Architecture approved with minor revision to auth flow",
+      "timestamp": "2026-03-25T12:05:00Z"
+    },
+    {
+      "type": "SKILL_FAILED",
+      "skill_id": "qa-engineer",
+      "error_type": "test_failure",
+      "retry_count": 2,
+      "max_retries": 3,
+      "details": "Integration test for /api/users failed: 500 Internal Server Error",
+      "timestamp": "2026-03-25T13:00:00Z"
+    }
+  ]
+}
+```
+
+### Event Types Reference
+
+| Event | Emitted By | When | Data |
+|-------|-----------|------|------|
+| `CHAIN_STARTED` | Middleware Chain | Pipeline start | session_id, mode |
+| `SKILL_STARTED` | ⑧ TaskTracking | Before skill execution | skill_id, mode, phase |
+| `SKILL_RUNNING` | ⑧ TaskTracking | During skill execution (heartbeat) | progress_pct, current_step |
+| `SKILL_COMPLETED` | ⑧ TaskTracking | After skill succeeds | quality_score, files_changed, duration |
+| `SKILL_FAILED` | ⑩ GracefulFailure | After skill fails | error_type, retry_count, details |
+| `GATE_PENDING` | ⑧ TaskTracking | Before gate decision | skills_completed |
+| `GATE_DECIDED` | ⑧ TaskTracking | After gate decision | decision, feedback |
+| `CHAIN_COMPLETED` | Middleware Chain | Pipeline end | total_duration, skills_run |
+
+### Integration with Middleware Chain
+
+```
+The middleware chain references these protocols:
+  - Middleware ⑧ (TaskTracking):
+    → Emits SKILL_STARTED before skill
+    → Emits SKILL_COMPLETED/SKILL_FAILED after skill
+    → Emits GATE_PENDING/GATE_DECIDED at gates
+  - Middleware ⑨ (Memory):
+    → Extracts decisions from SKILL_COMPLETED events
+    → Stores blockers from SKILL_FAILED events
+  - Middleware ⑩ (GracefulFailure):
+    → Emits SKILL_FAILED with retry context
+```
+
 
 ## Session End
 

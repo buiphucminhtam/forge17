@@ -23,6 +23,28 @@ Adaptive meta-skill orchestrator for all software engineering work. Analyzes the
 
 **All skills are bundled in this plugin. Single install, everything included.**
 
+### Middleware Chain (v8.0 — DeerFlow Pattern)
+
+Every skill invocation is wrapped by an ordered middleware chain. Read `skills/_shared/protocols/middleware-chain.md` for the full specification.
+
+```
+Pre-Skill:  ① SessionData → ② ContextLoader → ③ SkillRegistry → ④ Guardrail → ⑤ Summarization
+            ═══ SKILL EXECUTION ═══
+Post-Skill: ⑥ QualityGate → ⑦ BrownfieldSafety → ⑧ TaskTracking → ⑨ Memory → ⑩ GracefulFailure
+```
+
+### Progressive Skill Loading (v8.0 — DeerFlow Pattern)
+
+Skills are loaded on-demand based on classified mode. Read `.forgewright/skills-config.json` for the mode→skill mapping.
+
+```
+Instead of loading all 50 skill descriptions (~66KB), only load skills relevant to the mode:
+  Review mode  → loads 1 skill  (~3KB)
+  Feature mode → loads 5 skills (~15KB)
+  Full Build   → loads 10 skills (~30KB)
+  Fallback     → load all skills (classification failure)
+```
+
 ## When to Use
 
 - Building a new SaaS, platform, or service from scratch (full pipeline)
