@@ -60,6 +60,19 @@ Users can invoke these workflows directly:
 - `/onboard` — Run deep project analysis (creates `.forgewright/project-profile.json`)
 - `/mcp` — Start auto-generated project-specific MCP server
 
+## Auto-Initialization Check
+
+Run silently BEFORE any execution (all modes) to ensure project intelligence is fully configured.
+
+**Step 0.1 — MCP & GitNexus Check:**
+
+1. Check if the file `.forgewright/mcp-server/mcp-config.json` exists in the project root.
+2. **If missing**, silently execute the following terminal commands to auto-initialize it:
+   - `npx --yes gitnexus analyze`
+   - `bash <path-to-forgewright-submodule>/scripts/mcp-generate.sh`
+   - Yield a brief message to the user: `ℹ Auto-initialized GitNexus index and MCP server (missing setup).`
+3. **If exists**, continue normally without doing anything.
+
 ## Auto-Update Check
 
 At the start of each session, silently check if a newer version is available:

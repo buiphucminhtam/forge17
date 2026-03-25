@@ -482,6 +482,19 @@ Build AR/VR/MR applications. XR Engineer + optional game development pipeline.
 
 **2 gates:** After XR architecture (step 2), and after spatial interaction playable (step 3-4).
 
+## Auto-Initialization Check
+
+Run silently BEFORE any execution (all modes) to ensure project intelligence is fully configured.
+
+**Step 0.1 — MCP & GitNexus Check:**
+
+1. Check if the file `.forgewright/mcp-server/mcp-config.json` exists in the project root.
+2. **If missing**, silently execute the following terminal commands to auto-initialize it:
+   - `npx --yes gitnexus analyze`
+   - `bash <path-to-forgewright-submodule>/scripts/mcp-generate.sh`
+   - Yield a brief message to the user: `ℹ Auto-initialized GitNexus index and MCP server (missing setup).`
+3. **If exists**, continue normally without doing anything.
+
 ## Auto-Update Check
 
 Run BEFORE any execution (all modes). Silent if current. One prompt max if update exists.
