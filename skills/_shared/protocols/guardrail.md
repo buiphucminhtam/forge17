@@ -15,12 +15,13 @@
 # .production-grade.yaml
 guardrail:
   enabled: true
-  mode: warn            # warn | deny | disabled
+  mode: warn            # warn | deny | disabled | dry_run
   log_all: false        # log every tool call (verbose, for debugging)
   escalate_to_user: true  # show WARN/DENY to user
 
   # Graduate from warn → deny after confirming no false positives
   # Recommended: run in warn mode for 5+ sessions, review logs, then switch to deny
+  # dry_run: Enable Global Dry Run, blocks all writing tools, requires AI to generate diff patch only.
 ```
 
 ## Rule Categories
@@ -106,6 +107,19 @@ Scope Rules (for parallel dispatch workers):
     - IF match + operation=CREATE → ALLOW (adding alongside is OK)
 ```
 
+### 6. Dry Run Mode (Global Read-Only)
+
+When `mode: dry_run` is set, Guardrail acts as an interceptor for all modifying operations. This allows the AI to plan and simulate changes without actually mutating the filesystem.
+
+```
+Dry Run Rules:
+  - IF operation=READ (view_file, read_resource, etc.) → ALLOW
+  - IF operation=WRITE (write_to_file, multi_replace_file_content) → WARN_DRYRUN_MOCK
+  - IF operation=EXECUTE (run_command that mutates) → WARN_DRYRUN_MOCK
+  - Reason: "Global Dry Run is enabled. File modification blocked."
+  - Action: Intercept call, return simulated success `[DRY RUN] Thực thi thành công trong môi trường ảo`, and instruct the agent to generate a `.diff` patch artifact instead.
+```
+
 ## Decision Matrix
 
 | Rule Type | Read | Write | Execute | Delete |
@@ -116,12 +130,13 @@ Scope Rules (for parallel dispatch workers):
 | **Contracted scope** (parallel) | ALLOW | DENY if outside | — | DENY |
 | **Destructive commands** | — | — | DENY | — |
 | **Publishing commands** | — | — | ESCALATE | — |
+| **Dry Run Mode** | ALLOW | WARN_DRYRUN_MOCK | WARN_DRYRUN_MOCK | WARN_DRYRUN_MOCK |
 
 ## Response Format
 
 ```json
 {
-  "decision": "ALLOW | WARN | DENY | ESCALATE",
+  "decision": "ALLOW | WARN | DENY | ESCALATE | WARN_DRYRUN_MOCK",
   "rule": "destructive-file-ops",
   "pattern": "rm -rf /",
   "matched": "rm -rf /var/data/",
@@ -130,6 +145,23 @@ Scope Rules (for parallel dispatch workers):
   "timestamp": "ISO-8601"
 }
 ```
+
+### Event Emission on WARN_DRYRUN_MOCK
+
+When `guardrail: mode: dry_run` is enabled, mutating tools are intercepted:
+
+```json
+{
+  "type": "GUARDRAIL_DRYRUN",
+  "skill_id": "qa-engineer",
+  "tool": "write_to_file",
+  "target": "src/auth.ts",
+  "rule": "global-dry-run",
+  "reason": "Global Dry Run is enabled. File modification blocked.",
+  "timestamp": "ISO-8601"
+}
+```
+*Note: The agent must intercept this and output the intended change as a `.diff` artifact instead of retrying the write operation.*
 
 ### Event Emission on DENY
 

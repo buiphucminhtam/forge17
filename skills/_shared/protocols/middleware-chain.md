@@ -8,17 +8,16 @@ The Middleware Chain wraps every skill execution with ordered pre/post hooks. Un
 
 ```
 User Request
-  │
-  ▼
-┌─────────────────────────────────────────────────────┐
-│ MIDDLEWARE CHAIN — Pre-Skill (top to bottom)        │
-│                                                     │
-│  ① SessionData     Load profile, session state      │
-│  ② ContextLoader   Load memory, conventions, KIs    │
-│  ③ SkillRegistry   Progressive skill discovery      │
-│  ④ Guardrail       Pre-tool authorization           │
-│  ⑤ Summarization   Auto-compress if > 70% budget    │
-│                                                     │
+├──────────────────────────────────────────────────────┤
+│ MIDDLEWARE CHAIN — Pre-Skill (top to bottom)         │
+│                                                      │
+│  ① SessionData     Load profile, session state       │
+│  ② ContextLoader   Load memory, conventions, KIs     │
+│  ③b DryRunContext  System Prompt injection (if mock) │
+│  ③ SkillRegistry   Progressive skill discovery       │
+│  ④ Guardrail       Pre-tool authorization            │
+│  ⑤ Summarization   Auto-compress if > 70% budget     │
+│                                                      │
 ├─────────────────────────────────────────────────────┤
 │ ═══════ SKILL EXECUTION ═══════                     │
 ├─────────────────────────────────────────────────────┤
@@ -44,9 +43,10 @@ Result / Next Skill
 | # | Middleware | Source Protocol | Hook | Purpose |
 |---|-----------|----------------|------|---------|
 | ① | **SessionData** | session-lifecycle.md §Steps 1-3 | `before_skill()` | Load project-profile.json, session-log.json, detect manual changes |
-| ② | **ContextLoader** | session-lifecycle.md §Step 4 + memory-manager §Hooks | `before_skill()` | Search mem0 with task keywords, load code-conventions.md |
+| ② | **ContextLoader** | session-lifecycle.md §Step 4 + memory-manager | `before_skill()` | Search mem0 with task keywords, load code-conventions.md |
+| ③b| **DryRunContext** | dryrun-interceptor.md | `before_skill()` | Inject global system prompt instructing AI it is in test mode (Option B) |
 | ③ | **SkillRegistry** | skills-config.json | `before_skill()` | Filter available skills by classified mode (progressive loading) |
-| ④ | **Guardrail** | guardrail.md | `before_tool()` | Authorize each tool call against allow/blocklist rules |
+| ④ | **Guardrail** | guardrail.md | `before_tool()` | Authorize each tool call against allow/blocklist rules (Option A integration) |
 | ⑤ | **Summarization** | summarization.md | `before_skill()` | Compress old context if above 70% token budget |
 
 ### Post-Skill Middleware (runs AFTER skill)
@@ -78,6 +78,7 @@ Pre-Skill (①-⑤):
   IF middleware fails:
     - ① SessionData: WARN and continue with empty profile (new project)
     - ② ContextLoader: WARN and continue without memory
+    - ③b DryRunContext: WARN and continue without prompt injection
     - ③ SkillRegistry: FALLBACK to loading all skills
     - ④ Guardrail: BLOCK — do not proceed to skill (security-critical)
     - ⑤ Summarization: WARN and continue (non-critical)
@@ -104,6 +105,11 @@ IF Guardrail returns WARN:
   → Log warning but continue
   → Proceed to skill execution
 
+IF Guardrail returns WARN_DRYRUN_MOCK:
+  → Log interception
+  → MOCK tool execution without touching disk
+  → Return simulated success to agent
+
 IF Guardrail returns ALLOW:
   → Continue normally
 ```
@@ -114,6 +120,7 @@ IF Guardrail returns ALLOW:
 Per-Skill hooks (run once per skill invocation):
   ① SessionData.before_skill()
   ② ContextLoader.before_skill()
+  ③b DryRunContext.before_skill()
   ③ SkillRegistry.before_skill()
   ⑤ Summarization.before_skill()
   ⑥ QualityGate.after_skill()
@@ -138,12 +145,14 @@ middleware:
       enabled: true
     - name: context-loader
       enabled: true
+    - name: dry-run-context
+      enabled: true
     - name: skill-registry
       enabled: true
       fallback: load_all  # if classification fails
     - name: guardrail
       enabled: true
-      mode: warn  # warn | deny | disabled (start with warn, graduate to deny)
+      mode: warn  # warn | deny | disabled | dry_run (start with warn, graduate to deny; use dry_run for testing)
     - name: summarization
       enabled: true
       threshold: 0.7
