@@ -45,6 +45,12 @@ If Forgewright helps you ship faster, you can support the project here:
 ## Release Timeline
 
 ```
+2026-03-26  v7.6  ●━━━ Global Dry Run & Auto-Evolution —
+                  │     Zero-risk refactoring sandbox. Agent formulates .diff patch,
+                  │     self-scores logic (Threshold >= 9.0). If < 9.0, enters Dark Loop
+                  │     (Learn -> Research -> Self-Improve SKILL.md -> Re-plan).
+                  │     Physical Guardrail catches all writes, mocked securely.
+                  │
 2026-03-17  v7.5  ●━━━ Web Scraper Skill (Crawl4AI) —
                   │     Security-first web scraping: 10 hard security rules,
                   │     URL validation (SSRF/LFI defense), output sanitization
@@ -631,6 +637,13 @@ quality:
   minimum_score: 70             # warn below this
   block_score: 60               # stop below this
   strict_mode: false            # if true, Level 3 violations also block
+
+# v7.6: Global Dry Run & Guardrail
+guardrail:
+  enabled: true
+  mode: "dry_run"               # warn | block | dry_run
+planQuality:
+  threshold: 9.0                # <9.0 triggers self-research & skill improvement loop
 
 # v7.0: Brownfield safety configuration
 brownfield:

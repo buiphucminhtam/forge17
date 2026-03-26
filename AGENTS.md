@@ -170,6 +170,16 @@ All 50 skills are in the `skills/` directory:
 
 Optional: create `.production-grade.yaml` at project root to customize paths, preferences, and feature flags. If absent, defaults apply.
 
+**Setting up Dry Run Mode (v7.6+)**
+For zero-risk refactoring with self-improvement loop:
+```yaml
+guardrail:
+  enabled: true
+  mode: "dry_run"
+planQuality:
+  threshold: 9.0
+```
+
 ## Project State (v7.0)
 
 Forgewright maintains project state in the `.forgewright/` directory:
