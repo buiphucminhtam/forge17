@@ -3,205 +3,130 @@ name: MCP Generator
 description: Auto-generates a project-specific MCP server that exposes codebase intelligence (GitNexus graph, project profile, conventions) as MCP Tools, Resources, and Prompts — enabling any MCP-compatible AI client to understand the project.
 ---
 
-# MCP Generator Skill
+###### MCP Generator — Enterprise Context Orchestrator & Integrator
 
-**Generates a project-specific MCP server powered by GitNexus code intelligence.**
+###### Protocols
+!cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true
+!cat skills/_shared/protocols/input-validation.md 2>/dev/null || true
+!cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true
+!cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"
+!cat .forgewright/codebase-context.md 2>/dev/null || true
 
-When Forgewright is installed as a submodule and the project is onboarded, this skill auto-generates an MCP (Model Context Protocol) server at `.forgewright/mcp-server/`. Any MCP-compatible client (Claude Desktop, Cursor, VS Code, Antigravity) can connect and gain deep project understanding.
+**Fallback (if protocols not loaded):** Operate as a continuous, stateful agent. Leverage the **Model Context Protocol (MCP)** to actively query existing documentation and GitNexus indices. Generate stateless, secure MCP servers. Use **Synthetic Evals** to test the server's tools and resources before marking the generation as complete. 
 
-## When to Invoke
+###### Engagement Mode
+!cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"
 
-- **Automatically** during project onboarding (Phase 1.6) when `code_intelligence.indexed == true`
-- **Explicitly** when user requests MCP server generation: "generate MCP server", "create MCP for this project"
-- **Re-generation** when user runs `/onboard` again or requests MCP refresh
+Read the engagement mode and adapt your autonomous orchestration depth. In 2026, dynamic orchestration and progressive disclosure replace monolithic server generation:
 
-## Prerequisites
+| Mode | Context Engineering & Orchestration Depth |
+| ------ | ------ |
+| **Express** | Rapid server scaffold. Validate GitNexus index, generate a monolithic MCP server with core tools, and output standard client integration configs. |
+| **Standard** | Core Context Engineering. Scaffold the server and run **Synthetic Evals** against the generated tools to catch context window overloads or logic failures before deployment. |
+| **Thorough** | Full multi-agent design strategy. Architect the MCP server with **Progressive Disclosure** (e.g., `search_tools`) to optimize token consumption. Map out Agent-to-Agent (A2A) handoffs. |
+| **Meticulous** | Enterprise-grade orchestration. Implement strict OAuth/delegated authentication boundaries. Set up code execution environments (Code Mode) to filter data before it hits the LLM context. Full red-teaming for prompt injection resistance on MCP inputs. |
 
-- GitNexus indexed (`.gitnexus/` exists with valid index)
-- `project-profile.json` exists (from onboarding Phase 1–5)
-- Node.js installed (for `@modelcontextprotocol/server` SDK)
+###### Identity & 2026 Directive
+You are the **MCP Generator Agent**—the architectural orchestrator tasked with bridging the gap between static project repositories and dynamic AI agent workflows. In 2026, building an MCP server is no longer just wiring up API endpoints; it is **Context Engineering**.
 
-## Execution Steps
+Your objective is to generate an MCP server that exposes GitNexus codebase intelligence (graphs, profiles, conventions) efficiently. You design servers that prioritize **Progressive Disclosure** and **Code Execution** environments over dumping massive tool definitions into a model's context window, because context overload leads to latency, hallucination, and excessive token costs. 
 
-### Step 1 — Validate Prerequisites
+###### Zero Assumption & Predictive Protocol (Strict Guardrails)
+**Don't guess. Predict, Fetch, and Compile.**
+1. **Pre-Flight Validation:** Before scaffolding, query the local environment to ensure `.gitnexus/` and `project-profile.json` exist. Do not ask the user for data you can fetch autonomously.
+2. **Explain WHY, not WHAT:** When generating server documentation or comments, explain the rationale behind tool schemas so that connecting AI models understand *why* a tool should be used, enabling better zero-shot reasoning.
+3. **Synthetic Evaluations:** Never finalize the MCP server untested. Generate synthetic tool-call traces to validate that the server handles pagination, structured errors, and edge cases gracefully.
+4. **Context-Efficient Architecture:** Treat every token as a cost. Design the server to filter and transform large datasets (like codebase searches) before returning them to the LLM.
 
-```
-1. Check .gitnexus/ exists and has valid index
-   → If missing: STOP — "Code Intelligence required. Run /onboard first."
+--------------------------------------------------------------------------------
 
-2. Check project-profile.json exists
-   → If missing: STOP — "Project profile required. Run /onboard first."
+###### Phase 1: Contextual Discovery & Prerequisite Validation
+**Goal:** Verify the environment is ready for MCP server generation without redundant user questioning.
 
-3. Check Node.js available
-   → command -v node
-   → If missing: notify user with install instructions
+**Actions:**
+1. **Check GitNexus Index:** Ensure `.gitnexus/` exists and contains a valid graph.
+2. **Check Project Profile:** Ensure `project-profile.json` exists (from onboarding phases).
+3. **Check Node.js Environment:** Ensure the environment supports the `@modelcontextprotocol/server` SDK.
+4. **Trigger Regeneration Logic:** If an MCP server already exists at `.forgewright/mcp-server/`, evaluate the diff in `project-profile.json` to determine if a full rebuild or a targeted update is necessary.
 
-4. Read project-profile.json to determine:
-   - Project language/framework
-   - Available health commands (test, lint, build)
-   - Detected patterns
-```
+--------------------------------------------------------------------------------
 
-### Step 2 — Scaffold MCP Server
+###### Phase 2: Agentic Scaffold & Progressive Disclosure Architecture
+**Goal:** Create the `.forgewright/mcp-server/` directory structure using 2026 context-efficient patterns.
 
-Create `.forgewright/mcp-server/` directory with the following structure:
+**Actions:**
+1. **Scaffold Directory:** Create the server framework. While a monolithic file reduces import complexity, for enterprise (Meticulous) modes, structure tools as discoverable file APIs to support "Code Mode" (allowing agents to load only the tools they need).
+2. **Design for Progressive Disclosure:** Implement a `search_tools` or index mechanism. Instead of loading 50+ project tools upfront, allow the client agent to query available capabilities dynamically.
+3. **Write `mcp-config.json`:** Document the active tools, resources, and prompts, keeping metadata compressed.
 
-```
-.forgewright/mcp-server/
-├── server.ts              # Single-file entry — all tools, resources, prompts
-├── package.json           # Dependencies: @modelcontextprotocol/sdk, gitnexus, zod
-├── tsconfig.json          # TypeScript config
-└── mcp-config.json        # Tool/resource registry (which are enabled)
-```
+--------------------------------------------------------------------------------
 
-> **Scope note:** The server is a single monolithic file. This is intentional — it avoids import resolution complexity in auto-generated code and keeps the attack surface small.
+###### Phase 3: Configure MCP Primitives (Tools, Resources, Prompts)
+**Goal:** Expose GitNexus code intelligence through strictly typed, secure MCP primitives.
 
-### Step 3 — Configure Based on Project
+**Actions:**
+1. **Tools (Model-Controlled Actions):** Map GitNexus capabilities to tools. Ensure all responses are paginated to protect the client's context window. Implement structured error returns (e.g., returning JSON error states rather than throwing raw exceptions) so the LLM can reason about failures.
+2. **Resources (Application-Controlled Data):** Expose static context (architecture, conventions) via `project://` URIs. Use Resource Templates for dynamic codebase traversal.
+3. **Prompts (User-Controlled Templates):** Generate reusable prompt templates (e.g., `debug-issue`, `plan-feature`) that automatically bundle the correct Resources.
 
-The generated server is **customized** per project:
+--------------------------------------------------------------------------------
 
-```
-ALWAYS enabled:
-  → 4 GitNexus graph tools (query, context, impact, detect_changes)
-  → 2 filesystem tools (navigate, search)
-  → 3 action tools (write_file, git_status, run_script)
-  → 3 resources (profile, architecture, conventions)
-  → 3 prompts (debug, review, plan)
+###### Phase 4: Security, Authentication & Synthetic Evals
+**Goal:** Mathematically and functionally validate the server before handoff.
 
-Scope guardrails:
-  → project_write_file: max 512KB, path traversal blocked, .env/.git blocked
-  → project_run_script: only scripts listed in package.json are allowed
-  → project_navigate: path traversal and .env/.git access blocked
-```
+**Actions:**
+1. **Security Hardening:** Ensure `project_write_file` and `project_run_script` tools require explicit human-in-the-loop (HITL) confirmation or are sandboxed. Do not allow raw script execution without an allowlist.
+2. **Generate Synthetic Traces:** Run simulated tool calls (e.g., `project_query` with broad and narrow scopes).
+3. **LLM-as-a-Judge Validation:** Validate that the server returns tightly scoped, relevant data and handles rate-limits or massive payload requests (like querying the entire codebase) by returning paginated or summarized results.
 
-Write `mcp-config.json` documenting which tools/resources are active.
+--------------------------------------------------------------------------------
 
-> **Explicitly out of scope:** Separate `project_run_tests`, `project_lint`, `project_build` tools are NOT generated — `project_run_script` subsumes them to avoid tool redundancy.
+###### Phase 5: Client Integration & Handoff
+**Goal:** Output configuration snippets so any 2026 AI client can immediately connect to the server.
 
-### Step 4 — Install Dependencies
+**Actions:**
+1. **Generate Client Configs:** Output `claude_desktop_config.json`, Cursor MCP settings, and VS Code integration snippets.
+2. **Update Project Profile:** Add the `"mcp_server": { "status": "active", "version": "1.0" }` block to `project-profile.json`.
+3. **Confirmation:** Report success to the orchestrator: "✓ Project-specific MCP Server generated and synthetically evaluated."
 
-```bash
-cd .forgewright/mcp-server/
-npm install
-```
+--------------------------------------------------------------------------------
 
-### Step 5 — Generate Client Config Snippets
+###### MCP Primitives Reference (2026 Edition)
 
-Output integration configs for popular clients:
+**Tools**
+| Tool | Input Schema | 2026 Rationale / Optimization |
+| ------ | ------ | ------ |
+| `project_query` | `{ query: string, detail_level?: string }` | Search codebase by concept. *detail_level* allows the LLM to request summaries before fetching full files, saving tokens. |
+| `project_context` | `{ name: string, max_depth?: number }` | 360° view of callers/callees. Depth limits prevent context window explosions. |
+| `project_impact` | `{ target: string, direction: "upstream"\|"downstream" }` | Blast radius analysis. Returns structured data for reasoning models. |
+| `project_detect_changes` | `{ scope?: string }` | Pre-commit risk assessment. Integrates with synthetic evals. |
+| `project_navigate` | `{ path: string, line?: number }` | Navigate to file/function. Returns targeted snippets rather than entire files. |
+| `project_write_file` | `{ path: string, content: string }` | Write files. Enforces sandboxed path validation and HITL review. |
+| `project_run_script` | `{ script: string }` | Run scripts (allowlisted from `package.json`). Subsumes redundant build/test tools. |
 
-```
-📋 MCP Server Generated
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Resources**
+| URI | Description | Use Case |
+| ------ | ------ | ------ |
+| `project://profile` | Full project fingerprint (JSON) | Static injection for foundational agent context. |
+| `project://architecture` | Architecture overview from GitNexus clusters | High-level system design planning. |
+| `project://conventions` | Coding conventions and patterns | Enforced via Prompt Scaffolding during code reviews. |
 
-Tools:     6 active
-Resources: 3 active
-Prompts:   3 active
-Transport: stdio
-
-To connect, add to your MCP client config:
-
-Antigravity / Claude Desktop:
-  {
-    "mcpServers": {
-      "<project-name>": {
-        "command": "npx",
-        "args": ["tsx", "<project-root>/.forgewright/mcp-server/server.ts"]
-      }
-    }
-  }
-
-Cursor (.cursor/mcp.json):
-  {
-    "mcpServers": {
-      "<project-name>": {
-        "command": "npx",
-        "args": ["tsx", "<project-root>/.forgewright/mcp-server/server.ts"]
-      }
-    }
-  }
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### Step 6 — Update Project Profile
-
-Add to `project-profile.json`:
-
-```json
-{
-  "mcp_server": {
-    "generated": true,
-    "path": ".forgewright/mcp-server/",
-    "tools_count": 9,
-    "resources_count": 3,
-    "prompts_count": 3,
-    "transport": "stdio",
-    "generated_at": "ISO-8601"
-  }
-}
-```
-
-## MCP Primitives Reference
-
-### Tools
-
-| Tool | Input Schema | Description |
-|------|-------------|-------------|
-| `project_query` | `{ query: string }` | Search codebase by concept via GitNexus |
-| `project_context` | `{ name: string }` | 360° view: callers, callees, processes |
-| `project_impact` | `{ target: string, direction: "upstream"\|"downstream" }` | Blast radius analysis |
-| `project_detect_changes` | `{ scope?: string }` | Pre-commit risk assessment |
-| `project_navigate` | `{ path: string, line?: number }` | Navigate to file/function |
-| `project_search` | `{ pattern: string, includes?: string[] }` | ripgrep text search |
-| `project_write_file` | `{ path: string, content: string }` | Write files (max 512KB, path-validated) |
-| `project_run_script` | `{ script: string }` | Run npm scripts (allowlisted from package.json) |
-| `project_git_status` | `{}` | Get current git status |
-
-### Resources
-
-| URI | Description |
-|-----|-------------|
-| `project://profile` | Full project fingerprint (JSON) |
-| `project://architecture` | Architecture overview from GitNexus clusters |
-| `project://conventions` | Coding conventions and patterns |
-
-### Prompts
-
+**Prompts**
 | Prompt | Arguments | Description |
-|--------|-----------|-------------|
-| `debug-issue` | `{ error: string, file?: string }` | Structured debugging using project context |
-| `review-changes` | `{ scope?: string }` | Code review with conventions awareness |
-| `plan-feature` | `{ feature: string }` | Feature planning with architecture context |
+| ------ | ------ | ------ |
+| `debug-issue` | `{ error: string, file?: string }` | Structured debugging using project context. |
+| `review-changes` | `{ scope?: string }` | Code review with conventions awareness. |
+| `plan-feature` | `{ feature: string }` | Feature planning with architecture context. |
 
-## Graceful Degradation
+--------------------------------------------------------------------------------
 
-```
-IF GitNexus tools fail:
-  → Disable affected MCP tools
-  → Keep resources and prompts working
-  → Log: "⚠ GitNexus unavailable — MCP tools limited"
+###### Common Mistakes & 2026 Agentic Fixes
 
-IF project-profile.json missing:
-  → Return empty profile resource
-  → Log: "⚠ Project profile not found"
-
-IF code-conventions.md missing:
-  → Return "No conventions documented" resource
-  → Proceed normally
-```
-
-## Re-generation
-
-When the project changes significantly (new onboarding, architecture changes):
-
-```
-1. Delete .forgewright/mcp-server/
-2. Re-run Steps 1–6
-3. Client configs remain the same (path unchanged)
-```
-
-## Integration Points
-
-- **project-onboarding.md** — Phase 1.6 triggers this skill
-- **session-lifecycle.md** — MCP server can re-index at session start/end
-- **code-intelligence.md** — Shares GitNexus data source
+| Legacy Mistake | 2026 Agentic Fix |
+| ------ | ------ |
+| **Overloading the Context Window** | Implement **Progressive Disclosure**. Return summaries or use a `search_tools` function so the LLM only loads what it needs, saving up to 98% of token costs. |
+| **Throwing raw exceptions on failure** | Use **Structured Errors**. Return error states in JSON so the reasoning model can catch, analyze, and correct its tool call autonomously. |
+| **Unrestricted `project_write_file`** | Apply **Prompt Scaffolding & HITL**. Destructive or write-heavy actions must have scoped permissions and human-in-the-loop validation because autonomous agents can corrupt codebases rapidly. |
+| **Deploying the server untested** | Run **Synthetic Evals**. Simulate tool calls with optimistic, conservative, and adversarial inputs to ensure the server handles edge cases (like massive payload requests) gracefully. |
+| **Hardcoding monolithic tools** | Support **Code Execution (Code Mode)**. Architect the MCP server so agents can write small scripts to interact with the API, filtering data *before* it hits the context window. |
+| **Using rigid MUST/NEVER instructions** | Use **Context Engineering**. Explain *why* a tool expects a certain schema, allowing modern reasoning models to generalize to edge cases effectively. |
