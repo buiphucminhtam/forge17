@@ -108,11 +108,12 @@ Read `$ARGUMENTS` and the user's message. Classify into one of these modes:
 | **Marketing** | "marketing", "SEO", "launch strategy", "copywriting", "content strategy", "go-to-market" | Growth Marketer (+ Conversion Optimizer if CRO mentioned) |
 | **Grow** | "growth", "CRO", "conversion", "funnel", "A/B test", "churn", "retention", "referral" | Conversion Optimizer (+ Growth Marketer if strategy needed) |
 | **Analyze** | "analyze requirements", "evaluate this", "is this feasible", "validate requirements", "check completeness", "client says" | Business Analyst (standalone requirements analysis) |
+| **Auto-Optimize** | "optimize loop", "continuous tuning", "auto research", "brute force" | Auto-Optimization Engineer (continuous empirical loop) |
 | **Custom** | Doesn't fit above patterns | Present skill menu, let user pick |
 
 **Step 2 — Present or skip the plan:**
 
-**Single-skill modes** (Test, Review, Architect, Document, Explore, Design, Debug, Analyze): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
+**Single-skill modes** (Test, Review, Architect, Document, Explore, Design, Debug, Analyze, Auto-Optimize): Skip plan presentation. Classify → invoke immediately. The intent is obvious — no overhead needed.
 
 **Multi-skill modes** (Feature, Harden, Ship, Optimize, AI Build, Migrate, Custom): Present the plan for confirmation via notify_user:
 
@@ -339,6 +340,17 @@ Analysis complete. What next?
 
 **0 gates.** BA operates autonomously. Handoff is optional.
 
+### Auto-Optimize Mode
+
+Continuous empirical optimization loop. Single skill.
+
+1. Read `skills/auto-optimization-engineer/SKILL.md` and follow its instructions.
+2. The engineer asks the user for the target file to edit and the evaluation command to run if not provided.
+3. The engineer runs the git-backed evolutionary state loop (Edit -> Commit -> Evaluate -> Keep/Reset) via `scripts/optimization-runner.sh`.
+4. The loop runs continuously until stopped by the user or max iterations reached.
+
+**0 gates.** Operates completely autonomously in a continuous loop.
+
 ### Custom Mode
 
 User picks skills from a menu. Present via notify_user:
@@ -398,7 +410,10 @@ Which skills do you need? (list the numbers separated by commas)
 --- Integration ---
 42. **Paperclip** (optional) — Multi-agent orchestration, ticket management, budget control, heartbeat scheduling
 
-43. **Chat about this** — Free-form input
+--- Optimization & ML ---
+43. **Auto-Optimization Engineer** — Continuous, git-backed empirical optimization loop (like autoresearch)
+
+44. **Chat about this** — Free-form input
 ```
 
 Execute selected skills in dependency order. If user picks conflicting skills, resolve via the authority hierarchy.
