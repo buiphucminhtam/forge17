@@ -459,7 +459,9 @@ Database migration, framework upgrade, or large-scale code migration.
 
 ### Game Build Mode
 
-Build a game from concept to playable build. Full game development pipeline.
+Build a game from concept to live operations. Full production-grade AA/AAA game development pipeline.
+
+**Phase 1: Pre-Production (Ideation, Strategy & Vertical Slice)**
 
 1. **Concept analysis** — extract game concept, genre, platform, engine from user's message
 2. **Engine detection** — read `.production-grade.yaml` for `game.engine` override, or ask:
@@ -469,38 +471,44 @@ Build a game from concept to playable build. Full game development pipeline.
    2. **Unreal Engine** (AAA quality, heavy 3D, C++/Blueprint)
    3. **Godot** (Open-source, lightweight, rapid iteration)
    ```
-3. **2D Asset Strategy** (If project is 2D) — ask via notify_user:
+3. **Art Direction & Asset Strategy** — ask via notify_user to establish the "Art Bible" guidelines:
    ```
-   How should we handle 2D assets for this game?
-   1. **Bring Your Own Assets (BYOA)** (Provide a folder with existing spritesheets)
-   2. **Nano Banana / AI Automated Generation** (Pipeline uses game-asset-vfx to generate, then auto-slices via Python script)
+   How should we handle Art Strategy & Assets for this game?
+   1. **Bring Your Own Assets (BYOA)** (Provide a folder with existing assets)
+   2. **AI Automated Generation / Procedural Kitbashing** (Nano Banana / Procedural tools)
    ```
-   If option [2], enforce `skills/_shared/protocols/ai-2d-asset-pipeline.md` for generation.
-
-4. **3D Asset Strategy** (If project is 3D) — ask via notify_user:
-   ```
-   How should we handle 3D assets for this game?
-   1. **Bring Your Own Assets (BYOA)**
-   2. **Zero-Cost Procedural Kitbashing** (85/15 rule, NotebookLM verified Open Source tools like Material Maker, EZ-Tree, ProceduralToolkit, PCG)
-   ```
-   If option [2], enforce `skills/_shared/protocols/ai-3d-procedural-pipeline.md` for generation.
-
-5. **Game Designer** — `skills/game-designer/SKILL.md` — design pillars, core loop, economy, mechanic specs, player flows
-6. **Engine Engineer** — based on chosen engine:
-   - Unity: `skills/unity-engineer/SKILL.md` — SO architecture, gameplay systems, UI, Editor tools
+   If option [2], enforce `skills/_shared/protocols/ai-2d-asset-pipeline.md` or `ai-3d-procedural-pipeline.md` for generation.
+4. **Growth & Monetization** — `skills/growth-marketer/SKILL.md` & `skills/conversion-optimizer/SKILL.md` — establish target audience, business model (F2P/Premium), and core monetization loops BEFORE design begins.
+5. **Game Designer** — `skills/game-designer/SKILL.md` — design pillars, core loop, economy maps, mechanic specs, integrating monetization seamlessly into gameplay.
+6. **Engine Engineer (Architecture & Vertical Slice)** — based on chosen engine:
+   - Unity: `skills/unity-engineer/SKILL.md` — SO architecture, gameplay systems, core loop demo
    - Unreal: `skills/unreal-engineer/SKILL.md` — C++ architecture, GAS, AI, Blueprint layer
-   - Godot: `skills/godot-engineer/SKILL.md` — scene tree, signals, Resources, export
+   - Godot: `skills/godot-engineer/SKILL.md` — scene tree, signals, Resources, core export
+   *Goal: Build core systems AND a functional Vertical Slice to prove the "Fun" factor.*
+
+**Phase 2: Production (Parallel Content Creation)**
+
+*Runs continuously with QA Engineer (Step 11) testing each milestone (Alpha/Beta).*
+
 7. **Level Designer** — `skills/level-designer/SKILL.md` — level structure, encounters, pacing, blockouts
 8. **Narrative Designer** (if story-driven) — `skills/narrative-designer/SKILL.md` — dialogue, characters, lore
-9. **Technical Artist** — `skills/technical-artist/SKILL.md` — shaders, VFX, LOD, performance budgets
+9. **Technical Artist & Animator** — `skills/technical-artist/SKILL.md` — shaders, VFX, LOD, performance budgets, PLUS animation blending, state machines, and rigging integrations for game feel.
 10. **Game Audio Engineer** — `skills/game-audio-engineer/SKILL.md` — SFX, adaptive music, mix
-11. **Engine-specific depth** (optional, based on game needs):
+11. **QA Engineer (Continuous Integration)** — runs iteratively alongside Steps 7-10 to test level milestones (Alpha/Beta), balance systems, and find edge cases.
+12. **Engine-specific depth** (optional, based on game needs):
    - Multiplayer: `skills/unity-multiplayer/SKILL.md` or `skills/unreal-multiplayer/SKILL.md`
    - Shader/VFX: `skills/unity-shader-artist/SKILL.md` or `skills/unreal-technical-artist/SKILL.md`
-   - 2D Generation: `skills/game-asset-vfx/SKILL.md` (If AI Strategy chosen)
-12. **QA** — test gameplay systems, balance verification, edge cases
+   - 2D Generation: `skills/game-asset-vfx/SKILL.md`
 
-**3 gates:** After Game Designer GDD (step 5), after engine architecture (step 6), and after first playable (step 10).
+**Phase 3: Post-Production & Launch**
+
+13. **Post-Production & Marketing** — final QA regression, polishing, and `Growth Marketer` executing the launch campaign.
+
+**Phase 4: Sustain & Grow (Live Operations)**
+
+14. **LiveOps Transition** (Optional) — Loop in `Conversion Optimizer` and `Data Engineer` for post-launch retention analysis, A/B testing, and seasonal events.
+
+**4 gates:** After Market/GDD (step 5), after Architecture & Vertical Slice (step 6), after Content Complete / Beta (step 10), and before Launch (step 13).
 
 ### XR Build Mode
 
