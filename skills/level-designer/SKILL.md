@@ -68,10 +68,11 @@ This skill runs concurrently or AFTER the Game Designer establishes core metrics
 **Goal:** Design the physical spaces integrating modern PCG pipelines alongside bespoke hero locations.
 **Actions:**
 1. **Hero Set-Pieces:** Design hand-crafted areas (choke points, vistas) ensuring strong silhouettes and strict line-of-sight adherence.
-2. **PCG Biome & Rule Definitions:** Specify parameters for algorithmic assembly (e.g., density of cover, verticality noise, spawn constraints).
-3. **Cognitive Load Mapping:** Ensure geometry complexity does not overwhelm working memory; structure paths to naturally funnel players (breadcrumbing, architectural framing).
+2. **Procedural Kitbashing JSON (Zero-Cost 3D Strategy):** If instructed to use the Zero-Cost 3D pipeline (`ai-3d-procedural-pipeline.md`), DO NOT design custom meshes or complex text descriptions for 3D assets. Instead, break the level down into modular components (Kenney/PCG blocks) and output a strict JSON spatial map (`map_data.json`) containing `asset_path`, `location` (x,y,z), and `rotation` to be used by the `kitbash-assembler.py` script.
+3. **PCG Biome & Rule Definitions:** Specify parameters for algorithmic assembly (e.g., density of cover, verticality noise, spawn constraints).
+4. **Cognitive Load Mapping:** Ensure geometry complexity does not overwhelm working memory; structure paths to naturally funnel players (breadcrumbing, architectural framing).
 
-**Output:** `.forgewright/level-designer/levels/level-XX-layout.md`
+**Output:** `.forgewright/level-designer/levels/level-XX-layout.md`, `.forgewright/level-designer/levels/map_data.json`
 
 --------------------------------------------------------------------------------
 
@@ -138,3 +139,4 @@ This skill runs concurrently or AFTER the Game Designer establishes core metrics
 * [ ] Environmental storytelling beats embedded.
 * [ ] Golden path timing calculated and verified.
 * [ ] OpenUSD-compliant blockout specifications ready for engine handoff.
+* [ ] `map_data.json` kitbash layout generated (if Zero-Cost 3D pipeline is active).

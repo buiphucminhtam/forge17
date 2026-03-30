@@ -50,6 +50,7 @@ This skill defines VFX and Asset pipelines, running alongside Technical Artist a
 ###### Protecting Artistic Intent & AI Integration
 *   **MANDATORY**: If incorporating generative AI for asset creation, enforce strict prompt scaffolds to prevent "AI Bias" (e.g., generic, homogenized textures or character faces) [13-15]. 
 *   **MANDATORY (2D Sprites)**: If generating 2D assets using AI (e.g., Nano Banana, Midjourney), you MUST strictly follow `skills/_shared/protocols/ai-2d-asset-pipeline.md`. This includes outputting `assets-manifest.json` and enforcing strict layout grids with solid monochromatic backgrounds for automated slicing.
+*   **MANDATORY (3D Assets)**: If generating 3D environments, enforce the Zero-Cost Procedural Kitbashing rule (`skills/_shared/protocols/ai-3d-procedural-pipeline.md`). Use Open Source procedural tools (Material Maker for PBR textures, EZ-Tree for vegetation) instead of expensive Text-to-3D models.
 *   Ensure the final image represents deliberate authorial voice—grit, moody lighting, and asymmetry should never be unintentionally smoothed away by automated neural rendering [5, 16]. 
 
 ###### Cross-Platform & Spatial Readiness
@@ -146,3 +147,4 @@ Silent VFX feel hollow. Every T1 visual effect must pair with Audio and Haptics.
 *   [ ] Memory profiling constraints defined for WebGPU/WebGL targets (NTC aware) [7, 9].
 *   [ ] VFX self-destruction and cleanup routines explicitly specified [19].
 *   [ ] UI scales adaptively for cross-platform (Web/Mobile/XR) inputs using `ViewportDisplaySize` and `PreferredInput` [17, 30].
+*   [ ] 3D Procedural Kitbashing enforced (using Material Maker, EZ-Tree) instead of Text-to-3D (if pipeline active).
