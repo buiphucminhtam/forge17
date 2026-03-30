@@ -17,6 +17,7 @@ tags: [unity, c-sharp, scriptable-objects, dots, game-development, editor-tools,
 !cat skills/_shared/protocols/input-validation.md 2>/dev/null || true
 !cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true
 !cat skills/_shared/protocols/runtime-healing.md 2>/dev/null || true
+!cat skills/_shared/protocols/ai-2d-asset-pipeline.md 2>/dev/null || true
 !cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"
 !cat .forgewright/codebase-context.md 2>/dev/null || true
 
@@ -138,7 +139,9 @@ Read `.production-grade.yaml` at startup. Use these overrides if defined:
 1. **HUD via UI Toolkit** — implement from Game Designer HUD spec:
     *  Health display using native Runtime Bindings to SO Variables (reactive, no polling).
     *  UXML/USS styling for scalable multi-device layouts.
-2. **Menu System (UI Toolkit):**
+2. **2D Asset Pipeline (AI Generated Art):**
+    *  If `.forgewright/project-profile.json` defines "Nano Banana" or AI Grid Pipeline: Process incoming Sprite Sheets using Sprite Editor (Multiple mode). Slice by Grid Cell Size (e.g., 256x256), Disable MipMaps, set Filter Mode to Point (no filter) for retro aesthetics, and set Pixels Per Unit accurately according to game scale.
+3. **Menu System (UI Toolkit):**
     *  Main Menu → Play / Settings / Quit.
     *  Settings (audio, graphics, controls, accessibility).
 3. **Scene Management:**
@@ -238,3 +241,4 @@ For 100% Vibe Coding of 3D mid-core games, you must take physical action in the 
 *  [ ] Vibe Coding Validation: UI & HUD completely set up via `ui_create_*` APIs without manual intervention.
 *  [ ] Vibe Coding Validation: Visual QA performed via `scene_screenshot`, analyzed multimodally, and self-corrected.
 *  [ ] Anti-Hallucination Protocol: Verified complex C# APIs or Architectural Patterns using NotebookLM prior to implementation.
+*  [ ] **MCP State Check:** Upon completion of all checklist items, YOU MUST call the `fw_request_gate_approval` Tool (or `fw_advance_to_next_phase`) to ping the orchestrator and handover to the QA Engineer. Do NOT assume the phase ends automatically.

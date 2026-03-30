@@ -16,8 +16,8 @@ tags: [unreal-engine, cpp, blueprint, gas, nanite, lumen, multiplayer, game-deve
 
 ###### Protocols
 !cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true 
-!cat skills/_shared/protocols/input-validation.md 2>/dev/null || true 
 !cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true 
+!cat skills/_shared/protocols/ai-2d-asset-pipeline.md 2>/dev/null || true
 !cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults" 
 !cat .forgewright/codebase-context.md 2>/dev/null || true
 
@@ -127,9 +127,10 @@ Read `.production-grade.yaml` at startup. Use these overrides if defined:
 1. **Blueprint Setup:**
    * Create `BP_PlayerCharacter` (inheriting from C++ base). Assign Nanite-compatible meshes or high-quality Skeletal Meshes with appropriate LODs.
    * Setup Animation Blueprints utilizing Choosers, Proxy Tables, and Motion Matching (Production Ready in 5.4+).
-2. **UI (UMG Viewmodel):**
+2. **UI (UMG Viewmodel) & 2D Pipeline:**
    * Build `WBP_HUD` and `WBP_MainMenu`.
    * Create `UViewModel` C++ classes exposing Health, Stamina, and Ammo. Use `FieldNotify` macros and bind directly in the UMG editor.
+   * **2D Pipeline:** If AI Generated Art (Nano Banana) is detected in `.forgewright/project-profile.json`, use `Paper2D` or `PaperZD` plugins to extract 2D Sprites from grid sheets dynamically. Apply strict Texture Settings (NoMipmaps, Nearest Filtering) via Python pipeline scripts.
 3. **Worldbuilding (PCG):**
    * Set up PCG Graphs utilizing **Runtime Hierarchical Generation** for dynamic environment spawning without manual baking.
    * Integrate World Partition Runtime Hash configuration.
@@ -149,6 +150,17 @@ Read `.production-grade.yaml` at startup. Use these overrides if defined:
    * Provide instructions for **Unreal Build Accelerator (UBA)** and **Horde** continuous integration workflows.
    * Configure packaging settings to strip editor-only data and encrypt Pak files.
 **Output:** Optimized `DefaultEngine.ini` settings, Horde/UBA documentation.
+
+--------------------------------------------------------------------------------
+
+###### 100% Vibe Coding Integration via Unreal Python API
+
+For rapid development and scene blocking without manual user clicks, you MUST utilize the Unreal Engine Python API. Wait for the user to open Unreal Editor with the Python Web Execution plugin enabled, or use `run_command` with `UnrealEditor-Cmd.exe` for headless Python execution.
+
+**Vibe Coding Directives:**
+*   **Asset Import Automation:** Do not ask the user to manually slice 2D AI Sprites or import FBX files. Write a `.py` script that uses `unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks()` to automatically pull assets into the Content Browser and configure their Texture Group (e.g., `TEXTUREGROUP_Pixels2D`).
+*   **Automated Material Creation:** Use `unreal.MaterialEditingLibrary` to create Substrate or Base Materials, assign textures, and save the asset automatically.
+*   **Level Blockout:** Instantiate Actors via `unreal.EditorLevelLibrary.spawn_actor_from_class` to build greybox scenes, configure lighting (`DirectionalLight`), and place Start Points automatically.
 
 --------------------------------------------------------------------------------
 
@@ -193,3 +205,4 @@ Read `.production-grade.yaml` at startup. Use these overrides if defined:
 *  [ ] Tick optimization: Asynchronous tasks and reduced tick intervals configured.
 *  [ ] Object pooling configured for high-frequency Niagara/Sound spawns.
 *  [ ] Build pipeline and Horde/UBA readiness documented.
+*  [ ] **MCP State Check:** Upon completion of all checklist items, YOU MUST call the `fw_request_gate_approval` Tool (or `fw_advance_to_next_phase`) to ping the orchestrator and handover to the QA Engineer. Do NOT assume the phase ends automatically.
