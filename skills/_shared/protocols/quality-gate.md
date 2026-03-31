@@ -79,6 +79,11 @@ Execute levels in order. Each level has a severity that determines whether to ST
      - Check that existing endpoints are not removed
      - Check that existing response schemas are not broken
      - New endpoints OK, removals → STOP
+
+4. Architecture Parity Audit
+   - Compare the current workspace file tree against `.forgewright/project-profile.json` structural fingerprint.
+   - Look for unauthorized top-level components, services, or new uncontracted dependencies.
+   - IF structural drift detected (e.g., new backend service added without an ADR) → WARN: "Architecture Drift Detected" + log the drift.
 ```
 
 **For greenfield projects:** Level 2 is automatically satisfied (no baseline, no existing tests).

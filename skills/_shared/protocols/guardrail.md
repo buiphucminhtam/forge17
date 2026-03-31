@@ -120,6 +120,19 @@ Dry Run Rules:
   - Action: Intercept call, return simulated success `[DRY RUN] Thực thi thành công trong môi trường ảo`, and instruct the agent to generate a `.diff` patch artifact instead.
 ```
 
+### 7. Contextual Tool Denials (Mode-based)
+
+When operating in specific read-only or analysis modes, Guardrail enforces strict zero-modification policies by dynamically filtering the available ToolPool.
+
+```
+Mode Rules:
+  - IF current_mode IN [Review, Explore, Analyze]:
+    - IF operation=WRITE (write_to_file, multi_replace_file_content) → DENY
+    - IF operation=EXECUTE (run_command that mutates) → DENY
+    - Reason: "Contextual Tool Denial — Mode does not permit file modification."
+    - Action: BLOCK + emit GUARDRAIL_DENY_MODE.
+```
+
 ## Decision Matrix
 
 | Rule Type | Read | Write | Execute | Delete |
@@ -131,6 +144,7 @@ Dry Run Rules:
 | **Destructive commands** | — | — | DENY | — |
 | **Publishing commands** | — | — | ESCALATE | — |
 | **Dry Run Mode** | ALLOW | WARN_DRYRUN_MOCK | WARN_DRYRUN_MOCK | WARN_DRYRUN_MOCK |
+| **Read-Only Modes** | ALLOW | DENY | DENY | DENY |
 
 ## Response Format
 

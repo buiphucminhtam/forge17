@@ -318,6 +318,16 @@ Called when pipeline completes OR when session is explicitly ended.
         "T1": { "status": "completed", "summary": "Mini-BRD: 4 user stories" },
         "T3a": { "status": "completed", "summary": "Auth service with JWT" }
       },
+      "context_snapshot": {
+        "tokens_used": 14500,
+        "active_tools": ["write_to_file", "search_web", "run_command"],
+        "workspace_drift": false
+      },
+      "turn_history": [
+        { "turn": 1, "action": "read_file", "result": "success" },
+        { "turn": 2, "action": "write_to_file", "result": "guardrail_deny_mode" }
+      ],
+      "stop_reason": "success",
       "gates": {
         "1": { "decision": "approved", "feedback": null }
       },

@@ -178,6 +178,7 @@ All modes share these behaviors:
 - Read `.production-grade.yaml` for path overrides
 - Read existing workspace state if present
 - Apply coding-level adaptation from `.production-grade.yaml` (see above)
+- **Apply Contextual Tool Denials:** Ensure the skill running knows the current Mode. If Mode is `Review`, `Explore`, or `Analyze`, the Guardrail protocol strictly denies ALL file writes and mutating commands.
 - Apply sensitive file protection protocol for all file operations
 - **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 8.0 before any work begins
 - **Asynchronous Heartbeat:** Periodically emit human-readable status updates (e.g., "Running tests...", "Applying self-healing fix 2/5...") so the user knows the AI is working and hasn't frozen.

@@ -15,6 +15,17 @@ A clear, well-documented failure is MORE VALUABLE than a half-broken success. Us
 
 ## Retry Limits
 
+### Max-Turns Circuit Breaker (Turn Loop Engine)
+
+```
+Max total tool-calling turns per skill invocation: 15
+
+Turn 1-14: Normal execution, evaluate progress
+Turn 15+: HARD LIMIT REACHED. STOP immediately. A skill must NEVER exceed 15 sequential tool calls without returning to the orchestrator.
+
+After 15 turns → STOP. Yield StopReason: `turn_exhaustion`. Move to Graceful Exit Format.
+```
+
 ### Action-Level Retries
 
 ```
@@ -56,6 +67,7 @@ A skill is **stuck** when ANY of these patterns are detected:
 
 | Pattern | Detection Rule | Action |
 |---------|---------------|--------|
+| **Turn exhaustion** | 15+ sequential tool calls made by the current skill | STOP immediately. Report: `turn_exhaustion`. |
 | **Same action loop** | Same tool call with same parameters 2+ times | STOP immediately. Report: "Repeated action without progress." |
 | **Oscillation** | Alternating between 2 actions (A→B→A→B) | STOP after 2nd cycle. Report: "Oscillating between approaches." |
 | **No progress** | 3+ steps without any measurable progress toward goal | STOP. Report current state and what was tried. |

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.8.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-53-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-25-00CED1.svg" alt="Protocols" />
@@ -45,6 +45,11 @@ If Forgewright helps you ship faster, you can support the project here:
 ## Release Timeline
 
 ```
+2026-04-01  v7.9  ●━━━ Claw Code Architecture Upgrades —
+                  │     Max-Turns Circuit Breaker (15 turns max) to prevent hallucination loops.
+                  │     Contextual Tool Denials for zero-risk read-only modes (Explore/Review/Analyze).
+                  │     Architecture Parity Audit & Structured Session Checkpointing.
+                  │
 2026-03-30  v7.8  ●━━━ The Sentinel Upgrade & Native MCP Server —
                   │     Runtime Healing, Chaos Testing, TDD mandates.
                   │     Native Forgewright MCP Server with state manager.
