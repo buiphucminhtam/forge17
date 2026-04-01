@@ -2,6 +2,7 @@
 # Forgewright MCP build output
 mcp/build/
 mcp/coverage/
+mcp/node_modules/.vite/
 # Forgewright project state
 .forge17/embeddings.db
 .forgewright/
