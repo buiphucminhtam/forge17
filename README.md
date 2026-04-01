@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/version-7.5.0-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/skills-48-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/skills-52-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
   <a href="https://github.com/buiphucminhtam/forgewright/stargazers"><img src="https://img.shields.io/github/stars/buiphucminhtam/forgewright?style=social" alt="Stars" /></a>
@@ -21,7 +21,25 @@
   <img src="https://img.shields.io/badge/🧠_Code_Intelligence-GitNexus-4B0082.svg" alt="Code Intelligence" />
 </p>
 
-<h3 align="center">48 AI Skills · 19 Modes · 15 Protocols · Full Lifecycle Pipeline</h3>
+---
+
+## What is Forgewright?
+
+Forgewright is an **adaptive AI orchestrator** — not just a tool, but a full-stack engineering team powered by 52 specialized skills that collaborate through a structured lifecycle pipeline.
+
+**Core differentiators:**
+
+- **End-to-end lifecycle** — from initial research and requirements analysis all the way through to SEO, A/B testing, and growth optimization. No handoff gaps.
+- **Multi-engine game development** — Unity, Unreal Engine, Godot, and Roblox under one pipeline. Not just "code generation" — full GDD, shaders, multiplayer, spatial audio.
+- **AI-powered quality gates** — every skill output is scored 0–100. Build fails before merge if quality drops below threshold. No cowboy coding.
+- **Code Intelligence** — knowledge graph engine (GitNexus) maps your entire codebase. Ask *"what breaks if I change this function?"* and get blast-radius analysis instantly.
+- **Parallel execution** — independent tasks run simultaneously in git worktrees. Anti-hallucination validator checks each worker before merge.
+- **Research-grounded AI** — NotebookLM MCP integration eliminates hallucinations. Every claim backed by real sources with citations.
+- **Brownfield safety** — for existing projects: auto git branch, baseline tests, change manifest, rollback. Safe to experiment.
+
+> **You say what you want.** Forgewright figures out which skills to activate, in what order, with what guardrails, and delivers a production-ready result.
+
+<h3 align="center">52 AI Skills · 19 Modes · 15 Protocols · Full Lifecycle Pipeline</h3>
 
 <p align="center">
   <strong>Research → Design → Build → Test → Secure → Deploy → Market → Grow</strong><br />
@@ -56,7 +74,7 @@ If Forgewright helps you ship faster, you can support the project here:
                   │     URL validation (SSRF/LFI defense), output sanitization
                   │     (prompt injection defense), CSS-first extraction strategy.
                   │     Library-only mode (no Docker API). Integrated into
-                  │     Polymath Research + AI Build pipeline. 48 total skills.
+                  │     Polymath Research + AI Build pipeline. 52 total skills.
                   │
 2026-03-16  v7.4  ●━━━ UI Design Database & Reasoning Engine —
                   │     85 visual styles, 161 WCAG-validated color palettes,
@@ -167,7 +185,7 @@ Then say: *"Build a production-grade SaaS for [your idea]"* — or *"Build a gam
 
 ## For Antigravity Users
 
-Forgewright is self-discovering. Once installed, Antigravity reads `AGENTS.md` on every new chat and automatically routes your requests through the 48-skill pipeline.
+Forgewright is self-discovering. Once installed, Antigravity reads `AGENTS.md` on every new chat and automatically routes your requests through the 52-skill pipeline.
 
 **Available workflows:**
 
@@ -209,7 +227,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 
 ---
 
-## 48 Skills — Organized by Division
+## 52 Skills — Organized by Division
 
 ### 🧠 Orchestrator & Meta (5)
 
@@ -297,7 +315,7 @@ The orchestrator auto-classifies your request and routes to the right skills:
 DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW
 ```
 
-You give a high-level vision. 48 specialized skills handle everything else.
+You give a high-level vision. 52 specialized skills handle everything else.
 
 ### The Pipeline
 
@@ -421,7 +439,7 @@ CEO Agent (Orchestrator)
 
 | Metric | Detail |
 |--------|--------|
-| **48 specialized skills** | Each with sole authority over its domain |
+| **52 specialized skills** | Each with sole authority over its domain |
 | **19 execution modes** | Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze** |
 | **6-phase pipeline** | DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW |
 | **4 game engines** | Unity, Unreal Engine, Godot, Roblox |
@@ -449,7 +467,7 @@ Forgewright works out of the box with just **Step 1**. Each additional step unlo
 
 | Level | What You Get | Steps Needed |
 |-------|-------------|-------------|
-| ⚡ **Basic** (48 skills) | Full pipeline: DEFINE → BUILD → HARDEN → SHIP | Step 1 only |
+| ⚡ **Basic** (52 skills) | Full pipeline: DEFINE → BUILD → HARDEN → SHIP | Step 1 only |
 | ⚡⚡ **Smart** (+code understanding) | Blast radius analysis, safe refactoring, call chain tracing | + Step 2 |
 | ⚡⚡⚡ **Persistent** (+cross-session memory) | Remembers decisions, blockers, progress across sessions | + Step 3 |
 | ⚡⚡⚡⚡ **Research** (+grounded research) | NotebookLM podcasts, source analysis, deep research | + Step 4 |
@@ -476,7 +494,7 @@ git submodule add -b main https://github.com/buiphucminhtam/forgewright.git .ant
 
 ✅ **Verify:** Open Antigravity, type anything — Forgewright auto-routes through the orchestrator.
 
-🔓 **Unlocks:** 48 skills, 19 modes, 15 protocols, full lifecycle pipeline.
+🔓 **Unlocks:** 52 skills, 19 modes, 15 protocols, full lifecycle pipeline.
 
 ---
 
@@ -690,7 +708,7 @@ Each domain has one authority. No overlap, no contradictions.
 ## Examples
 
 ```bash
-# Greenfield SaaS (full pipeline, 48 skills)
+# Greenfield SaaS (full pipeline, 52 skills)
 "Build a production-grade SaaS for multi-vendor e-commerce
  with seller dashboards, buyer marketplace, and payment processing."
 
@@ -735,7 +753,7 @@ Each domain has one authority. No overlap, no contradictions.
 ## FAQ
 
 **How many skills does Forgewright have?**
-48 specialized skills covering requirements analysis, software engineering, game development (Unity, Unreal, Godot, Roblox), XR (AR/VR/MR), AI/ML, data engineering, web scraping, accessibility, UX research, and go-to-market.
+52 specialized skills covering requirements analysis, software engineering, game development (Unity, Unreal, Godot, Roblox), XR (AR/VR/MR), AI/ML, data engineering, web scraping, accessibility, UX research, and go-to-market.
 
 **Can it build complete games?**
 Yes. The Game Build mode orchestrates game-specific skills: Game Designer → Engine Engineer → Level Designer → Narrative → Technical Art → Audio → QA. Supports Unity, Unreal Engine, Godot, and Roblox.
@@ -755,7 +773,7 @@ No. Playwright is the primary CI testing tool. Midscene is optional for visual Q
 **What languages are supported?**
 TypeScript, Go, Python, Rust, Java, C++ (Unreal), C# (Unity), GDScript (Godot), Luau (Roblox).
 
-**Do I need all 48 skills?**
+**Do I need all 52 skills?**
 No. The orchestrator only activates what you need. A backend API may use 8 skills. A full game may use 20+. The BA skill only activates when information gaps are detected.
 
 **What is Code Intelligence?**
@@ -802,7 +820,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>Forgewright — 48 AI skills. 19 modes. 15 protocols. Code Intelligence. SaaS to AAA games. One prompt. ⭐</strong>
+  <strong>Forgewright — 52 AI skills. 19 modes. 15 protocols. Code Intelligence. SaaS to AAA games. One prompt. ⭐</strong>
 </p>
 <p align="center">
   <em>Understand relationships, not just files. Validate with zero assumptions. Research with zero hallucinations. Build games across 4 engines. Ship with quality scoring. Grow with data.</em>
