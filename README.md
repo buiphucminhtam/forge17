@@ -42,7 +42,7 @@ Forgewright implements a robust **DeerFlow Middleware Pattern** intertwined with
 flowchart TD
     User([User Request]) --> Orch[Orchestrator<br>production-grade/SKILL.md]
     
-    subgraph Context Engine
+    subgraph ContextEngine [Context Engine]
         KB[(knowledge_base/HANDBOOK.md)]
         Neo4j[(GitNexus Intelligence)]
         Profile[(project-profile.json)]
@@ -55,7 +55,7 @@ flowchart TD
     
     BMAD --> GR[Guardrail Middleware<br>Contextual Tool Denials]
     
-    subgraph Execution Swarm
+    subgraph ExecutionSwarm [Execution Swarm]
         direction LR
         FE[Frontend Agent<br>React/Vue]
         BE[Backend Agent<br>Node/Go]
@@ -63,12 +63,12 @@ flowchart TD
         Game[Game Engine<br>Unity/Unreal]
     end
     
-    GR -- Mutating Allowed --> Execution Swarm
+    GR -- Mutating Allowed --> ExecutionSwarm
     GR -- Read-only Modes --> Reject((Action Blocked))
     
-    Execution Swarm --> QA{Quality Gate<br>Architecture Parity Audit}
+    ExecutionSwarm --> QA{Quality Gate<br>Architecture Parity Audit}
     QA -- Pass --> Arbiter[Merge Arbiter<br>Conflict Resolution]
-    QA -- Fail/Drift Detected --> Execution Swarm
+    QA -- Fail/Drift Detected --> ExecutionSwarm
     
     Arbiter --> Out([Production Quality Code])
     
