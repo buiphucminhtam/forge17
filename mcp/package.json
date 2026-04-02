@@ -1,0 +1,21 @@
+{
+  "name": "forgewright-mcp-global",
+  "version": "1.0.0",
+  "description": "Global MCP Server for Forgewright — works across all projects",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  }
+}
