@@ -1,6 +1,36 @@
 # Changelog
 
-All notable changes to Forge17 (formerly Production Grade Plugin).
+All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
+
+## [7.7.0] — 2026-04-02
+
+### Added
+
+- **Forge-Nexus MCP Server** (`mcp/`) — Global MCP server v1.0.0 with PipelineManager, SkillParser, PromptEngine. Enables Claude/Cursor AI assistants to interact with Forgewright pipeline across all projects. Listens on stdio via Model Context Protocol SDK.
+- **GitHub Actions CI/CD** (`.github/workflows/ci.yml`) — Full pipeline: ESLint, Prettier format-check, TypeScript build, Vitest unit tests with v8 coverage, coverage threshold gate, commitlint on PRs.
+- **Dev tooling** (`mcp/`) — ESLint with TypeScript ESLint plugin, Prettier formatting, Vitest test runner, commitlint for Conventional Commits, `.eslintrc.json`, `.prettierrc`, `vitest.config.ts` with pool: forks.
+- **Husky Git hooks** (`.husky/`) — Pre-commit hook (ESLint + Prettier + TypeScript + Vitest), commit-msg hook for commitlint. Root `package.json` with `prepare: husky install` for auto-initialization on clone.
+- **Global Setup Script** (`scripts/setup-project.sh`) — Links Forgewright to any project without git submodule. Detects tech stack, runs GitNexus analyze, prints Cursor MCP config snippet.
+- **GitHub Templates** (`.github/`) — Issue templates (bug report, feature request), PR template with Forgewright pipeline checklist.
+- **Cursor Subagent Review Workflow** (`.cursor/agents/`) — 5 specialized subagents: quality-reviewer, security-auditor, spec-reviewer, verifier, chat-interpreter for structured code review.
+- **GitNexus MCP Tools** (via MCP server) — `gitnexus_query`, `gitnexus_context`, `gitnexus_impact`, `gitnexus_detect_changes`, `gitnexus_rename`, `gitnexus_cypher` for code intelligence.
+- **Auto-initialization Check** — MCP server and GitNexus index auto-initialize on session start if `.forgewright/mcp-server/mcp-config.json` is missing.
+- **Antigravity Plugin** (`.antigravity/`) — Production-grade plugin system with 52 skills, 15 shared protocols, preset templates, game dev workflows.
+
+### Changed
+
+- **Skill count** — 48 skills (corrected after oscillation 52 → 53 → 52)
+- **README** — Added Mermaid flow diagrams for pipeline, subagent review, parallel dispatch; version badge bumped to 7.7.0
+- **VERSION** — Bumped to 7.7.0
+- **AGENTS.md** — Updated skill count to 52, skill directory table
+- **CI pipeline** — Skills updated with activation rules, parallel-dispatch with Mermaid diagrams
+
+### Fixed
+
+- `.vite` build cache ignored in `.gitignore`
+- `mcp/node_modules/` tracked artifacts removed (added to `.gitignore`)
+- GitNexus code intelligence block updated with `npx gitnexus analyze` refresh note
+
 
 ## [7.0.0] — 2026-03-14
 
