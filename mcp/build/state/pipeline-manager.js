@@ -15,6 +15,18 @@ let _forgewrightRoot = null;
 let _workspaceRoot = null;
 function _getForgewrightRoot() {
     if (!_forgewrightRoot) {
+        // Walk up from __dirname until we find package.json (MCP root)
+        let dir = __dirname;
+        for (let i = 0; i < 10; i++) {
+            if (fs.existsSync(path.join(dir, 'package.json'))) {
+                _forgewrightRoot = path.dirname(dir);
+                return _forgewrightRoot;
+            }
+            const parent = path.dirname(dir);
+            if (parent === dir)
+                break;
+            dir = parent;
+        }
         _forgewrightRoot = path.resolve(FORGEWRIGHT_ROOT);
     }
     return _forgewrightRoot;
@@ -61,6 +73,10 @@ export const PIPELINE_PHASES = [
     "Phase 3: QA & Hardening",
     "Phase 4: Release & Deployment"
 ];
+export function resetWorkspaceRoot() {
+    _workspaceRoot = null;
+}
+export { DEFAULT_STATE };
 const DEFAULT_STATE = {
     currentPhase: 0,
     currentMode: null,
@@ -86,7 +102,14 @@ export function getState() {
     }
     try {
         const raw = fs.readFileSync(stateFile, 'utf-8');
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.currentPhase !== 'number' ||
+            !Array.isArray(parsed.history) ||
+            !['IDLE', 'IN_PROGRESS', 'WAITING_FOR_GATE', 'COMPLETED'].includes(parsed.status)) {
+            console.error("State has invalid shape, returning default");
+            return DEFAULT_STATE;
+        }
+        return parsed;
     }
     catch (e) {
         console.error("Failed to read state, returning default", e);

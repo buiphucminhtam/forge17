@@ -7,15 +7,30 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "lint": "eslint src/ --ext .ts --max-warnings=0",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format:write": "prettier --write \"src/**/*.ts\"",
+    "test": "vitest run --reporter=basic",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage --reporter=basic"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.1",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@commitlint/cli": "^18.4.4",
+    "@commitlint/config-conventional": "^18.4.4",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.16",
-    "typescript": "^5.3.3"
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
   }
 }

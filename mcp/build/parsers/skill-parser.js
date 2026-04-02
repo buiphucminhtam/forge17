@@ -1,9 +1,8 @@
 import fs from 'fs';
 import { dirname, join, basename } from 'path';
 import { fileURLToPath } from 'url';
-// Dynamic require needed here because js-yaml reads its own file at require time
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import * as jsyaml from 'js-yaml';
+import { z } from 'zod';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Build → parsers → build → mcp → FORGEWRIGHT_ROOT
@@ -18,7 +17,17 @@ try {
 catch {
     resolvedRoot = FORGEWRIGHT_ROOT;
 }
-const SKILLS_DIR = join(resolvedRoot, 'skills');
+export let SKILLS_DIR = join(resolvedRoot, 'skills');
+export function _setRootOverride(root) {
+    resolvedRoot = root;
+    SKILLS_DIR = join(resolvedRoot, 'skills');
+}
+export const FrontmatterSchema = z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    version: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+});
 function parseFrontmatter(content) {
     const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
     const match = content.match(frontmatterRegex);
