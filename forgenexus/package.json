@@ -1,0 +1,56 @@
+{
+  "name": "forgenexus",
+  "version": "2.0.0",
+  "description": "ForgeNexus — Self-hosted code intelligence for AI agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "forgenexus": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "node scripts/patch-tree-sitter.js",
+    "start": "node dist/cli/index.js",
+    "dev": "tsc --watch",
+    "test": "vitest run --reporter=basic",
+    "test:watch": "vitest",
+    "lint": "eslint src/ --ext .ts --max-warnings=0",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format:write": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.0.1",
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "better-sqlite3": "^11.8.1",
+    "glob": "^10.3.10",
+    "js-yaml": "^4.1.0",
+    "tree-sitter": "0.22.4",
+    "tree-sitter-c": "^0.24.1",
+    "tree-sitter-cpp": "^0.23.4",
+    "tree-sitter-dart": "^1.0.0",
+    "tree-sitter-javascript": "0.21.4",
+    "tree-sitter-kotlin": "^0.3.8",
+    "tree-sitter-php": "^0.24.2",
+    "tree-sitter-python": "0.23.4",
+    "tree-sitter-ruby": "^0.23.1",
+    "tree-sitter-swift": "^0.7.1",
+    "tree-sitter-typescript": "0.23.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-code": "latest",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.16",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

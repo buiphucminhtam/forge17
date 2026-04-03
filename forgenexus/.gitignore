@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.gitnexus/
+.env
+coverage/
+*.log
+.DS_Store
