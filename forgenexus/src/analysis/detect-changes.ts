@@ -4,7 +4,7 @@
  *
  * This powers both:
  *   - detect_changes tool (pre-commit analysis)
- *   - PR review blast radius (GitNexus Enterprise feature)
+ *   - PR review blast radius
  */
 
 import { execSync } from "child_process";
@@ -162,7 +162,7 @@ export function detectChanges(
 }
 
 /**
- * PR Review blast-radius analysis — the GitNexus Enterprise feature.
+ * PR Review blast-radius analysis.
  * Analyzes what would break if a PR is merged.
  *
  * This goes beyond simple diff analysis by:

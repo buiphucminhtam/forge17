@@ -6,6 +6,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, basename } from "path";
+import { ensureNexusDataDirMigrated, defaultCodebaseDbPath } from "../paths.js";
 
 interface WikiOptions {
   repoPath: string;
@@ -16,7 +17,8 @@ export async function wiki(opts: WikiOptions): Promise<void> {
   const { repoPath, args } = opts;
   const log = (msg: string) => console.error(`[ForgeNexus] ${msg}`);
 
-  const dbPath = join(repoPath, ".gitnexus", "codebase.db");
+  ensureNexusDataDirMigrated(repoPath);
+  const dbPath = defaultCodebaseDbPath(repoPath);
   if (!existsSync(dbPath)) {
     log(`No index found. Run 'forgenexus analyze' first.`);
     return;

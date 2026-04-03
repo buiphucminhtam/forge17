@@ -375,7 +375,7 @@ Before any skill writes code, it MUST:
 |-------|-------------|---------------|
 | ⚡ **Basic** | 52 skills, full pipeline | Steps 1–3 |
 | ⚡⚡ **Smart** | Blast radius analysis, safe refactoring | Step 2 (ForgeNexus) |
-| ⚡⚡⚡ **Persistent** | Cross-session memory | `python3 scripts/mem0-cli.py setup` |
+| ⚡⚡⚡ **Persistent** | Cross-session memory (**required** for orchestrator) | `bash scripts/ensure-mem0.sh` (or `python3 scripts/mem0-cli.py setup`) — CI: `FORGEWRIGHT_SKIP_MEM0=1` |
 | ⚡⚡⚡⚡ **Research** | NotebookLM MCP — grounded AI, zero hallucinations | `pip install notebooklm-mcp`, add to MCP config |
 | ⚡⚡⚡⚡⚡ **Full Power** | Web crawling, AI vision testing, multi-agent | Steps 5–7 (see below) |
 

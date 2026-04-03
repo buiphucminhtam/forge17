@@ -1,7 +1,7 @@
 /**
  * ForgeNexus MCP Tool Definitions
  *
- * Full parity with GitNexus, plus ForgeNexus extras (pr_review).
+ * Core graph tools plus ForgeNexus extras (e.g. pr_review).
  * Every tool has detailed WHEN TO USE / AFTER THIS / TIPS sections
  * to guide agent workflows.
  */

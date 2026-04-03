@@ -5,23 +5,25 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { join } from "path";
 import { ForgeDB } from "../data/db.js";
 import { Registry } from "../data/registry.js";
 import { registerTools } from "./tools.js";
 import { registerResources } from "./resources.js";
 import { registerPrompts } from "./prompts.js";
+import { ensureNexusDataDirMigrated, defaultCodebaseDbPath } from "../paths.js";
+import { applyLegacyGitnexusEnv } from "../env-legacy.js";
 
 export async function startMCPServer(repoPath?: string) {
+  applyLegacyGitnexusEnv();
   const cwd = repoPath ?? process.cwd();
   const registry = new Registry();
   const repo = registry.getByPath(cwd);
 
   // Determine which DB to use: registry entry takes priority,
   // otherwise fall back to the standard path directly.
-  const dbPath = repo
-    ? repo.path + "/.gitnexus/codebase.db"
-    : join(cwd, ".gitnexus", "codebase.db");
+  const indexRoot = repo?.path ?? cwd;
+  ensureNexusDataDirMigrated(indexRoot);
+  const dbPath = defaultCodebaseDbPath(indexRoot);
 
   const db = new ForgeDB(dbPath);
 

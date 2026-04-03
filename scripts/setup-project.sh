@@ -11,9 +11,10 @@
 #
 # What it does:
 #   1. Creates .forgewright/ directory in the target project
-#   2. Detects tech stack and generates project-profile.json
-#   3. Runs ForgeNexus analyze to index the project
-#   4. Prints the Cursor MCP config snippet (add to ~/.cursor/mcp.json)
+#   2. Initializes mem0 (.forgewright/memory.jsonl) via mem0-cli.py
+#   3. Detects tech stack and generates project-profile.json
+#   4. Runs ForgeNexus analyze to index the project
+#   5. Prints the Cursor MCP config snippet (add to ~/.cursor/mcp.json)
 #
 # Requirements:
 #   - Global Forgewright repo must exist at FORGEWRIGHT_PATH (see below)
@@ -235,9 +236,27 @@ print_cursor_config() {
 
 # ─── Main ───────────────────────────────────────────────────────────────
 
+run_mem0_ensure() {
+    if [ "${FORGEWRIGHT_SKIP_MEM0:-}" = "1" ]; then
+        log_info "Skipping mem0 (FORGEWRIGHT_SKIP_MEM0=1)."
+        return
+    fi
+    if ! command -v python3 &> /dev/null; then
+        log_warn "python3 not found — mem0 not initialized. Install Python 3 and run: bash ${FORGEWRIGHT_PATH}/scripts/ensure-mem0.sh"
+        return
+    fi
+    log_info "Ensuring Forgewright memory (mem0)..."
+    if bash "${FORGEWRIGHT_PATH}/scripts/ensure-mem0.sh" "$TARGET_PROJECT"; then
+        log_ok "mem0 ready (.forgewright/memory.jsonl)"
+    else
+        log_warn "mem0 setup failed. Fix errors and run: bash ${FORGEWRIGHT_PATH}/scripts/ensure-mem0.sh \"$TARGET_PROJECT\""
+    fi
+}
+
 main() {
     check_prerequisites
     create_forgewright_dir
+    run_mem0_ensure
     run_forgenexus_analyze
     print_cursor_config
 

@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema for ForgeNexus
- * Single CodeRelation table with type property (matches GitNexus schema).
+ * Single CodeRelation table with type property (unified graph schema).
  *
  * Full Edge Types (17 total):
  *   CONTAINS        — file/folder contains a symbol

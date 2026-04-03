@@ -1,7 +1,7 @@
 /**
  * Vector embeddings generation for semantic search.
  * Supports OpenAI API, Ollama (local), HuggingFace Inference API, Google Gemini,
- * and @huggingface/transformers (fully local, no API key needed — matches GitNexus).
+ * and @huggingface/transformers (fully local, no API key needed).
  *
  * Embedding providers (in priority order for auto-detection):
  *   1. transformers  — Local ML inference, no API key, GPU-accelerated
@@ -220,7 +220,7 @@ async function generateOpenAIEmbeddings(
 
 /**
  * Generate embeddings using @huggingface/transformers — fully local ML inference.
- * Matches GitNexus approach: runs entirely on your machine with GPU (CUDA/CoreML)
+ * Runs entirely on your machine with GPU (CUDA/CoreML)
  * or CPU fallback. No API key required.
  *
  * Models: all-MiniLM-L6-v2 family (384-dim, fast), bge-small (512-dim, better quality)
@@ -556,7 +556,7 @@ function bm25Score(docTerms: string[], queryTerms: string[]): number {
  * Hybrid search: combines BM25 (FTS) + Semantic (embeddings) via RRF.
  * Returns results ranked by Reciprocal Rank Fusion.
  *
- * This matches GitNexus hybrid search approach:
+ * Hybrid lexical + semantic search:
  * - BM25: exact/keyword matching via SQLite FTS5
  * - Semantic: vector similarity via embeddings
  * - RRF: principled fusion of both rankings

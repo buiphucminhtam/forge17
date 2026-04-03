@@ -11,7 +11,7 @@
 #
 # Prerequisites:
 #   - Node.js >= 18
-#   - ForgeNexus indexed (.gitnexus/ exists)
+#   - ForgeNexus indexed (.forgenexus/ exists)
 #   - project-profile.json exists (run /onboard first time)
 # ─────────────────────────────────────────────────────────
 

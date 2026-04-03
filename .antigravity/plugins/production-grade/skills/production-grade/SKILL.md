@@ -495,6 +495,18 @@ Run silently BEFORE any execution (all modes) to ensure project intelligence is 
    - Yield a brief message to the user: `ℹ Auto-initialized ForgeNexus index and MCP server (missing setup).`
 3. **If exists**, continue normally without doing anything.
 
+**Step 0.2 — Memory (mem0) Check (required):**
+
+Forgewright **requires** local project memory via `scripts/mem0-cli.py` (Python 3, no pip deps). The store is **`.forgewright/memory.jsonl`** in the project root.
+
+1. Check if **`.forgewright/memory.jsonl`** exists in the project root.
+2. **If missing**, silently run:
+   - `bash <path-to-forgewright>/scripts/ensure-mem0.sh`  
+     (from the **host** project: optional explicit root `bash .../ensure-mem0.sh "$(pwd)"`)
+   - Default: resolves host root like `mcp-generate.sh` (sibling of the Forgewright repo with `.git`, else Forgewright repo root).
+3. **If `ensure-mem0.sh` fails** (e.g. no `python3`), tell the user mem0 is mandatory: install Python 3 and re-run the script. Do not skip session memory. **Exception:** `FORGEWRIGHT_SKIP_MEM0=1` (CI/headless only).
+4. **If setup succeeded**, yield briefly: `ℹ Initialized Forgewright memory (mem0). Run mem0-cli refresh if the store is empty.`
+
 ## Auto-Update Check
 
 Run BEFORE any execution (all modes). Silent if current. One prompt max if update exists.
@@ -542,9 +554,10 @@ Run AFTER update check, BEFORE mode classification. Follows `skills/_shared/prot
    - If last session completed → log summary, continue to new request
    - If first session → continue normally
 
-3. **Load memory context:**
-   - If memory-manager configured → retrieve top-5 project context (max 800 tokens)
-   - If not configured → read `.forgewright/code-conventions.md` if exists
+3. **Load memory context (mem0 is required — Step 0.2):**
+   - Run `python3 <path-to-forgewright>/scripts/mem0-cli.py search "<project-name> <user-request-keywords>" --limit 5 --format compact` (or `./scripts/mem0-cli.py` when the project is the Forgewright repo)
+   - If the store is empty or search returns nothing → run `python3 ... mem0-cli.py refresh` once, then search again
+   - Also read `.forgewright/code-conventions.md` if it exists for extra conventions
 
 4. **Detect manual changes:**
    - If git available → check commits since last session

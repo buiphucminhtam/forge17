@@ -4,7 +4,9 @@
 
 Index any codebase, understand architecture, trace execution flows, analyze blast radius before changes, and run safe refactors — all with a single CLI and MCP server.
 
-> **ForgeNexus vs GitNexus**: ForgeNexus matches GitNexus feature parity and adds 6 extra tools (route_map, tool_map, shape_check, api_impact, pr_review, multi-repo graph), 5 local embedding providers, and auto-setup. GitNexus has more polished skill documentation and CLAUDE.md/AGENTS.md generation.
+> **Index data** is stored under **`.forgenexus/`** at the repo root (older installs may auto-migrate from `.gitnexus/` on first run).
+
+**Migrating from `gitnexus`:** Use the **`forgenexus`** CLI only. The `gitnexus` bin, if present, **exits with an error** until you update scripts—temporary bridge: `FORGENEXUS_COMPAT_GITNEXUS_CLI=1`. Replace npm dependency `gitnexus` with `forgenexus`. Env vars `GITNEXUS_LLM_*` are mapped to `FORGENEXUS_LLM_*` with a deprecation warning.
 
 ## Features
 
@@ -128,7 +130,7 @@ npx forgenexus mcp [path]               # Start MCP server (stdio)
 ### "What does this function do and who calls it?"
 
 ```
-gitnexus context {name: "validatePayment"}
+forgenexus context {name: "validatePayment"}
 → 360° view: callers, callees, importers, extends/implements, methods, properties
 → Shows which processes/communities this symbol belongs to
 ```
@@ -136,7 +138,7 @@ gitnexus context {name: "validatePayment"}
 ### "Is it safe to change this function?"
 
 ```
-gitnexus impact {target: "validatePayment", direction: "upstream", maxDepth: 3}
+forgenexus impact {target: "validatePayment", direction: "upstream", maxDepth: 3}
 → d=1 (WILL BREAK): processCheckout, webhookHandler
 → d=2 (LIKELY AFFECTED): authRouter, sessionManager
 → Risk: MEDIUM
@@ -145,7 +147,7 @@ gitnexus impact {target: "validatePayment", direction: "upstream", maxDepth: 3}
 ### "What will break if I merge this PR?"
 
 ```
-gitnexus pr_review {base_ref: "origin/main"}
+forgenexus pr_review {base_ref: "origin/main"}
 → Files changed: 8 | Symbols: 12
 → Blast radius: 2 critical, 3 high, 5 medium
 → Breaking changes: PaymentInput type changed (createPayment not updated)
@@ -155,7 +157,7 @@ gitnexus pr_review {base_ref: "origin/main"}
 ### "Find all API routes in this project"
 
 ```
-gitnexus route_map
+forgenexus route_map
 → GET /api/users → getUsers (src/routes/users.ts:42)
 → POST /api/checkout → processCheckout (src/checkout.ts:15)
 → GET /api/products/:id → getProduct (src/api/products.ts:22)
@@ -173,7 +175,7 @@ READ forgenexus://repo/myapp/processes
 ### "Search for 'payment' related code"
 
 ```
-gitnexus query {query: "payment validation error handling"}
+forgenexus query {query: "payment validation error handling"}
 → [HIGH] validatePayment (src/payments/validator.ts:15) — 3 callers
 → [MED] processCheckout (src/checkout.ts:42) — CheckoutFlow step 2/7
 → [MED] refundHandler (src/orders/refund.ts:8)

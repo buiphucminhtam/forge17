@@ -166,24 +166,24 @@ ForgeNexus uses OpenAI-compatible API format. Configure via environment variable
 
 **MiniMax (Recommended — cost-effective):**
 ```bash
-export GITNEXUS_LLM_PROVIDER=openai-compatible
-export GITNEXUS_LLM_BASE_URL=https://api.minimaxi.chat/v1
-export GITNEXUS_LLM_API_KEY=your-minimax-api-key
-export GITNEXUS_LLM_MODEL=MiniMax-Text-01
+export FORGENEXUS_LLM_PROVIDER=openai-compatible
+export FORGENEXUS_LLM_BASE_URL=https://api.minimaxi.chat/v1
+export FORGENEXUS_LLM_API_KEY=your-minimax-api-key
+export FORGENEXUS_LLM_MODEL=MiniMax-Text-01
 ```
 
 **Google Gemini:**
 ```bash
-export GITNEXUS_LLM_PROVIDER=openai-compatible
-export GITNEXUS_LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-export GITNEXUS_LLM_API_KEY=your-google-ai-studio-key
-export GITNEXUS_LLM_MODEL=gemini-2.0-flash
+export FORGENEXUS_LLM_PROVIDER=openai-compatible
+export FORGENEXUS_LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+export FORGENEXUS_LLM_API_KEY=your-google-ai-studio-key
+export FORGENEXUS_LLM_MODEL=gemini-2.0-flash
 ```
 
 **OpenAI:**
 ```bash
-export GITNEXUS_LLM_API_KEY=your-openai-key
-export GITNEXUS_LLM_MODEL=gpt-4o-mini
+export FORGENEXUS_LLM_API_KEY=your-openai-key
+export FORGENEXUS_LLM_MODEL=gpt-4o-mini
 ```
 
 > **Tip:** Add these exports to your `~/.zshrc` (macOS) or `~/.bashrc` (Linux) to persist across sessions. The LLM config is **entirely optional** — if not set, only `--skills` and `wiki` features will be unavailable. All MCP tools work without LLM.

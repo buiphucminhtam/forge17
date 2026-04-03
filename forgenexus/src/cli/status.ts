@@ -5,11 +5,17 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
+import {
+  ensureNexusDataDirMigrated,
+  nexusDataDir,
+  defaultCodebaseDbPath,
+} from "../paths.js";
 
 export function status(opts: { repoPath: string }): void {
   const { repoPath } = opts;
-  const nexusDir = join(repoPath, ".gitnexus");
-  const dbPath = join(nexusDir, "codebase.db");
+  ensureNexusDataDirMigrated(repoPath);
+  const nexusDir = nexusDataDir(repoPath);
+  const dbPath = defaultCodebaseDbPath(repoPath);
 
   if (!existsSync(dbPath)) {
     console.error(`[ForgeNexus] No index found at ${nexusDir}. Run 'forgenexus analyze' first.`);

@@ -7,6 +7,11 @@ import { join, basename } from "path";
 import { execSync } from "child_process";
 import { Indexer } from "../analysis/indexer.js";
 import { ForgeDB } from "../data/db.js";
+import {
+  ensureNexusDataDirMigrated,
+  nexusDataDir,
+  defaultCodebaseDbPath,
+} from "../paths.js";
 
 export async function analyze(opts: {
   repoPath: string;
@@ -28,9 +33,10 @@ export async function analyze(opts: {
   }
 
   const isGit = existsSync(join(repoPath, ".git"));
-  const nexusDir = join(repoPath, ".gitnexus");
+  ensureNexusDataDirMigrated(repoPath);
+  const nexusDir = nexusDataDir(repoPath);
   mkdirSync(nexusDir, { recursive: true });
-  const dbPath = join(nexusDir, "codebase.db");
+  const dbPath = defaultCodebaseDbPath(repoPath);
 
   const indexer = new Indexer(repoPath, {
     repoPath,

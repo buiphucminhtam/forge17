@@ -5,7 +5,7 @@
  * Generated at: {{generatedAt}}
  *
  * This server exposes project intelligence as MCP primitives.
- * Powered by GitNexus code intelligence (Native Integration).
+ * Powered by ForgeNexus code intelligence (Native Integration).
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -16,7 +16,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 // @ts-ignore
-import { LocalBackend } from "gitnexus/dist/mcp/local/local-backend.js";
+import { LocalBackend } from "forgenexus/dist/mcp/local/local-backend.js";
 
 // ─── Configuration ──────────────────────────────────────────────
 const __filename = fileURLToPath(import.meta.url);
@@ -105,7 +105,7 @@ const server = new McpServer({
 
 const backend = new LocalBackend();
 
-// ─── Graph Tools (GitNexus Native) ──────────────────────────────
+// ─── Graph Tools (ForgeNexus Native) ──────────────────────────────
 
 server.tool(
   "project_query",
@@ -295,7 +295,7 @@ server.resource(
 server.resource(
   "project-architecture",
   "project://architecture",
-  { description: "Architecture overview natively from GitNexus" },
+  { description: "Architecture overview natively from ForgeNexus" },
   async () => {
     try {
       const { clusters } = await backend.queryClusters();
@@ -435,7 +435,7 @@ async function main() {
   
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`[{{projectName}}] MCP server V2 started (Native GitNexus + stdio transport)`);
+  console.error(`[{{projectName}}] MCP server V2 started (Native ForgeNexus + stdio transport)`);
 }
 
 main().catch((error) => {

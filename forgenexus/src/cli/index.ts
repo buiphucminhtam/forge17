@@ -17,6 +17,7 @@ import { setup } from "./setup.js";
 import { status } from "./status.js";
 import { wiki } from "./wiki.js";
 import { startMCPServer } from "../mcp/server.js";
+import { applyLegacyGitnexusEnv } from "../env-legacy.js";
 
 const COMMANDS = ["analyze", "clean", "status", "wiki", "mcp", "setup", "help"] as const;
 
@@ -81,6 +82,7 @@ MCP configuration (.cursor/mcp.json):
 }
 
 async function main() {
+  applyLegacyGitnexusEnv();
   const args = process.argv.slice(2);
   const cmd = args[0] ?? "help";
 

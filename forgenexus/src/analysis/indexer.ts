@@ -12,6 +12,7 @@ import { ForgeDB } from "../data/db.js";
 import { detectCommunities, traceProcesses } from "../data/graph.js";
 import { generateEmbeddings, detectProvider } from "../data/embeddings.js";
 import type { ForgeNexusConfig, RepoStats, CodeNode, CodeEdge } from "../types.js";
+import { defaultCodebaseDbPath } from "../paths.js";
 
 export type Phase = "scanning" | "parsing" | "edges" | "communities" | "processes" | "fts" | "embeddings" | "complete";
 
@@ -37,7 +38,7 @@ export class Indexer {
       includeEmbeddings: config.includeEmbeddings ?? false,
       repoName: config.repoName ?? basename(basePath),
       repoPath: config.repoPath ?? basePath,
-      dbPath: config.dbPath ?? join(basePath, ".gitnexus", "codebase.db"),
+      dbPath: config.dbPath ?? defaultCodebaseDbPath(basePath),
     };
     this.scanner = new FileScanner(basePath, this.config);
     this.parser = new ParserEngine();

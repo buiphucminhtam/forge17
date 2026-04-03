@@ -4,12 +4,13 @@
 .forge17/
 .embeddings/
 .forgewright/
+.forgenexus/
 .gitnexus/
 
 # Node modules (all of them)
 node_modules/
 
-# GitNexus auto-generated Claude Code files — Antigravity uses its own protocols
+# ForgeNexus / legacy auto-generated Claude Code files — Antigravity uses its own protocols
 .claude/
 CLAUDE.md
 
@@ -23,6 +24,7 @@ dist/
 
 # Antigravity plugin internals (nested git submodule, caches, local MCP server)
 .antigravity/.git/
+.antigravity/.forgenexus/
 .antigravity/.gitnexus/
 .antigravity/.forgewright/
 .antigravity/.forge17/

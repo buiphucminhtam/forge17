@@ -5,10 +5,12 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync } from "fs";
 import { join, dirname } from "path";
+import { ensureNexusDataDirMigrated, nexusDataDir } from "../paths.js";
 
 export async function setup(): Promise<void> {
   const cwd = process.cwd();
-  const nexusDir = join(cwd, ".gitnexus");
+  ensureNexusDataDirMigrated(cwd);
+  const nexusDir = nexusDataDir(cwd);
   mkdirSync(nexusDir, { recursive: true });
 
   // ── MCP Config ──────────────────────────────────────────────────────────────
@@ -179,7 +181,7 @@ FORGENEXUS_ROOT="${cwd}"
 # Only reindex if switching branches (not on file checkout)
 if [ "$3" = "1" ]; then
   # Branch checkout detected — quick check if index is stale
-  if [ -f "$FORGENEXUS_ROOT/.gitnexus/codebase.db" ]; then
+  if [ -f "$FORGENEXUS_ROOT/.forgenexus/codebase.db" ]; then
     (
       cd "$FORGENEXUS_ROOT"
       # Silently check if new branches added files we haven't indexed

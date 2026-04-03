@@ -1,6 +1,6 @@
 /**
  * Global repository registry — tracks all indexed repos.
- * Stored in {forgewright_root}/.gitnexus/registry.db
+ * Stored in {forgewright_root}/.forgenexus/registry.db
  */
 
 import Database from 'better-sqlite3';
@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import type { RepoMeta } from '../types.js';
+import { ensureNexusDataDirMigrated, nexusDataDir } from '../paths.js';
 
 const REGISTRY_SCHEMA = `
 CREATE TABLE IF NOT EXISTS registry (
@@ -47,7 +48,8 @@ export class Registry {
 
   constructor() {
     this.root = findForgewrightRoot();
-    const nexusDir = join(this.root, '.gitnexus');
+    ensureNexusDataDirMigrated(this.root);
+    const nexusDir = nexusDataDir(this.root);
     if (!existsSync(nexusDir)) {
       mkdirSync(nexusDir, { recursive: true });
     }
@@ -55,6 +57,21 @@ export class Registry {
     this.db = new Database(this.dbPath);
     this.db.pragma('journal_mode = WAL');
     this.db.exec(REGISTRY_SCHEMA);
+    this.migrateLegacyDbPathsInRegistry();
+  }
+
+  /** Normalize rows that still point at pre-rename `.gitnexus/` paths. */
+  private migrateLegacyDbPathsInRegistry(): void {
+    try {
+      this.db
+        .prepare(
+          `UPDATE registry SET db_path = REPLACE(db_path, '/.gitnexus/', '/.forgenexus/')
+           WHERE db_path LIKE '%/.gitnexus/%'`
+        )
+        .run();
+    } catch {
+      /* empty */
+    }
   }
 
   register(repo: RepoMeta, dbPath: string): void {
@@ -128,8 +145,8 @@ export class Registry {
  *
  * Usage:
  *   const unified = new UnifiedGraph();
- *   unified.addRepo('my-app', '/path/to/my-app/.gitnexus/codebase.db');
- *   unified.addRepo('shared-lib', '/path/to/shared-lib/.gitnexus/codebase.db');
+ *   unified.addRepo('my-app', '/path/to/my-app/.forgenexus/codebase.db');
+ *   unified.addRepo('shared-lib', '/path/to/shared-lib/.forgenexus/codebase.db');
  *   unified.query('auth middleware'); // searches across both repos
  */
 export class UnifiedGraph {

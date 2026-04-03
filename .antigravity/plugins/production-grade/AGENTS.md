@@ -73,6 +73,14 @@ Run silently BEFORE any execution (all modes) to ensure project intelligence is 
    - Yield a brief message to the user: `ℹ Auto-initialized ForgeNexus index and MCP server (missing setup).`
 3. **If exists**, continue normally without doing anything.
 
+**Step 0.2 — Memory (mem0) Check (required):**
+
+Forgewright **requires** local project memory: **`.forgewright/memory.jsonl`**, created by `scripts/mem0-cli.py` (Python 3, stdlib only). **If missing**, run:
+
+`bash <path-to-forgewright>/scripts/ensure-mem0.sh`
+
+If that fails, install Python 3 and retry. **CI only:** `FORGEWRIGHT_SKIP_MEM0=1` skips this step.
+
 ## Auto-Update Check
 
 At the start of each session, silently check if a newer version is available:
@@ -173,6 +181,7 @@ Optional: create `.production-grade.yaml` at project root to customize paths, pr
 ## Project State (v7.0)
 
 Forgewright maintains project state in the `.forgewright/` directory:
+- `memory.jsonl` — Cross-session memory (mem0 / `mem0-cli.py`; **required** after setup — run `scripts/ensure-mem0.sh` if absent)
 - `project-profile.json` — Project fingerprint, health, patterns, risk (committed)
 - `code-conventions.md` — Detected coding patterns for consistency (committed)
 - `session-log.json` — Session history and resume state (gitignored)

@@ -5,11 +5,12 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "forgenexus": "dist/cli/index.js"
+    "forgenexus": "dist/cli/index.js",
+    "gitnexus": "dist/cli/gitnexus-entry.js"
   },
   "scripts": {
     "build": "tsc",
-    "postinstall": "node scripts/patch-tree-sitter.js",
+    "postinstall": "node scripts/patch-tree-sitter.js && node scripts/warn-legacy-gitnexus-dep.js",
     "start": "node dist/cli/index.js",
     "dev": "tsc --watch",
     "test": "vitest run --reporter=basic",
