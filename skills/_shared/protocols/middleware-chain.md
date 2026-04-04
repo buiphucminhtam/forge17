@@ -56,7 +56,7 @@ Result / Next Skill
 | ⑥ | **QualityGate** | quality-gate.md | `after_skill()` | Run 4-level validation, calculate 0-100 score |
 | ⑦ | **BrownfieldSafety** | brownfield-safety.md | `after_skill()` | Regression check, protected path enforcement, change manifest |
 | ⑧ | **TaskTracking** | session-lifecycle.md §Hooks | `after_skill()` | Emit SKILL_COMPLETED event, update task.md |
-| ⑨ | **Memory** | memory-manager.md §Hooks | `after_skill()` | Extract decisions/blockers, store to mem0 (debounced) |
+| ⑨ | **Memory** | memory-manager.md §Hooks + session-lifecycle §Per-request | `after_skill()` **and** `turn_close()` | After each skill: extract decisions/blockers → mem0. **After each completed user request:** mandatory Turn-Close `add` (session + optional decisions/architecture/blockers) — not optional unless `MEM0_DISABLED` / `FORGEWRIGHT_SKIP_MEM0` |
 | ⑩ | **GracefulFailure** | graceful-failure.md | `on_error()` | Detect stuck states, manage retry counts, trigger exit |
 
 ## Execution Rules

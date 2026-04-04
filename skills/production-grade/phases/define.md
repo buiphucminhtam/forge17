@@ -11,9 +11,13 @@ Read `.production-grade.yaml` for path overrides:
 - `paths.architecture_docs` → Architecture docs (default: `docs/architecture/`)
 - `features.ui_design` → if false, skip T1.5 (default: true for full builds)
 
-## T0.5: Business Analyst — Requirements Validation (Conditional)
+## T0.5: Business Analyst — Requirements Validation
 
-**Activation:** Runs if the orchestrator's BA pre-flight check (Step 7.5) detected information gaps (6W1H score < 6/7). Skip if requirements are already complete or user explicitly skipped BA.
+**Activation (orchestrator Step 7.5):**
+
+- **Greenfield Full Build:** **Always run T0.5 first** — BA is mandatory until `ba-package.md` exists and minimum elicitation rounds (per `skills/production-grade/SKILL.md` §7.5) are met. Do not skip on self-scored 6W1H alone.
+- **Brownfield Full Build:** Run if information gaps, net-new product/surface, or no `ba-package.md` for this initiative; may skip only when orchestrator logged "Requirements sufficiently complete" per §7.5.
+- **Escape:** `.production-grade.yaml` → `features.skip_define_ba: true`, or user explicitly chose **Skip BA — I accept incomplete requirements risk** at the orchestrator prompt.
 
 ```
 Update task.md: T0.5 status → in_progress

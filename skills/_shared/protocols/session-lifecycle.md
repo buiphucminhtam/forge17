@@ -46,7 +46,7 @@ ELSE:
 ### Step 3 — Load Memory Context
 
 ```
-IF memory-manager is configured (MEM0_DISABLED != true):
+IF MEM0_DISABLED != true AND FORGEWRIGHT_SKIP_MEM0 != 1:
   Run: python3 scripts/mem0-cli.py search "<project-name> <user-request-keywords>" --limit 5 --format compact
   IF no results returned:
     Run: python3 scripts/mem0-cli.py refresh
@@ -55,7 +55,7 @@ IF memory-manager is configured (MEM0_DISABLED != true):
   Log: "✓ Memory loaded: [N] relevant items"
 ELSE:
   Read .forgewright/code-conventions.md if exists
-  Log: "✓ Conventions loaded (memory not configured)"
+  Log: "✓ Conventions loaded (memory skipped or disabled)"
 ```
 
 ### Step 3.5 — Check Code Intelligence Freshness
@@ -96,6 +96,61 @@ IF git is available AND last session timestamp known:
 ELSE:
   Continue without drift detection
 ```
+
+## Turn-Start Memory Retrieval (Within-Session Continuity)
+
+**When:** Before answering each user request within a session. Runs **before** orchestrator processes the new request.
+
+**Why:** Without this, conversation facts written in Turn N are not retrieved in Turn N+1. The assistant loses context of what was just discussed.
+
+**Trigger point:** After session-lifecycle Step 0.5 (session start), and **before each subsequent user request**.
+
+### Step T1 — Load Conversation Summary
+
+```
+IF .forgewright/subagent-context/CONVERSATION_SUMMARY.md exists:
+  Read it → inject into context
+  Log: "✓ Conversation summary loaded — [N] exchanges summarized"
+```
+
+### Step T2 — Retrieve Recent Turns
+
+```
+IF MEM0_DISABLED != true AND FORGEWRIGHT_SKIP_MEM0 != 1:
+  # Search for recent conversation facts (within current session)
+  python3 scripts/mem0-cli.py search "conversation recent" --limit 3 --format compact 2>/dev/null
+  
+  # Search for task context relevant to current request
+  python3 scripts/mem0-cli.py list --category session --limit 3 --format compact 2>/dev/null
+  
+  # Inject: "Recent context: [top memories]"
+  Log: "✓ Recent turns loaded — [N] relevant items"
+```
+
+### Step T3 — Detect Scope Context
+
+```
+IF .forgewright/business-analyst/handoff/ba-package.md exists:
+  # BA scope persists across turns
+  Read key sections → inject scope summary
+  Log: "✓ BA scope context loaded"
+
+IF .forgewright/subagent-context/PIPELINE_SUMMARY.md exists:
+  # Pipeline summary from orchestrator
+  Log: "✓ Pipeline summary loaded"
+```
+
+### Turn-Start Checkpoint
+
+```
+Log: "✓ Turn-Start context loaded:
+  - Conversation summary: [loaded/skipped]
+  - Recent turns: [N] items
+  - BA scope: [loaded/skipped]
+  - Pipeline context: [loaded/skipped]"
+```
+
+**Integration:** The orchestrator (production-grade/SKILL.md) calls these steps before processing each user request. This is distinct from Session Start (Step 0.5) which runs only once per session.
 
 ## Session Save (Automatic Hooks)
 
@@ -203,7 +258,7 @@ All events are emitted by Middleware ⑧ (TaskTracking) and stored in `session-l
       "type": "GATE_PENDING",
       "gate_number": 2,
       "skills_completed": ["product-manager", "solution-architect"],
-      "timestamp": "2026-03-25T12:00:00Z"
+      "timestamp": "2026-03-25T11:59:00Z"
     },
     {
       "type": "GATE_DECIDED",
@@ -253,6 +308,74 @@ The middleware chain references these protocols:
     → Emits SKILL_FAILED with retry context
 ```
 
+## Per-request memory (Turn-Close) — mandatory
+
+**When:** After the assistant has **fully addressed** the current user message (single-turn chat, end of pipeline step, or before waiting on the next user input). **Not optional** for normal sessions (`MEM0_DISABLED` / `FORGEWRIGHT_SKIP_MEM0` exempt).
+
+**Why:** Without this, project memory only grows at gates/phases — **conversation facts and incremental decisions are lost** between requests.
+
+### Step TC1 — Generate Conversation Summary (Auto-Generated)
+
+```
+BEFORE running the mem0 add command, auto-generate a summary:
+1. Extract key facts from the current exchange:
+   - What was the user asking about?
+   - What did we decide or discover?
+   - What remains open?
+2. Compose auto-summary (~100-200 chars):
+   "Exchange: [2-3 sentences summarizing the exchange]"
+3. Write to .forgewright/subagent-context/CONVERSATION_SUMMARY.md:
+   # Conversation Summary — [session_id]
+   - [timestamp]: [summary of exchange 1]
+   - [timestamp]: [summary of exchange 2]
+   ...
+4. Log: "✓ Conversation summary updated"
+```
+
+### Step TC2 — Write Turn-Close Memory (Mandatory)
+
+**MUST run at least one** `mem0-cli.py add` per turn, using a **single compact line** (redact secrets; stay under ~400 chars):
+
+```bash
+python3 scripts/mem0-cli.py add "REQ: [1-line user goal] | DONE: [what changed or decided] | OPEN: [blockers/questions or none] | SCOPE_UPDATE: [scope change or 'stable'] | CONVERSATION: [auto-summary from TC1]" --category session
+```
+
+### SCOPE_UPDATE Field
+
+Append `SCOPE_UPDATE:` to every Turn-Close memory entry:
+
+| Situation | SCOPE_UPDATE value |
+|----------|-------------------|
+| New project / first BA session | `SCOPE_UPDATE: Project scoped: [1-line description]` |
+| New feature added | `SCOPE_UPDATE: Scope extended: [feature name]` |
+| Scope refined / clarified | `SCOPE_UPDATE: Scope refined: [what changed]` |
+| No change | `SCOPE_UPDATE: Scope stable` |
+
+### Additional Memory Categories
+
+**ALSO add a second line** when any of these occurred this turn (pick category):
+
+| Situation | Category | Example prefix |
+|-----------|----------|----------------|
+| User or assistant locked a choice | `decisions` | `DECISION:` |
+| Architecture / stack / pattern | `architecture` | `ARCH:` |
+| Blocked on external factor | `blockers` | `BLOCKER:` |
+| Scope / BA / requirements shift | `project` | `SCOPE:` |
+
+### Turn-Close Self-Check
+
+**Self-check (orchestrator):** Before ending the turn, confirm:
+```
+IF Turn-Close memory written:
+  Log: "✓ Turn-Close memory saved"
+ELSE:
+  Retry once
+  IF still failing:
+    Log: "⚠ mem0 add failed" in session-log.json under events
+    Tell user: "Memory sync failed — some context may not persist"
+```
+
+**De-duplication:** If the same summary was already added in the last 60 seconds (identical text), skip duplicate.
 
 ## Session End
 

@@ -635,6 +635,12 @@ When the gate passes, generate `.forgewright/business-analyst/handoff/ba-package
 | R001 | [Who said this] | [When] | [BA review date] |
 ```
 
+**Persist to mem0 (mandatory after handoff file exists):**
+
+```bash
+python3 scripts/mem0-cli.py add "BA complete: [project/feature] | completeness [N]/7 | themes: [≤3 short phrases]" --category project
+```
+
 ---
 
 ## Config Paths

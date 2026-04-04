@@ -137,6 +137,7 @@ The orchestrator calls memory-manager at specific lifecycle points. All hooks ar
 | Hook | Trigger | Memory Command |
 |------|---------|---------------|
 | `SESSION_START` | Pipeline begins | `search "<project> <keywords>" --limit 5` |
+| `TURN_CLOSE` | After every user request is answered (before idle) | **Mandatory** `add "REQ:… | DONE:… | OPEN:…" --category session` (+ optional `decisions` / `architecture` / `blockers`). See session-lifecycle §Per-request memory. |
 | `PHASE_COMPLETE` | After DEFINE/BUILD/HARDEN/SHIP | `add "Phase [name]: [summary]" --category tasks` |
 | `GATE_DECISION` | After Gate 1/2/3 | `add "Gate [N] [decision]: [feedback]" --category decisions` |
 | `SESSION_END` | Pipeline completes | `add "Session completed: [summary]" --category session` + `refresh` |
