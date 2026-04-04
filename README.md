@@ -1,8 +1,6 @@
 # Forgewright — Adaptive AI Orchestrator
 
-> **Self-contained setup guide.** Read top-to-bottom once. Run `/pipeline`, `/onboard`, or `/setup` as shortcuts.
->
-> **Agent note:** Every bash block below is executable as-is. Use `$(pwd)` and `$(realpath ...)` for dynamic path resolution. Do not assume fixed paths.
+> **Version 7.7** · 52 Skills · 19 Modes · 15 Protocols · ForgeNexus Code Intelligence
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
@@ -12,18 +10,24 @@
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/Code_Intelligence-ForgeNexus-4B0082.svg" alt="Code Intelligence" />
-  <img src="https://img.shields.io/badge/Parallel-Git_Worktrees-orange.svg" alt="Parallel" />
+  <img src="https://img.shields.io/badge/Memory-Persistent%20(mem0)-00CED1.svg" alt="Memory" />
+  <img src="https://img.shields.io/badge/MCP-12%20Tools-orange.svg" alt="MCP" />
 </p>
 
 ---
 
 ## TL;DR — What Is This?
 
-**Forgewright** is an AI-powered orchestrator that routes your request through the right skills automatically.
+Forgewright is an AI-powered orchestrator that routes your request through the right skills automatically.
 
-- You say: *"Build a production-grade SaaS for X"* or *"Build a Unity multiplayer game"*
-- Forgewright activates: Business Analyst → Product Manager → Architect → Engineers → QA → Security → DevOps → SRE
-- Output: production-ready code, reviewed, tested, scored 0–100
+```
+You say: "Build a production-grade SaaS for X"
+        ↓
+Forgewright activates:
+  BA → PM → Architect → Engineers → QA → Security → DevOps → SRE
+        ↓
+Output: production-ready code, reviewed, tested, scored 0–100
+```
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW`
 **Skills:** 52 specialized AI agents covering SaaS, game dev, XR, AI/ML, data engineering, and growth.
@@ -32,158 +36,101 @@
 
 ## Agent Setup — Executable Checklist
 
-> Follow every step in order. Each step is **machine-executable** — copy, paste, run.
+> Follow every step in order. Each block is **machine-executable** — copy, paste, run.
 
 ---
 
-### Step 0 — Self-Discovery
-
-Run this once at the start of any session:
+### Step 0 — Detect Context
 
 ```bash
-# 1. Determine your role
 CWD="$(pwd)"
-FW_PLUGINS="$(realpath "$CWD/.antigravity/plugins/production-grade" 2>/dev/null || echo "")"
 IS_FORGEWRIGHT_REPO="$(echo "$CWD" | grep -q 'forgewright' && echo "yes" || echo "no")"
-FORGEWRIGHT_ROOT="$(realpath "$(dirname "$(realpath "$0" 2>/dev/null || echo "$0")")/.." 2>/dev/null || echo ".")"
+FW_PLUGINS="$(realpath "$CWD/.antigravity/plugins/production-grade" 2>/dev/null || echo "")"
 echo "CWD: $CWD"
 echo "IS_FORGEWRIGHT_REPO: $IS_FORGEWRIGHT_REPO"
-echo "FORGEWRIGHT_ROOT: $FORGEWRIGHT_ROOT"
+echo "FW_PLUGINS: $FW_PLUGINS"
 ```
 
-| Condition | What this is | Next step |
-|-----------|-------------|-----------|
-| `IS_FORGEWRIGHT_REPO=yes` | This IS the forgewright repository | Step 1 (a) |
-| `$FW_PLUGINS` is non-empty | Forgewright is installed as a submodule | Step 1 (b) |
-| Otherwise | This is a project repo without forgewright | Step 1 (c) |
+| Condition | Next step |
+|-----------|-----------|
+| `IS_FORGEWRIGHT_REPO=yes` | **Step 1A** — Forgewright self-setup |
+| `$FW_PLUGINS` non-empty | **Step 1B** — Submodule already installed |
+| Otherwise | **Step 1C** — Add as git submodule |
 
 ---
 
 ### Step 1 — Install Forgewright
 
-#### (A) You are inside the forgewright repo
-
-> Skip if you are in a project repo.
+#### (A) Inside the forgewright repo — self-setup
 
 ```bash
-# Verify setup files exist
-ls skills/production-grade/SKILL.md   # orchestrator entry point
-ls setup.sh                           # root setup script
+# Verify core files
+ls skills/production-grade/SKILL.md  # orchestrator entry
 ls CLAUDE.md                          # code intelligence rules
-echo "Forgewright repo verified."
+ls AGENTS.md                          # 52-skill catalog
+echo "Forgewright self-setup OK."
 ```
 
-#### (B) Forgewright is installed as a submodule
+#### (B) Forgewright is a git submodule
 
 ```bash
-# Verify submodule is initialized
+# Initialize submodule
 git submodule update --init --recursive .antigravity/plugins/production-grade
 
-# Verify installation
+# Verify
 ls .antigravity/plugins/production-grade/skills/ | wc -l   # should be 52
-ls .antigravity/plugins/production-grade/CLAUDE.md          # should exist
-ls .antigravity/plugins/production-grade/AGENTS.md          # should exist
-
-# If submodule not initialized (empty output), run:
-# git submodule update --init --recursive
+ls .antigravity/plugins/production-grade/CLAUDE.md          # must exist
+ls .antigravity/plugins/production-grade/AGENTS.md          # must exist
+echo "Submodule initialized."
 ```
 
-#### (C) This is a project repo without forgewright
+#### (C) Add Forgewright as a submodule to any project
 
 ```bash
-# Run from project root (NOT from inside forgewright)
-git submodule add -b main https://github.com/buiphucminhtam/forgewright.git .antigravity/plugins/production-grade
+# Run from project root (NOT inside forgewright)
+PROJECT_ROOT="$(pwd)"
+git submodule add -b main https://github.com/buiphucminhtam/forgewright.git \
+  "$PROJECT_ROOT/.antigravity/plugins/production-grade"
 
-# Copy required files
-cp .antigravity/plugins/production-grade/AGENTS.md ./AGENTS.md
-cp .antigravity/plugins/production-grade/CLAUDE.md ./CLAUDE.md
+# Copy required files to project root
+cp "$PROJECT_ROOT/.antigravity/plugins/production-grade/AGENTS.md" \
+   "$PROJECT_ROOT/AGENTS.md"
+cp "$PROJECT_ROOT/.antigravity/plugins/production-grade/CLAUDE.md" \
+   "$PROJECT_ROOT/CLAUDE.md"
 
 # Commit
 git add .gitmodules .antigravity AGENTS.md CLAUDE.md
-git commit -m "feat: add forgewright v7.7 — 52 skills, ForgeNexus, MCP server"
+git commit -m "feat: add forgewright v7.7 — 52 skills, ForgeNexus, MCP"
 
-# Verify
+# Initialize
 git submodule update --init --recursive .antigravity/plugins/production-grade
 ```
 
 ---
 
-### Step 2 — ForgeNexus Code Intelligence
+### Step 2 — Power Level Setup
 
-> **What this does:** Indexes your codebase into a knowledge graph. Lets you ask *"what breaks if I change this function?"* with instant blast-radius analysis.
-> **Prerequisite:** Node.js 18+
-> **Time:** 10–60 seconds depending on project size.
+Run from project root. Each command is independent — run what you need.
 
-#### 2a — Find forgewright root (dynamic, no hardcoded paths)
+#### ⚡ Level 1 — Basic (52 skills + pipeline)
 
-```bash
-# OPTION 1: If forgewright is a submodule in this project
-FW_ROOT="$(realpath .antigravity/plugins/production-grade)"   # from project root
+> Installed by Step 1. Nothing extra needed.
 
-# OPTION 2: If you are inside the forgewright repo
-FW_ROOT="$(pwd)"                                               # already at forgewright root
+#### ⚡⚡ Level 2 — Smart (ForgeNexus code intelligence)
 
-# OPTION 3: If forgewright is a sibling directory
-FW_ROOT="$(realpath "$(dirname "$(pwd)")/forgewright")"        # sibling clone
-
-echo "Forgewright root: $FW_ROOT"
-```
-
-#### 2b — Detect existing ForgeNexus installation
-
-```bash
-# Check if forgenexus package exists
-if [ -f "$FW_ROOT/forgenexus/package.json" ]; then
-    echo "FORGENEXUS_PKG=found"
-else
-    echo "FORGENEXUS_PKG=missing"
-fi
-
-# Check if forgenexus is already built
-if [ -f "$FW_ROOT/forgenexus/dist/cli/index.js" ]; then
-    echo "FORGENEXUS_BUILD=found"
-else
-    echo "FORGENEXUS_BUILD=missing"
-fi
-
-# Check if project is already indexed
-FORGENEXUS_DB="$FW_ROOT/forgenexus/data/$(basename "$(pwd)").db"
-if [ -f "$FORGENEXUS_DB" ]; then
-    echo "FORGENEXUS_INDEX=found ($FORGENEXUS_DB)"
-else
-    echo "FORGENEXUS_INDEX=missing"
-fi
-```
-
-#### 2c — Install & Build if needed
+> **What you get:** Ask *"what breaks if I change this function?"* — instant blast-radius analysis.
+> **Requires:** Node.js 18+
 
 ```bash
 FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
 PROJECT_ROOT="$(pwd)"
 
-# Install forgenexus if package missing
-if [ ! -f "$FW_ROOT/forgenexus/package.json" ]; then
-    echo "Installing forgenexus..."
-    mkdir -p "$FW_ROOT"
-    git clone https://github.com/buiphucminhtam/forgewright.git "$FW_ROOT" --depth 1
-fi
-
-# Install npm dependencies
-cd "$FW_ROOT/forgenexus" && npm install
-
-# Build if dist missing
+# Build ForgeNexus (if not built)
 if [ ! -f "$FW_ROOT/forgenexus/dist/cli/index.js" ]; then
-    npm run build 2>&1 || npm run compile 2>&1
+    cd "$FW_ROOT" && npm install && npm run build
 fi
-```
 
-#### 2d — Analyze the codebase
-
-```bash
-FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
-PROJECT_ROOT="$(pwd)"
-
-# Run index (auto-detects: new → analyze, existing → checks freshness)
+# Index your project
 cd "$FW_ROOT"
 npx --yes forgenexus analyze "$PROJECT_ROOT"
 
@@ -191,290 +138,227 @@ npx --yes forgenexus analyze "$PROJECT_ROOT"
 npx forgenexus status "$PROJECT_ROOT"
 ```
 
----
+#### ⚡⚡⚡ Level 3 — Persistent Memory (Turn-Start + Turn-Close)
 
-### Step 3 — Generate MCP Config
+> **What you get:** Cross-session memory. The orchestrator remembers decisions, architecture, blockers across requests.
+> **Why:** Without this, project memory only grows at gates — conversation facts are lost between turns.
+> **Requires:** Python 3.8+
 
-> **What this does:** Creates a ForgeNexus MCP configuration so your AI client has access to 12 tools (`query`, `context`, `impact`, `detect_changes`, `rename`, `cypher`, `route_map`, `tool_map`, `shape_check`, `api_impact`, `pr_review`, `list_repos`) and 3 resources.
-> **Time:** ~30 seconds (Step 2 already built forgenexus, this just writes the config).
+```bash
+PROJECT_ROOT="$(pwd)"
+FORGEWRIGHT_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
 
-#### 3a — Detect ForgeNexus build location
+# Initialize memory store
+bash "$FORGEWRIGHT_ROOT/scripts/ensure-mem0.sh" "$PROJECT_ROOT"
+
+# Verify
+ls "$PROJECT_ROOT/.forgewright/memory.jsonl"   # must exist
+python3 "$FORGEWRIGHT_ROOT/scripts/mem0-cli.py" refresh
+
+# Skip if CI/headless only:
+# FORGEWRIGHT_SKIP_MEM0=1
+```
+
+**How it works:**
+- **Turn-Start** (before each request): loads conversation summary + recent turns + BA scope
+- **Turn-Close** (after each request): writes `REQ: | DONE: | OPEN: | SCOPE_UPDATE:` to mem0
+- The orchestrator calls these automatically — no manual action needed
+
+#### ⚡⚡⚡⚡ Level 4 — Full Power (MCP + ForgeNexus tools)
+
+> **What you get:** 12 ForgeNexus tools in your AI chat (`query`, `context`, `impact`, `detect_changes`, `rename`, `cypher`, `route_map`, `tool_map`, `shape_check`, `api_impact`, `pr_review`, `list_repos`)
+> **Requires:** Step 2 + Step 3
 
 ```bash
 FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
 PROJECT_ROOT="$(pwd)"
 
-# Determine the forgenexus entry point
-if [ -f "$FW_ROOT/forgenexus/dist/cli/index.js" ]; then
-    FORGENEXUS_ENTRY="$FW_ROOT/forgenexus/dist/cli/index.js"
-    echo "FORGENEXUS_ENTRY=$FORGENEXUS_ENTRY (pre-built)"
-else
-    FORGENEXUS_ENTRY="$FW_ROOT/forgenexus/src/cli/index.ts"
-    echo "FORGENEXUS_ENTRY=$FORGENEXUS_ENTRY (TypeScript, use with tsx)"
-fi
+# Generate MCP config
+bash "$FW_ROOT/scripts/mcp-generate.sh"
 
-# Verify entry point exists
-if [ ! -f "$FORGENEXUS_ENTRY" ] && [ ! -f "${FORGENEXUS_ENTRY%.ts}.js" ]; then
-    echo "ERROR: forgenexus not found at $FORGENEXUS_ENTRY"
-    echo "Fix: run Step 2 (ForgeNexus install + build) first."
-    exit 1
-fi
-
-echo "OK: forgenexus ready"
+# Verify
+ls "$PROJECT_ROOT/.forgewright/mcp-server/"
+cat "$PROJECT_ROOT/.forgewright/mcp-server/mcp-config.json"
 ```
 
-#### 3b — Write MCP config
+Then add to your AI client:
+
+**Cursor / VS Code** — already written by Step 3:
 
 ```bash
-FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
-PROJECT_ROOT="$(pwd)"
-
-mkdir -p "$PROJECT_ROOT/.forgewright/mcp-server"
-
-# Detect entry point
-if [ -f "$FW_ROOT/forgenexus/dist/cli/index.js" ]; then
-    FORGENEXUS_ENTRY="$FW_ROOT/forgenexus/dist/cli/index.js"
-    RUNNER="node"
-else
-    FORGENEXUS_ENTRY="$FW_ROOT/forgenexus/src/cli/index.ts"
-    RUNNER="npx"
-    RUNNER_ARGS="tsx"
-fi
-
-# Build the command args based on entry type
-if [ "$RUNNER" = "node" ]; then
-    MCP_ARGS="[\"node\",\"$FORGENEXUS_ENTRY\",\"mcp\",\"$PROJECT_ROOT\"]"
-else
-    MCP_ARGS="[\"npx\",\"tsx\",\"$FORGENEXUS_ENTRY\",\"mcp\",\"$PROJECT_ROOT\"]"
-fi
-
-# Write .cursor/mcp.json (Cursor and VS Code use the same format)
-mkdir -p "$PROJECT_ROOT/.cursor"
-cat > "$PROJECT_ROOT/.cursor/mcp.json" << EOF
-{
-  "mcpServers": {
-    "forgenexus": {
-      "command": "$RUNNER",
-      "args": $MCP_ARGS
-    }
-  }
-}
-EOF
-
-# Also write project-level forgenexus metadata
-cat > "$PROJECT_ROOT/.forgewright/mcp-server/mcp-config.json" << EOF
-{
-  "forgewright_version": "7.7.0",
-  "forgenexus_entry": "$FORGENEXUS_ENTRY",
-  "runner": "$RUNNER",
-  "project_root": "$PROJECT_ROOT",
-  "tools": [
-    "query", "context", "impact", "detect_changes", "rename",
-    "cypher", "route_map", "tool_map", "shape_check", "api_impact",
-    "pr_review", "list_repos"
-  ],
-  "resources": ["project://profile", "project://conventions"],
-  "prompts": ["debug-issue", "review-changes", "plan-feature"]
-}
-EOF
-
-echo "MCP config written:"
-cat "$PROJECT_ROOT/.cursor/mcp.json"
+cat ~/.cursor/mcp.json          # verify
+# Restart Cursor after any MCP config change
 ```
 
----
-
-### Step 4 — Enable MCP in Your AI Client
-
-> **If you ran Step 3b, your `.cursor/mcp.json` is already written.** Just restart your AI client.
-
-#### Cursor
+**Claude Desktop (macOS):**
 
 ```bash
-PROJECT_ROOT="$(pwd)"
-# Step 3b already wrote .cursor/mcp.json
-# Just verify it:
-cat "$PROJECT_ROOT/.cursor/mcp.json"
-
-# If you need to install at a custom path:
-# mkdir -p .cursor
-# (paste the content from Step 3b output)
-```
-
-#### Claude Code (macOS)
-
-```bash
-PROJECT_ROOT="$(pwd)"
-
-mkdir -p "$HOME/Library/Application Support/Claude"
-
-# Read the config from Step 3b output and write to Claude's settings
-# The forgenexus MCP works across all projects (uses registry to find repo by path)
-cat > "$HOME/Library/Application Support/Claude/claude_desktop_config.json" << 'EOF'
+FORGENEXUS_ENTRY="$(realpath .antigravity/plugins/production-grade/forgenexus/dist/cli/index.js 2>/dev/null)"
+cat > "$HOME/Library/Application Support/Claude/claude_desktop_config.json" << EOF
 {
   "mcpServers": {
     "forgenexus": {
       "command": "node",
-      "args": ["PATH_TO_FORGENEXUS/dist/cli/index.js", "mcp", "PATH_TO_YOUR_PROJECT"]
+      "args": ["$FORGENEXUS_ENTRY", "mcp", "$PROJECT_ROOT"]
     }
   }
 }
 EOF
-
-# Substitute paths dynamically
-FORGENEXUS_PATH="$(realpath .antigravity/plugins/production-grade/forgenexus 2>/dev/null || pwd)"
-sed -i '' "s|PATH_TO_FORGENEXUS|$FORGENEXUS_PATH|g" "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-sed -i '' "s|PATH_TO_YOUR_PROJECT|$(pwd)|g" "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-
-echo "Installed. Config:"
-cat "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 ```
 
-#### VS Code (uses same format as Cursor)
+**Verify MCP connection:**
+
+```bash
+# Quick smoke test
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | \
+    node "$(realpath .antigravity/plugins/production-grade/forgenexus/dist/cli/index.js)" \
+    mcp "$PROJECT_ROOT" 2>/dev/null | head -5
+
+# Expected: {"jsonrpc":"2.0","id":1,"result":{"tools":[...
+```
+
+---
+
+### Step 3 — Verify Full Setup
 
 ```bash
 PROJECT_ROOT="$(pwd)"
-mkdir -p "$PROJECT_ROOT/.vscode"
-# VS Code reads .vscode/mcp.json — copy from Step 3b output:
-cp "$PROJECT_ROOT/.cursor/mcp.json" "$PROJECT_ROOT/.vscode/mcp.json"
-echo "VS Code MCP config installed at: $PROJECT_ROOT/.vscode/mcp.json"
+FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
+
+echo "=== Forgewright Power Level Check ==="
+echo "Skills: $(ls "$FW_ROOT/skills" -1 2>/dev/null | wc -l | tr -d ' ') / 52"
+echo "ForgeNexus: $([ -f "$FW_ROOT/forgenexus/dist/cli/index.js" ] && echo '✓ built' || echo '✗ missing')"
+echo "MCP server: $([ -d "$PROJECT_ROOT/.forgewright/mcp-server" ] && echo '✓ generated' || echo '✗ missing')"
+echo "Memory: $([ -f "$PROJECT_ROOT/.forgewright/memory.jsonl" ] && echo '✓ initialized' || echo '✗ missing')"
+echo "ForgeNexus indexed: $([ -d "$PROJECT_ROOT/.forgewright/mcp-server" ] && echo '✓ yes' || echo '✗ run: npx forgenexus analyze')"
+echo "======================================="
 ```
-
-#### Windows (PowerShell)
-
-```powershell
-$projectRoot = (Get-Location).Path
-$fwRoot = $null
-if (Test-Path ".antigravity\plugins\production-grade") {
-    $fwRoot = (Get-Item ".antigravity\plugins\production-grade").FullName
-} else {
-    $fwRoot = (Get-Item "forgewright").FullName
-}
-$forgenexusEntry = "$fwRoot\forgenexus\dist\cli\index.js"
-
-# Claude Desktop config
-$claudeDir = "$env:USERPROFILE\AppData\Roaming\Claude"
-if (-not (Test-Path $claudeDir)) { New-Item -ItemType Directory -Path $claudeDir -Force }
-$config = @{
-    mcpServers = @{
-        forgenexus = @{
-            command = "node"
-            args = @($forgenexusEntry, "mcp", $projectRoot)
-        }
-    }
-}
-$config | ConvertTo-Json -Depth 10 | Set-Content "$claudeDir\claude_desktop_config.json" -Encoding UTF8
-Write-Host "Installed: $claudeDir\claude_desktop_config.json"
-```
-
-#### Verify MCP Connection
-
-```bash
-FORGENEXUS_ENTRY="$(realpath .antigravity/plugins/production-grade/forgenexus/dist/cli/index.js 2>/dev/null || echo 'NOT_BUILT')"
-echo "ForgeNexus entry: $FORGENEXUS_ENTRY"
-
-# Quick smoke test (JSON-RPC tools/list)
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | \
-    node "$FORGENEXUS_ENTRY" mcp . 2>/dev/null | \
-    head -5 || echo "Server not responding (run: npm run build in forgenexus/)"
-
-# Expected: {"jsonrpc":"2.0","id":1,"result":{"tools":[...
-
-# Restart AI client, then test in chat:
-# forgenexus_list_repos()
-# forgenexus_query({query: "your query here"})
-```
-
-**If tools don't appear after restart, common causes:**
-- `cwd` in config must point to your project root (not forgewright root)
-- Run `npx --yes forgenexus analyze .` first to index the project
-- Restart the AI client after any config changes
 
 ---
 
-### Step 5 — Rules (Read Before Any Code Edit)
+## The Flow — How Forgewright Works
 
-> These rules MUST be followed. They protect against breaking changes and hallucinations.
+### Architecture Overview
 
-#### Before editing any function/class/method:
-
-```bash
-# Run blast-radius analysis
-impact({target: "functionName", direction: "upstream"})
+```
+User Request
+    │
+    ▼
+┌─────────────────────────────────────────────────────────┐
+│  ORCHESTRATOR (production-grade/SKILL.md)               │
+│  • Classifies request → 19 modes                       │
+│  • Routes to correct skills                            │
+│  • Manages 3 approval gates                            │
+└────────────────────┬────────────────────────────────────┘
+                     │
+     ┌───────────────┼──────────────────────┐
+     ▼               ▼                      ▼
+┌─────────┐    ┌──────────┐          ┌──────────┐
+│ DEFINE  │    │   BUILD  │          │  HARDEN   │
+│ Phase   │    │  Phase   │          │  Phase    │
+└────┬────┘    └────┬─────┘          └────┬─────┘
+     │              │                     │
+     ▼              ▼                     ▼
+┌──────────┐   ┌──────────┐          ┌──────────┐
+│ Gate 1   │   │ Gate 2   │          │ Gate 3   │
+│ APPROVE? │   │ APPROVE? │          │ APPROVE? │
+└────┬─────┘   └────┬─────┘          └────┬─────┘
+     │              │                      │
+     ▼              ▼                      ▼
+┌──────────┐   ┌──────────┐          ┌──────────┐
+│  SHIP    │   │ SUSTAIN  │          │   GROW   │
+└────┬─────┘   └────┬─────┘          └──────────┘
+     │              │
+     ▼              ▼
+   Deploy        Monitor
 ```
 
-| Risk | Meaning | Action |
-|------|---------|--------|
-| d=1 | WILL BREAK — direct callers/importers | MUST update these |
-| d=2 | LIKELY AFFECTED — indirect deps | Should test |
-| d=3 | MAY NEED TESTING — transitive | Test if critical path |
-| HIGH / CRITICAL | ⚠️ **WARN THE USER before proceeding.** |
+### Middleware Chain (per skill execution)
 
-#### Before committing any changes:
-
-```bash
-# Check affected scope
-detect_changes({scope: "staged"})
+```
+User Request
+    │
+    ▼
+┌──────────────────────────────────────────────────────────┐
+│ PRE-SKILL (top → bottom)                                 │
+│  ① SessionData      Load profile, session state          │
+│  ② ContextLoader    Memory + conventions + KIs           │
+│  ③ SkillRegistry    Progressive skill discovery           │
+│  ④ Guardrail        Pre-tool authorization              │
+│  ⑤ Summarization    Auto-compress if >70% budget       │
+├──────────────────────────────────────────────────────────┤
+│ ══════════════ SKILL EXECUTION ═══════════════════════ │
+├──────────────────────────────────────────────────────────┤
+│ POST-SKILL (bottom → top)                                │
+│  ⑥ QualityGate      4-level validation, 0–100 score      │
+│  ⑦ BrownfieldSafety Regression check, change manifest    │
+│  ⑧ TaskTracking     Update task.md                       │
+│  ⑨ Memory           Turn-Close: REQ/DONE/OPEN → mem0   │
+│  ⑩ GracefulFailure Retry management, exit strategy      │
+└──────────────────────────────────────────────────────────┘
+    │
+    ▼
+Result / Next Skill
 ```
 
-#### Before renaming any symbol:
+### Session Lifecycle (Turn-Start + Turn-Close)
 
-```bash
-# NEVER use find-and-replace for renaming
-# ALWAYS use the call-graph-aware rename tool
-rename({
-  symbol_name: "oldFunctionName",
-  new_name: "newFunctionName",
-  dry_run: true
-})
+```
+Session Start
+    │
+    ▼
+  Step 0.5  Load .forgewright/ project context
+  Step 1    Load project-profile.json
+  Step 2    Load session-log.json (detect manual changes)
+  Step 3    Load memory (mem0 search + code-conventions)
+  Step 3.5  Check ForgeNexus freshness
+  Step 4    Auto-detect greenfield vs brownfield
+    │
+    ▼
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+│  FOR EACH USER REQUEST (within session):                │
+│                                                          │
+│  TURN-START:                                             │
+│    T1  Load CONVERSATION_SUMMARY.md                      │
+│    T2  mem0 search: recent turns + session items         │
+│    T3  Load BA scope + pipeline context                  │
+│    → Pass all to orchestrator                           │
+│                                                          │
+│  [Orchestrator processes request via skills]             │
+│                                                          │
+│  TURN-CLOSE (mandatory after every response):           │
+│    TC1 Auto-generate CONVERSATION_SUMMARY.md            │
+│    TC2 mem0 add: REQ: | DONE: | OPEN: | SCOPE_UPDATE:   │
+│    TC3 Optional: mem0 add for decisions/architecture/     │
+│                 blockers                                  │
+│    → Log: "✓ Turn-Close memory saved"                   │
+└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+    │
+    ▼
+Session End
 ```
 
-#### Self-check before finishing any task:
+### Request → Mode → Skills Routing
 
-1. `impact` was run for all modified symbols
-2. No HIGH or CRITICAL risk warnings were ignored
-3. `detect_changes({scope: "staged"})` confirms changes match expected scope
-4. All d=1 (WILL BREAK) dependents were updated
-
----
-
-### Step 6 — Agent Workflow
-
-After completing Steps 1–5, Forgewright is fully operational.
-
-#### Request → Mode Classification → Skill Routing
-
-The orchestrator (`skills/production-grade/SKILL.md`) auto-classifies every request into one of 19 modes:
-
-| You Say | Mode | Who Gets Activated |
-|---------|------|--------------------|
+| You Say | Mode | Skills Activated |
+|---------|------|-----------------|
 | "Build a SaaS for X" | **Full Build** | BA → PM → Architect → BE → FE → QA → Security → DevOps → SRE |
 | "Add [feature]" | **Feature** | PM → Architect → BE/FE → QA |
-| "Build a Unity/Unreal/Godot/Roblox game" | **Game Build** | Game Designer → Engine Engineer → Level → Narrative → Technical Art → Audio → QA |
-| "Build a VR/AR app" | **XR Build** | XR Engineer → Game Build Pipeline (if game-like) |
+| "Build a Unity/Unreal/Godot/Roblox game" | **Game Build** | Game Designer → Engine Engineer → Level → Narrative → Technical Art → Audio |
+| "Build a VR/AR app" | **XR Build** | XR Engineer → XR Game Pipeline |
+| "Build a mobile app" | **Mobile** | BA → Mobile Engineer → PM → Architect |
+| "Build AI feature / RAG" | **AI Build** | AI Engineer → Prompt Engineer → Data Scientist |
 | "Review my code" | **Review** | Code Reviewer |
 | "Write tests" | **Test** | QA Engineer |
 | "Deploy / CI/CD" | **Ship** | DevOps → SRE |
 | "Design UI for X" | **Design** | UX Researcher → UI Designer |
-| "Build a mobile app" | **Mobile** | BA → Mobile Engineer (+ PM, Architect) |
-| "Help me think about X" | **Explore** | Polymath co-pilot |
+| "Optimize performance" | **Optimize** | Performance Engineer → SRE |
+| "Test on Android/iOS" | **Mobile Test** | Mobile Tester (AI vision on real devices) |
 | "Deep research on X" | **Research** | Polymath + NotebookLM MCP |
 | "Marketing strategy for X" | **Marketing** | Growth Marketer → Conversion Optimizer |
-| "Optimize performance" | **Optimize** | Performance Engineer + SRE |
-| "Test on Android/iOS" | **Mobile Test** | Mobile Tester (AI vision on real devices) |
-| "Build AI feature / RAG" | **AI Build** | AI Engineer + Prompt Engineer + Data Scientist |
+| "Help me think about X" | **Explore** | Polymath co-pilot |
 | "Debug / fix bug" | **Debug** | Debugger → Engineer |
 | "Analyze requirements" | **Analyze** | Business Analyst |
-
-#### Every Skill Follows the Plan Loop
-
-Before any skill writes code, it MUST:
-
-1. **PLAN** — Define scope, approach, deliverables
-2. **SCORE** — Rate the plan against 8 criteria (threshold ≥ 8.0/10)
-3. **META-EVALUATE** — Check: did we meet the quality bar?
-4. **CHECK ≥ 8** — If yes, execute. If no → learn, research, improve, re-plan. Max 3 iterations.
-5. **EXECUTE** — Write code, build, test, fix
 
 ---
 
@@ -491,43 +375,23 @@ Before any skill writes code, it MUST:
 
 ---
 
-## Available Workflows (Shortcuts)
+## Optional Enhancements
 
-| Command | What It Does |
-|---------|-------------|
-| `/setup` | First-time install as git submodule |
-| `/update` | Check for and install updates |
-| `/pipeline` | Show full pipeline reference, modes, and skill list |
-| `/onboard` | Deep project analysis — creates `.forgewright/project-profile.json` with tech stack, patterns, risk profile |
-| `/mcp` | Generate or regenerate MCP server config |
-
----
-
-## Power Levels — Optional Enhancements
-
-| Level | What You Get | How to Enable |
-|-------|-------------|---------------|
-| ⚡ **Basic** | 52 skills, full pipeline | Steps 1–3 |
-| ⚡⚡ **Smart** | Blast radius analysis, safe refactoring | Step 2 (ForgeNexus) |
-| ⚡⚡⚡ **Persistent** | Cross-session memory (**required** for orchestrator) | `bash scripts/ensure-mem0.sh` (or `python3 scripts/mem0-cli.py setup`) — skip CI only: `FORGEWRIGHT_SKIP_MEM0=1` |
-| ⚡⚡⚡⚡ **Research** | NotebookLM MCP — grounded AI, zero hallucinations | `pip install notebooklm-mcp`, add to MCP config |
-| ⚡⚡⚡⚡⚡ **Full Power** | Web crawling, AI vision testing, multi-agent | Steps 5–7 (see below) |
-
-### Optional: Web Scraping (crawl4ai)
+### 🌐 Web Scraping (crawl4ai)
 
 ```bash
 pip install "crawl4ai>=0.8.0"
 # Then: "Scrape [URL]" or "Crawl [website]"
 ```
 
-### Optional: AI Vision Testing (Midscene.js)
+### 👁 AI Vision Testing (Midscene.js)
 
 ```bash
 npm install -g @anthropic-ai/midscene
 # Then: "Test on Android" or "Test on iOS"
 ```
 
-### Optional: Multi-Agent (Paperclip)
+### 🤖 Multi-Agent (Paperclip)
 
 ```bash
 npx paperclipai onboard --yes
@@ -535,21 +399,64 @@ cd paperclip && pnpm dev
 # Dashboard: http://localhost:3100
 ```
 
+### 🔬 Research (NotebookLM MCP)
+
+```bash
+pip install notebooklm-mcp
+# Add to MCP config for grounded AI with zero hallucinations
+```
+
+---
+
+## Quality Gate — Automated Validation
+
+Run anytime to score your project 0–100:
+
+```bash
+bash scripts/forge-validate.sh
+
+# CI mode (exit code only)
+bash scripts/forge-validate.sh --quiet
+
+# JSON report
+bash scripts/forge-validate.sh --json
+```
+
+| Score | Grade | Meaning |
+|-------|-------|---------|
+| 90–100 | A | Production ready |
+| 80–89 | B | Minor issues |
+| 70–79 | C | Review recommended |
+| 60–69 | D | Fix issues before deploy |
+| < 60 | F | Unacceptable — block deploy |
+
 ---
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| `forgenexus: command not found` | Run `npx forgenexus` instead of `forgenexus` |
-| `npm install` fails in submodule | Check Node.js version (`node --version`), needs 18+ |
-| MCP tools not showing up | Restart AI client after adding MCP config |
-| Index is stale | Run `npx forgenexus analyze "$(pwd)"` |
-| Submodule not initialized | Run `git submodule update --init --recursive` |
-| AGENTS.md not detected | Ensure it's in project root, not in submodule |
-| `mcp-generate.sh` fails | Run `npm run build` in `forgenexus/` directory first |
-| Windows: `bash` not found | Use PowerShell commands in Step 4 (Windows section) |
-| `realpath` not found on macOS | Install with `brew install coreutils`, or use `pwd` and `dirname` as fallback |
+| `forgenexus: command not found` | Run `npx forgenexus` instead |
+| `npm install` fails in submodule | Check `node --version` (needs 18+) |
+| MCP tools not showing up | Restart AI client after any config change |
+| Index is stale | `npx forgenexus analyze "$(pwd)"` |
+| Submodule not initialized | `git submodule update --init --recursive` |
+| `realpath` not found on macOS | `brew install coreutils` |
+| `python3` not found | Install Python 3.8+ for memory features |
+| Windows: `bash` not found | Use PowerShell equivalent commands |
+
+---
+
+## Available Workflow Shortcuts
+
+| Command | What It Does |
+|---------|-------------|
+| `/setup` | First-time install as git submodule |
+| `/update` | Check + install Forgewright updates (safe, preserves project changes) |
+| `/pipeline` | Show full pipeline reference, modes, and skill list |
+| `/onboard` | Deep project analysis — creates `.forgewright/project-profile.json` |
+| `/mcp` | Generate or regenerate MCP server config |
+| `/setup-mobile-test` | Set up plug-and-play mobile testing (Android/iOS) |
 
 ---
 
@@ -571,8 +478,8 @@ MIT
 ---
 
 <p align="center">
-  <strong>Forgewright — 52 AI skills. 19 modes. 15 protocols. Code Intelligence. SaaS to AAA games. One prompt.</strong>
+  <strong>Forgewright — 52 AI skills. 19 modes. 15 protocols. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
 </p>
 <p align="center">
-  <em>Understand relationships, not just files. Validate with zero assumptions. Research with zero hallucinations. Build games across 4 engines. Ship with quality scoring. Grow with data.</em>
+  <em>Plan with precision. Build with confidence. Scale with intelligence.</em>
 </p>
