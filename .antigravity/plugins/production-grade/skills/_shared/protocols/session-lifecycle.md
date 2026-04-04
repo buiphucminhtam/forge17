@@ -46,7 +46,7 @@ ELSE:
 ### Step 3 — Load Memory Context
 
 ```
-IF memory-manager is configured (MEM0_DISABLED != true):
+IF MEM0_DISABLED != true AND FORGEWRIGHT_SKIP_MEM0 != 1:
   Run: python3 scripts/mem0-cli.py search "<project-name> <user-request-keywords>" --limit 5 --format compact
   IF no results returned:
     Run: python3 scripts/mem0-cli.py refresh
@@ -55,7 +55,7 @@ IF memory-manager is configured (MEM0_DISABLED != true):
   Log: "✓ Memory loaded: [N] relevant items"
 ELSE:
   Read .forgewright/code-conventions.md if exists
-  Log: "✓ Conventions loaded (memory not configured)"
+  Log: "✓ Conventions loaded (memory skipped or disabled)"
 ```
 
 ### Step 3.5 — Check Code Intelligence Freshness
@@ -253,6 +253,31 @@ The middleware chain references these protocols:
     → Emits SKILL_FAILED with retry context
 ```
 
+
+## Per-request memory (Turn-Close) — mandatory
+
+**When:** After the assistant has **fully addressed** the current user message (single-turn chat, end of pipeline step, or before waiting on the next user input). **Not optional** for normal sessions (`MEM0_DISABLED` / `FORGEWRIGHT_SKIP_MEM0` exempt).
+
+**Why:** Without this, project memory only grows at gates/phases — **conversation facts and incremental decisions are lost** between requests.
+
+**MUST run at least one** `mem0-cli.py add` per turn, using a **single compact line** (redact secrets; stay under ~400 chars):
+
+```bash
+python3 scripts/mem0-cli.py add "REQ: [1-line user goal] | DONE: [what changed or decided] | OPEN: [blockers/questions or none]" --category session
+```
+
+**ALSO add a second line** when any of these occurred this turn (pick category):
+
+| Situation | Category | Example prefix |
+|-----------|----------|------------------|
+| User or assistant locked a choice | `decisions` | `DECISION:` |
+| Architecture / stack / pattern | `architecture` | `ARCH:` |
+| Blocked on external factor | `blockers` | `BLOCKER:` |
+| Scope / BA / requirements shift | `project` | `SCOPE:` |
+
+**Self-check (orchestrator):** Before ending the turn, confirm: *Turn-Close memory written?* If tools failed, retry once; if still failing, log `⚠ mem0 add failed` in `session-log.json` under `events` and tell the user.
+
+**De-duplication:** If the same summary was already added in the last 60 seconds (identical text), skip duplicate.
 
 ## Session End
 

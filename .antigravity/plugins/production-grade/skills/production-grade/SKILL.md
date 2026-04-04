@@ -885,12 +885,25 @@ When **Parallel** is selected, the BUILD and HARDEN phases use the parallel-disp
    - If user explicitly requests to skip polymath ("just build it", clear detailed spec) → proceed immediately.
 
 7.5. **BA pre-flight check (after Polymath, before PM):**
-   - If `.forgewright/business-analyst/handoff/ba-package.md` exists → read it, pass to PM as pre-loaded context. Log: `✓ BA package loaded — requirements pre-validated`
-   - If no BA package, assess the user's request for information completeness using 6W1H:
-     - Score each requirement against: Who, What, Why, Where, When, Which, How
-     - If average score < 6/7 → read `skills/business-analyst/SKILL.md` and follow its instructions. BA will elicit, evaluate, validate, and produce `ba-package.md`.
-     - If score ≥ 6/7 → skip BA. Log: `✓ Requirements sufficiently complete — proceeding to PM`
-   - If user explicitly requests to skip BA ("just build it", detailed spec provided) → proceed immediately.
+
+   **Detect greenfield Full Build** (any of: Step 4 logged **Greenfield**; empty/minimal codebase with net-new product intent; user said "from scratch" / "new SaaS" / equivalent):
+
+   - **Greenfield Full Build — BA is mandatory (no silent skip):**
+     - Do **not** skip BA because the model self-scored 6W1H ≥ 6/7. Self-scores are optimistic; greenfield needs **documented client answers**.
+     - **MUST** read `skills/business-analyst/SKILL.md` and run through at least **one full elicitation cycle** (stakeholder + structured questions per engagement depth: Express minimum **3** client-answered items, Standard **3–5**, Thorough **5+** with **2 rounds** if gaps remain) until:
+       - `.forgewright/business-analyst/handoff/ba-package.md` exists **and**
+       - Open gaps are either resolved or explicitly logged as **client-acknowledged assumptions** (not BA guesses).
+     - Log: `⧖ Greenfield Full Build — mandatory BA before PM`
+     - **Escape hatches (only these):** (1) `.production-grade.yaml` → `features.skip_define_ba: true`, or (2) `notify_user` with explicit option **"Skip BA — I accept incomplete requirements risk"** (user must choose; never auto-skip), or (3) `ba-package.md` already present from **this session** with completeness sign-off.
+
+   **Brownfield Full Build** (existing meaningful codebase):
+
+   - If `.forgewright/business-analyst/handoff/ba-package.md` exists → read it, pass to PM. Log: `✓ BA package loaded — requirements pre-validated`
+   - If no BA package: run 6W1H completeness. If average < 6/7 **or** the request describes a **net-new product/surface** (major scope) → run BA as above (same minimum elicitation as Standard depth).
+   - If score ≥ 6/7 **and** incremental change only **and** no net-new product → may skip BA. Log: `✓ Requirements sufficiently complete — proceeding to PM`
+
+   **Non–Full-Build modes** (Feature, etc.): keep conditional BA per the Feature Mode section (6W1H below 6/7 → BA).
+
    - **Context-aware routing (v7.0):** If project-profile shows health issues, suggest addressing them:
      - `health.tests_pass == false` → suggest Harden mode first
      - `risk.known_cves > 0` (Critical/High) → warn and suggest Security audit
@@ -905,7 +918,9 @@ Create a `task.md` file in `.forgewright/` with all 13 tasks and their statuses.
 10. **Begin Phase 1** — read `phases/define.md` and start immediately. Do NOT ask "should I proceed?"
    - **Memory save (session start):** Run `python3 scripts/mem0-cli.py add "Session started: [mode] mode for [brief request]. Engagement: [level]" --category session`
 
-**Key principle:** The user already told you what to build. Research, plan, start building. Pause at the 3 approval gates. In Thorough/Meticulous mode, also show phase summaries between major phases — but never block on them (inform, don't gate).
+**Key principle:** Research, plan, start building. Pause at the 3 approval gates. **Exception — greenfield Full Build:** BA elicitation is a **hard gate before PM**; do not jump to T1 until `ba-package.md` exists and minimum rounds above are satisfied (unless an explicit escape hatch in 7.5 was used). In Thorough/Meticulous mode, show phase summaries between major phases (inform; strategic gates still rule).
+
+**After every user request is satisfied** (end of assistant turn, before going idle): run **Turn-Close memory** (see `session-lifecycle.md` §Per-request memory).
 
 ## Quality Gate Integration
 
@@ -932,6 +947,7 @@ Call these hooks at the appropriate lifecycle points:
 | Gate decided | `GATE_DECISION(gate#, decision, feedback)` | Update session-log, save decision to memory |
 | Error occurs | `ERROR(task_id, type, details)` | Update session-log, save blocker to memory |
 | Pipeline ends | Session End | Summarize, save to memory, update project profile |
+| User request answered | `TURN_CLOSE` | Mandatory mem0 `add` — see session-lifecycle §Per-request memory |
 
 ## User Experience Protocol
 
