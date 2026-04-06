@@ -2,6 +2,18 @@
 
 All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
 
+## [7.7.1] — 2026-04-06
+
+### Added
+
+- **ForgeNexus 2.1.0** (`forgenexus/`) — Parallel worker threads, Leiden algorithm, binding propagation, suffix trie, incremental FTS, embedding cache, early-exit optimization, 15+ framework detection
+
+### Changed
+
+- **ForgeNexus README** — Full 9-phase pipeline architecture diagram, expanded features table, performance comparison vs original pipeline, GitNexus integration docs
+- **VERSION** — Bumped to 7.7.1
+- **Version badge** in README, AGENTS.md
+
 ## [7.7.0] — 2026-04-02
 
 ### Added
