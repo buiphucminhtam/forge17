@@ -1,6 +1,6 @@
 {
   "name": "forgewright",
-  "version": "7.7.1",
+  "version": "7.8.0",
   "description": "Production-Grade AI Pipeline Orchestrator — 52 skills, 19 modes",
   "private": true,
   "scripts": {
@@ -16,6 +16,6 @@
     "typecheck:cli": "cd src/cli && npx tsc --noEmit"
   },
   "devDependencies": {
-    "husky": "^9.0.0"
+    "husky": "^10.0.0"
   }
 }

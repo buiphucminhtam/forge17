@@ -2,6 +2,37 @@
 
 All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
 
+## [7.8.0] — 2026-04-06
+
+> **⚠️ Breaking Change — ForgeNexus Database Migration**
+>
+> ForgeNexus has migrated from `better-sqlite3` to **KuzuDB** (graph database).
+> Existing SQLite indexes must be migrated. Run the migration script:
+> ```bash
+> node forgenexus/scripts/migrate-sqlite-to-kuzu.js [--dry-run]
+> ```
+
+### Added
+
+- **ForgeNexus Groups** (`forgenexus/src/data/groups.ts`) — Multi-repo contract tracking. Create named groups, add repos, sync contracts, query cross-repo execution flows. 8 new MCP tools: `group_list`, `group_create`, `group_add`, `group_sync`, `group_contracts`, `group_query`, `group_status`, `group_remove`. CLI: `forgenexus group <list|create|add|remove|sync>`.
+- **Claude Code Hooks** (`forgenexus/.claude/hooks/`) — Auto-install on `forgenexus setup`: `pre-tool-use.ts` enriches grep/search context with graph data; `post-tool-use.ts` auto-reindexes after git commits.
+- **SQLite → KuzuDB Migration Script** (`forgenexus/scripts/migrate-sqlite-to-kuzu.js`) — Automated migration for existing ForgeNexus SQLite indexes. Run with `--dry-run` to preview.
+- **README Mermaid Diagrams** — 7 diagrams replacing ASCII art: Architecture Overview, Middleware Chain, Session Lifecycle, ForgeNexus Analyze Pipeline, Multi-Repo Group Management, Claude Code Hooks Flow, Request → Mode → Skills Routing.
+
+### Changed
+
+- **ForgeNexus Database Backend** (`forgenexus/src/data/db.ts`, `schema.ts`, `registry.ts`) — Replaced `better-sqlite3` with `kuzu ^0.11.3`. Schema migrated from single `nodes`/`edges` tables to per-type node tables (CodeNode, Community, Process) and per-edge-type rel tables (CALLS, IMPORTS, EXTENDS, etc.). KuzuDB handles FTS and vector extensions natively.
+- **Husky Git Hooks** (`.husky/`) — Upgraded from v9 to v10. All hook scripts updated to use `#!/usr/bin/env sh` + source `husky.sh`. `husky.sh` rewritten with v10-compatible bootstrap logic.
+- **ESLint + Security Fixes** (`forgenexus/src/analysis/detect-changes.ts`, prompts) — Fixed 34 ESLint errors (unused vars, prefer-const, no-useless-escape, no-extra-semi, dead code). Added security overrides for `esbuild ^0.25.0` and `minimatch ^9.0.5`. Fixed 2 critical prompt bugs: `checkStaleness` variable interpolation and `detect_impact` template literal.
+- **Prettier Format** — Reformatted all 32 source files.
+- **Root-Level Scripts** (`package.json`) — Added `build:forgenexus`, `test:forgenexus`, `lint:forgenexus`, `format:forgenexus`, `build:cli`, `dev:cli`, `typecheck:cli`.
+
+### Dependencies
+
+- **Removed:** `better-sqlite3`, `@types/better-sqlite3`
+- **Added:** `kuzu ^0.11.3` (graph DB with FTS + vector extensions)
+- **Added overrides:** `esbuild ^0.25.0`, `minimatch ^9.0.5`
+
 ## [7.7.1] — 2026-04-06
 
 ### Added

@@ -1,10 +1,10 @@
 # Forgewright — Adaptive AI Orchestrator
 
-> **Version 7.7** · 52 Skills · 19 Modes · 15 Protocols · ForgeNexus Code Intelligence
+> **Version 7.8** · 52 Skills · 19 Modes · 15 Protocols · ForgeNexus Code Intelligence
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.7.1-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-7.8.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-52-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-19-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
@@ -238,168 +238,371 @@ echo "======================================="
 
 ## The Flow — How Forgewright Works
 
+> All diagrams below render in GitHub, GitLab, and any mermaid-compatible viewer.
+> If a diagram does not render, check that your viewer uses mermaid 10+.
+
 ### Architecture Overview
 
-```
-User Request
-    │
-    ▼
-┌─────────────────────────────────────────────────────────┐
-│  ORCHESTRATOR (production-grade/SKILL.md)               │
-│  • Classifies request → 19 modes                       │
-│  • Routes to correct skills                            │
-│  • Manages 3 approval gates                            │
-└────────────────────┬────────────────────────────────────┘
-                     │
-     ┌───────────────┼──────────────────────┐
-     ▼               ▼                      ▼
-┌─────────┐    ┌──────────┐          ┌──────────┐
-│ DEFINE  │    │   BUILD  │          │  HARDEN   │
-│ Phase   │    │  Phase   │          │  Phase    │
-└────┬────┘    └────┬─────┘          └────┬─────┘
-     │              │                     │
-     ▼              ▼                     ▼
-┌──────────┐   ┌──────────┐          ┌──────────┐
-│ Gate 1   │   │ Gate 2   │          │ Gate 3   │
-│ APPROVE? │   │ APPROVE? │          │ APPROVE? │
-└────┬─────┘   └────┬─────┘          └────┬─────┘
-     │              │                      │
-     ▼              ▼                      ▼
-┌──────────┐   ┌──────────┐          ┌──────────┐
-│  SHIP    │   │ SUSTAIN  │          │   GROW   │
-└────┬─────┘   └────┬─────┘          └──────────┘
-     │              │
-     ▼              ▼
-   Deploy        Monitor
+```mermaid
+flowchart TD
+    START(["User Request"])
+    ORCH(["Orchestrator<br/>production-grade"])
+
+    ORCH --> MODE{{"Classify Request<br/>19 Modes"}}
+
+    MODE --> |"Full Build"| PHASE_DEFINE["DEFINE Phase<br/>BA → PM → Architect"]
+    MODE --> |"Feature"| PHASE_FEATURE["FEATURE Phase<br/>PM → BE/FE → QA"]
+    MODE --> |"Harden"| PHASE_HARDEN["HARDEN Phase<br/>Security → QA → Review"]
+    MODE --> |"Ship"| PHASE_SHIP["SHIP Phase<br/>DevOps → SRE"]
+    MODE --> |"Game Build"| PHASE_GAME["GAME Phase<br/>Designer → Engine → Level → Audio"]
+    MODE --> |"AI Build"| PHASE_AI["AI Phase<br/>AI Engineer → Prompt → Data"]
+    MODE --> |"Other"| PHASE_OTHER["Other Modes<br/>Specialized Skills"]
+
+    PHASE_DEFINE --> GATE1{{"Gate 1<br/>Approve?"}}
+    PHASE_FEATURE --> GATE1
+    PHASE_HARDEN --> GATE2{{"Gate 2<br/>Approve?"}}
+    PHASE_SHIP --> GATE2
+    PHASE_GAME --> GATE3{{"Gate 3<br/>Approve?"}}
+    PHASE_AI --> GATE3
+    PHASE_OTHER --> GATE1
+
+    GATE1 --> |"Yes"| BUILD["BUILD Phase<br/>BE → FE → QA → Security"]
+    GATE1 --> |"No"| REVISE1["Revise DEFINE"]
+    BUILD --> GATE2
+    GATE2 --> |"Yes"| SHIP_DEPLOY["SHIP Phase<br/>Deploy → Monitor"]
+    GATE2 --> |"No"| REVISE2["Revise BUILD"]
+    SHIP_DEPLOY --> GATE3
+    GATE3 --> |"Yes"| SUSTAIN["SUSTAIN Phase<br/>Monitor → Grow"]
+    GATE3 --> |"No"| REVISE3["Revise SHIP"]
+    SUSTAIN --> GROW["GROW Phase<br/>Growth → Optimize"]
+
+    START --> ORCH
+    GROW --> END(["Output: Production<br/>Ready Code"])
+
+    style START fill:#1a1a2e,stroke:#e94560,color:#fff
+    style END fill:#16213e,stroke:#0f3460,color:#e94560
+    style ORCH fill:#0f3460,stroke:#e94560,color:#fff
+    style MODE fill:#533483,stroke:#e94560,color:#fff
+    style GATE1 fill:#533483,stroke:#f39c12,color:#fff
+    style GATE2 fill:#533483,stroke:#f39c12,color:#fff
+    style GATE3 fill:#533483,stroke:#f39c12,color:#fff
+    style REVISE1 fill:#c0392b,stroke:#e74c3c,color:#fff
+    style REVISE2 fill:#c0392b,stroke:#e74c3c,color:#fff
+    style REVISE3 fill:#c0392b,stroke:#e74c3c,color:#fff
 ```
 
 ### Middleware Chain (per skill execution)
 
-```
-User Request
-    │
-    ▼
-┌──────────────────────────────────────────────────────────┐
-│ PRE-SKILL (top → bottom)                                 │
-│  ① SessionData      Load profile, session state          │
-│  ② ContextLoader    Memory + conventions + KIs           │
-│  ③ SkillRegistry    Progressive skill discovery           │
-│  ④ Guardrail        Pre-tool authorization              │
-│  ⑤ Summarization    Auto-compress if >70% budget       │
-├──────────────────────────────────────────────────────────┤
-│ ══════════════ SKILL EXECUTION ═══════════════════════ │
-├──────────────────────────────────────────────────────────┤
-│ POST-SKILL (bottom → top)                                │
-│  ⑥ QualityGate      4-level validation, 0–100 score      │
-│  ⑦ BrownfieldSafety Regression check, change manifest    │
-│  ⑧ TaskTracking     Update task.md                       │
-│  ⑨ Memory           Turn-Close: REQ/DONE/OPEN → mem0   │
-│  ⑩ GracefulFailure Retry management, exit strategy      │
-└──────────────────────────────────────────────────────────┘
-    │
-    ▼
-Result / Next Skill
+```mermaid
+flowchart TD
+    REQ(["User Request"])
+    PRE1["① SessionData<br/>Load profile + session state"]
+    PRE2["② ContextLoader<br/>Memory + conventions + KIs"]
+    PRE3["③ SkillRegistry<br/>Progressive skill discovery"]
+    PRE4["④ Guardrail<br/>Pre-tool authorization"]
+    PRE5["⑤ Summarization<br/>Auto-compress if >70% budget"]
+    SKILL_EXEC["SKILL EXECUTION<br/>Engineer → QA → Security → ..."]
+    POST1["⑥ QualityGate<br/>4-level validation 0-100"]
+    POST2["⑦ BrownfieldSafety<br/>Regression + change manifest"]
+    POST3["⑧ TaskTracking<br/>Update task.md"]
+    POST4["⑨ Memory Turn-Close<br/>REQ: DONE: OPEN: → mem0"]
+    POST5["⑩ GracefulFailure<br/>Retry + exit strategy"]
+    RESULT(["Result / Next Skill"])
+
+    REQ --> PRE1 --> PRE2 --> PRE3 --> PRE4 --> PRE5 --> SKILL_EXEC
+    SKILL_EXEC --> POST1 --> POST2 --> POST3 --> POST4 --> POST5 --> RESULT
+
+    style REQ fill:#1a1a2e,stroke:#e94560,color:#fff
+    style RESULT fill:#16213e,stroke:#0f3460,color:#e94560
+    style SKILL_EXEC fill:#0f3460,stroke:#e94560,color:#fff
+    style PRE1 fill:#1a5276,stroke:#3498db,color:#fff
+    style PRE2 fill:#1a5276,stroke:#3498db,color:#fff
+    style PRE3 fill:#1a5276,stroke:#3498db,color:#fff
+    style PRE4 fill:#1a5276,stroke:#3498db,color:#fff
+    style PRE5 fill:#1a5276,stroke:#3498db,color:#fff
+    style POST1 fill:#1e8449,stroke:#2ecc71,color:#fff
+    style POST2 fill:#1e8449,stroke:#2ecc71,color:#fff
+    style POST3 fill:#1e8449,stroke:#2ecc71,color:#fff
+    style POST4 fill:#1e8449,stroke:#2ecc71,color:#fff
+    style POST5 fill:#1e8449,stroke:#2ecc71,color:#fff
 ```
 
 ### Session Lifecycle (Turn-Start + Turn-Close)
 
-```
-Session Start
-    │
-    ▼
-  Step 0.5  Load .forgewright/ project context
-  Step 1    Load project-profile.json
-  Step 2    Load session-log.json (detect manual changes)
-  Step 3    Load memory (mem0 search + code-conventions)
-  Step 3.5  Check ForgeNexus freshness
-  Step 4    Auto-detect greenfield vs brownfield
-    │
-    ▼
-┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-│  FOR EACH USER REQUEST (within session):                │
-│                                                          │
-│  TURN-START:                                             │
-│    T1  Load CONVERSATION_SUMMARY.md                      │
-│    T2  mem0 search: recent turns + session items         │
-│    T3  Load BA scope + pipeline context                  │
-│    → Pass all to orchestrator                           │
-│                                                          │
-│  [Orchestrator processes request via skills]             │
-│                                                          │
-│  TURN-CLOSE (mandatory after every response):           │
-│    TC1 Auto-generate CONVERSATION_SUMMARY.md            │
-│    TC2 mem0 add: REQ: | DONE: | OPEN: | SCOPE_UPDATE:   │
-│    TC3 Optional: mem0 add for decisions/architecture/     │
-│                 blockers                                  │
-│    → Log: "✓ Turn-Close memory saved"                   │
-└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-    │
-    ▼
-Session End
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User
+    participant Orch as Orchestrator
+    participant Mem as Memory mem0
+    participant Forge as ForgeNexus
+    participant Skill as Skills
+
+    User->>Orch: New Session Start
+
+    Orch->>Orch: Step 0.5: Load .forgewright/ context
+    Orch->>Orch: Step 1: Load project-profile.json
+    Orch->>Orch: Step 2: Load session-log.json
+    Orch->>Orch: Step 3: mem0 search + code-conventions
+    Orch->>Forge: Step 3.5: Check index freshness
+    Orch->>Orch: Step 4: Detect greenfield vs brownfield
+
+    rect rgb(20, 30, 60)
+        Note over Orch,Skill: FOR EACH REQUEST (within session)
+
+        User->>Orch: Request
+
+        rect rgb(30, 50, 80)
+            Note over Orch: TURN-START
+            Orch->>Mem: T1: Load CONVERSATION_SUMMARY.md
+            Orch->>Mem: T2: mem0 search recent turns + session
+            Orch->>Mem: T3: Load BA scope + pipeline context
+        end
+
+        Orch->>Skill: Route to skills via Plan Quality Loop
+        Skill-->>Orch: Skill output
+
+        rect rgb(20, 60, 40)
+            Note over Orch: TURN-CLOSE (mandatory)
+            Orch->>Mem: TC1: Auto-generate CONVERSATION_SUMMARY.md
+            Orch->>Mem: TC2: mem0 add REQ/DONE/OPEN/SCOPE_UPDATE
+            Orch->>Mem: TC3: Optional: decisions/architecture/blockers
+        end
+
+        Orch-->>User: Response
+    end
+
+    User->>Orch: Session End
 ```
 
 ### ForgeNexus Analyze Pipeline (Code Intelligence)
 
-```
-npx forgenexus analyze
-│
-├── ① Scanner     glob file discovery + language detection
-│
-├── ② Parse       tree-sitter AST → nodes + 17 edge types
-│   ┌──────────────────────────────────────────────────────┐
-│   │  Worker Pool (cpus-1 threads, 20MB byte-budget)       │
-│   │  • Each worker owns its own tree-sitter parser       │
-│   │  • Graceful fallback: sequential if <15 files         │
-│   └──────────────────────────────────────────────────────┘
-│
-├── ③ Resolve     Suffix Trie O(1) import path resolution
-│
-├── ④ Propagate   Cross-file binding: Kahn topological sort
-│                 Fast-path: skip if <3% gaps
-│
-├── ⑤ Community   Leiden Algorithm
-│                 3-phase (move → refine → aggregate)
-│                 60s timeout · large-graph mode · degree filter
-│
-├── ⑥ Process     BFS entry-point tracing → call chains
-│                 Auto-detect: Next.js, FastAPI, NestJS,
-│                 Express, Django, Rails, Gin, Spring, etc.
-│
-├── ⑦ FTS         Incremental FTS5 — only changed nodes
-│
-├── ⑧ Embeddings  Cache-first · 5 providers (local + API)
-│
-└── ⑨ Meta        Commit tracking + early-exit on unchanged git
+```mermaid
+flowchart LR
+    ANAME["npx forgenexus analyze"]
 
-Performance gains vs original:
-  Parallel parsing: 3-5x on multi-core
-  Suffix trie: O(1) vs O(n×m) LIKE
-  Incremental FTS: O(changed) vs O(all)
-  Leiden: well-connected vs greedy Louvain
-  Early exit: skip all phases if git unchanged
+    subgraph SCAN["① Scanner"]
+        S1["glob file discovery"]
+        S2["language detection"]
+        S3[".gitignore filter"]
+    end
+
+    subgraph PARSE["② Parse — tree-sitter AST"]
+        P1["Worker Pool<br/>cpus-1 threads<br/>20MB budget/worker"]
+        P2["Graceful fallback<br/>sequential if <15 files"]
+        P3["17 Edge Types extracted"]
+    end
+
+    subgraph RESOLVE["③ Resolve"]
+        R1["Suffix Trie O(1)<br/>import path resolution"]
+        R2["Fast-path<br/>skip if <3% gaps"]
+    end
+
+    subgraph PROP["④ Propagate"]
+        PP1["Kahn topological sort"]
+        PP2["Cross-file binding"]
+    end
+
+    subgraph COMMUNITY["⑤ Community — Leiden Algorithm"]
+        C1["3-phase:<br/>move → refine → aggregate"]
+        C2["60s timeout · large-graph mode"]
+    end
+
+    subgraph PROCESS["⑥ Process — BFS Entry-Point Tracing"]
+        PR1["Call chain extraction"]
+        PR2["Auto-detect framework:<br/>Next.js · FastAPI · NestJS<br/>Express · Django · Rails<br/>Gin · Spring · etc."]
+    end
+
+    subgraph FTS_EMB["⑦ FTS + Embeddings"]
+        F1["Incremental FTS5<br/>only changed nodes"]
+        E1["Cache-first embedding<br/>5 providers"]
+    end
+
+    subgraph META["⑧ Meta"]
+        M1["Commit tracking"]
+        M2["Early exit<br/>if git unchanged"]
+    end
+
+    DB[(<b>KuzuDB Graph<br/>Nodes + Rels + FTS<br/>Vector Embeddings</b>)]
+
+    ANAME --> SCAN --> PARSE --> RESOLVE --> PROP --> COMMUNITY --> PROCESS --> FTS_EMB --> META
+    FTS_EMB --> DB
+    PARSE --> DB
+    PROP --> DB
+
+    style ANAME fill:#0f3460,stroke:#e94560,color:#fff
+    style DB fill:#16213e,stroke:#4B0082,color:#fff
+    style SCAN fill:#1a5276,stroke:#3498db
+    style PARSE fill:#1a5276,stroke:#3498db
+    style RESOLVE fill:#6c3483,stroke:#9b59b6
+    style PROP fill:#6c3483,stroke:#9b59b6
+    style COMMUNITY fill:#1e8449,stroke:#2ecc71
+    style PROCESS fill:#1e8449,stroke:#2ecc71
+    style FTS_EMB fill:#d35400,stroke:#e67e22
+    style META fill:#2c3e50,stroke:#7f8c8d
+```
+
+### Multi-Repo Group Management (ForgeNexus Groups)
+
+```mermaid
+flowchart TD
+    CLI["forgenexus group CLI"]
+    MCP["MCP Tools<br/>8 group tools"]
+    GROUPS[("Groups<br/>data/groups.ts")]
+    REGISTRY[("Registry DB<br/>KuzuDB")]
+    CONTRACTS[("Contracts<br/>Cross-repo API<br/>signatures")]
+    REPOS[("Indexed Repos<br/>via forgenexus analyze")]
+
+    CLI --> |"group create"| GROUPS
+    CLI --> |"group list"| GROUPS
+    CLI --> |"group add<br/>group remove"| GROUPS
+    MCP --> |"group_sync"| GROUPS
+    MCP --> |"group_contracts"| GROUPS
+    MCP --> |"group_query<br/>group_status"| CONTRACTS
+
+    GROUPS --> |"sync<br/>extract"| CONTRACTS
+    CONTRACTS --> REGISTRY
+    REPOS --> |"analyze"| REGISTRY
+    REGISTRY --> |"link contracts<br/>cross-repo edges"| CONTRACTS
+
+    style CLI fill:#0f3460,stroke:#e94560,color:#fff
+    style MCP fill:#0f3460,stroke:#e94560,color:#fff
+    style GROUPS fill:#16213e,stroke:#4B0082,color:#fff
+    style REGISTRY fill:#16213e,stroke:#4B0082,color:#fff
+    style CONTRACTS fill:#1e8449,stroke:#2ecc71,color:#fff
+    style REPOS fill:#1a5276,stroke:#3498db,color:#fff
+```
+
+### Claude Code Hooks — Auto-Reindex Flow
+
+```mermaid
+flowchart TD
+    HOOK_PRE[("pre-tool-use hook<br/>Enrich context")]
+    HOOK_POST[("post-tool-use hook<br/>Auto-reindex")]
+
+    subgraph PRE_HOOK["pre-tool-use.ts"]
+        T1{"tool name?"}
+        T_GREP["grep / search<br/>ForgeNexus search<br/>→ show callers"]
+        T_READ["read file<br/>→ show file symbols"]
+        T_EDIT["edit / Write<br/>→ warn about callers"]
+        T_SKIP["Other tools<br/>→ skip"]
+    end
+
+    subgraph POST_HOOK["post-tool-use.ts"]
+        G1{"git commit<br/>detected?"}
+        G2["Find forgenexus root<br/>detect last commit"]
+        G3["Spawn incremental<br/>forgenexus analyze"]
+        G4["Success → log<br/>Failure → warn"]
+    end
+
+    HOOK_PRE --> PRE_HOOK
+    PRE_HOOK --> T1
+    T1 --> |"grep/search"| T_GREP
+    T1 --> |"read"| T_READ
+    T1 --> |"edit/Write"| T_EDIT
+    T1 --> |"other"| T_SKIP
+
+    HOOK_POST --> POST_HOOK
+    POST_HOOK --> G1
+    G1 --> |"yes"| G2 --> G3 --> G4
+    G1 --> |"no"| G_SKIP["(no action)"]
+
+    style HOOK_PRE fill:#6c3483,stroke:#9b59b6,color:#fff
+    style HOOK_POST fill:#6c3483,stroke:#9b59b6,color:#fff
+    style PRE_HOOK fill:#1a1a2e,stroke:#9b59b6
+    style POST_HOOK fill:#1a1a2e,stroke:#9b59b6
+    style T_GREP fill:#1e8449,stroke:#2ecc71,color:#fff
+    style T_READ fill:#1e8449,stroke:#2ecc71,color:#fff
+    style T_EDIT fill:#d35400,stroke:#e67e22,color:#fff
+    style G3 fill:#d35400,stroke:#e67e22,color:#fff
 ```
 
 ### Request → Mode → Skills Routing
 
-| You Say | Mode | Skills Activated |
-|---------|------|-----------------|
-| "Build a SaaS for X" | **Full Build** | BA → PM → Architect → BE → FE → QA → Security → DevOps → SRE |
-| "Add [feature]" | **Feature** | PM → Architect → BE/FE → QA |
-| "Build a Unity/Unreal/Godot/Roblox game" | **Game Build** | Game Designer → Engine Engineer → Level → Narrative → Technical Art → Audio |
-| "Build a VR/AR app" | **XR Build** | XR Engineer → XR Game Pipeline |
-| "Build a mobile app" | **Mobile** | BA → Mobile Engineer → PM → Architect |
-| "Build AI feature / RAG" | **AI Build** | AI Engineer → Prompt Engineer → Data Scientist |
-| "Review my code" | **Review** | Code Reviewer |
-| "Write tests" | **Test** | QA Engineer |
-| "Deploy / CI/CD" | **Ship** | DevOps → SRE |
-| "Design UI for X" | **Design** | UX Researcher → UI Designer |
-| "Optimize performance" | **Optimize** | Performance Engineer → SRE |
-| "Test on Android/iOS" | **Mobile Test** | Mobile Tester (AI vision on real devices) |
-| "Deep research on X" | **Research** | Polymath + NotebookLM MCP |
-| "Marketing strategy for X" | **Marketing** | Growth Marketer → Conversion Optimizer |
-| "Help me think about X" | **Explore** | Polymath co-pilot |
-| "Debug / fix bug" | **Debug** | Debugger → Engineer |
-| "Analyze requirements" | **Analyze** | Business Analyst |
+```mermaid
+flowchart LR
+    INPUT["You Say..."]
+
+    INPUT --> F1["Build SaaS<br/>Production Grade"]
+    INPUT --> F2["Add Feature<br/>Implement"]
+    INPUT --> F3["Build Game<br/>Unity/Unreal/Godot/Roblox"]
+    INPUT --> F4["Build VR/AR<br/>XR App"]
+    INPUT --> F5["Build Mobile<br/>iOS/Android"]
+    INPUT --> F6["AI Feature<br/>RAG/LLM/Chatbot"]
+    INPUT --> F7["Review Code<br/>Quality Check"]
+    INPUT --> F8["Write Tests<br/>Coverage"]
+    INPUT --> F9["Deploy CI/CD<br/>Docker/Terraform"]
+    INPUT --> F10["Design UI<br/>UX Research"]
+    INPUT --> F11["Optimize<br/>Performance"]
+    INPUT --> F12["Deep Research<br/>Investigate"]
+    INPUT --> F13["Marketing<br/>Growth Strategy"]
+    INPUT --> F14["Debug Fix<br/>Bug Trace"]
+    INPUT --> F15["Analyze<br/>Requirements"]
+
+    F1 --> M1{{"Mode:<br/>Full Build"}}
+    F2 --> M2{{"Mode:<br/>Feature"}}
+    F3 --> M3{{"Mode:<br/>Game Build"}}
+    F4 --> M4{{"Mode:<br/>XR Build"}}
+    F5 --> M5{{"Mode:<br/>Mobile"}}
+    F6 --> M6{{"Mode:<br/>AI Build"}}
+    F7 --> M7{{"Mode:<br/>Review"}}
+    F8 --> M8{{"Mode:<br/>Test"}}
+    F9 --> M9{{"Mode:<br/>Ship"}}
+    F10 --> M10{{"Mode:<br/>Design"}}
+    F11 --> M11{{"Mode:<br/>Optimize"}}
+    F12 --> M12{{"Mode:<br/>Research"}}
+    F13 --> M13{{"Mode:<br/>Marketing"}}
+    F14 --> M14{{"Mode:<br/>Debug"}}
+    F15 --> M15{{"Mode:<br/>Analyze"}}
+
+    M1 --> SK1["BA → PM → Architect →<br/>BE → FE → QA →<br/>Security → DevOps → SRE"]
+    M2 --> SK2["PM → Architect →<br/>BE/FE → QA"]
+    M3 --> SK3["Game Designer →<br/>Engine Engineer →<br/>Level → Narrative →<br/>Technical Art → Audio"]
+    M4 --> SK4["XR Engineer →<br/>XR Game Pipeline"]
+    M5 --> SK5["BA → Mobile Engineer →<br/>PM → Architect"]
+    M6 --> SK6["AI Engineer →<br/>Prompt Engineer →<br/>Data Scientist"]
+    M7 --> SK7["Code Reviewer"]
+    M8 --> SK8["QA Engineer"]
+    M9 --> SK9["DevOps → SRE"]
+    M10 --> SK10["UX Researcher →<br/>UI Designer"]
+    M11 --> SK11["Performance Engineer →<br/>SRE"]
+    M12 --> SK12["Polymath +<br/>NotebookLM MCP"]
+    M13 --> SK13["Growth Marketer →<br/>Conversion Optimizer"]
+    M14 --> SK14["Debugger →<br/>Engineer"]
+    M15 --> SK15["Business Analyst"]
+
+    style INPUT fill:#1a1a2e,stroke:#e94560,color:#fff
+    style M1 fill:#533483,stroke:#9b59b6,color:#fff
+    style M2 fill:#533483,stroke:#9b59b6,color:#fff
+    style M3 fill:#533483,stroke:#9b59b6,color:#fff
+    style M4 fill:#533483,stroke:#9b59b6,color:#fff
+    style M5 fill:#533483,stroke:#9b59b6,color:#fff
+    style M6 fill:#533483,stroke:#9b59b6,color:#fff
+    style M7 fill:#533483,stroke:#9b59b6,color:#fff
+    style M8 fill:#533483,stroke:#9b59b6,color:#fff
+    style M9 fill:#533483,stroke:#9b59b6,color:#fff
+    style M10 fill:#533483,stroke:#9b59b6,color:#fff
+    style M11 fill:#533483,stroke:#9b59b6,color:#fff
+    style M12 fill:#533483,stroke:#9b59b6,color:#fff
+    style M13 fill:#533483,stroke:#9b59b6,color:#fff
+    style M14 fill:#533483,stroke:#9b59b6,color:#fff
+    style M15 fill:#533483,stroke:#9b59b6,color:#fff
+    style SK1 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK2 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK3 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK4 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK5 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK6 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK7 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK8 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK9 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK10 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK11 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK12 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK13 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK14 fill:#0f3460,stroke:#3498db,color:#fff
+    style SK15 fill:#0f3460,stroke:#3498db,color:#fff
+```
 
 ---
 
@@ -418,21 +621,21 @@ Performance gains vs original:
 
 ## Optional Enhancements
 
-### 🌐 Web Scraping (crawl4ai)
+### Web Scraping (crawl4ai)
 
 ```bash
 pip install "crawl4ai>=0.8.0"
 # Then: "Scrape [URL]" or "Crawl [website]"
 ```
 
-### 👁 AI Vision Testing (Midscene.js)
+### AI Vision Testing (Midscene.js)
 
 ```bash
 npm install -g @anthropic-ai/midscene
 # Then: "Test on Android" or "Test on iOS"
 ```
 
-### 🤖 Multi-Agent (Paperclip)
+### Multi-Agent (Paperclip)
 
 ```bash
 npx paperclipai onboard --yes
@@ -440,7 +643,7 @@ cd paperclip && pnpm dev
 # Dashboard: http://localhost:3100
 ```
 
-### 🔬 Research (NotebookLM MCP)
+### Research (NotebookLM MCP)
 
 ```bash
 pip install notebooklm-mcp
@@ -485,6 +688,8 @@ bash scripts/forge-validate.sh --json
 | `realpath` not found on macOS | `brew install coreutils` |
 | `python3` not found | Install Python 3.8+ for memory features |
 | Windows: `bash` not found | Use PowerShell equivalent commands |
+| Mermaid diagrams not rendering | Ensure viewer uses **mermaid 10+**. GitHub/GitLab current versions support it. |
+| `better-sqlite3` build error after merge | Run `cd forgenexus && npm install` to install `kuzu` instead |
 
 ---
 
