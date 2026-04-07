@@ -1,4 +1,24 @@
 /**
+ * Detect whether a database file is SQLite (the legacy format).
+ * Returns the detected format or null if the file doesn't exist.
+ */
+function detectDbFormat(dbPath: string): 'sqlite' | 'kuzudb' | null {
+  if (!existsSync(dbPath)) return null
+
+  try {
+    // SQLite files start with the 16-byte header "SQLite format 3\0"
+    const header = readFileSync(dbPath)
+    if (header.length >= 16) {
+      const magic = header.slice(0, 16).toString('utf8')
+      if (magic.startsWith('SQLite')) return 'sqlite'
+    }
+    return 'kuzudb'
+  } catch {
+    return 'kuzudb' // can't read — assume it's fine
+  }
+}
+
+/**
  * ForgeNexus Database — KuzuDB (Graph Database) Backend v2.2
  *
  * Migration from SQLite (better-sqlite3):
@@ -23,6 +43,7 @@
  *   - Periodic flush every 2s to prevent queue buildup
  */
 
+import { existsSync, unlinkSync, readFileSync } from 'fs'
 import { Database, Connection } from 'kuzu'
 import { KUZU_SCHEMA } from './schema.js'
 import type {
@@ -38,7 +59,6 @@ import type {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function rowToNode(r: Record<string, any>): CodeNode {
-  const emb = r.embedding
   return {
     uid: r.uid,
     type: (r.type ?? 'unknown') as NodeType,
@@ -54,19 +74,18 @@ function rowToNode(r: Record<string, any>): CodeNode {
     signature: r.signature ?? undefined,
     community: r.community ?? undefined,
     process: r.process ?? r.process_name ?? undefined,
-    embedding: emb ? (typeof emb === 'string' ? JSON.parse(emb) : emb) : undefined,
   }
 }
 
 function rowToEdge(r: Record<string, any>): CodeEdge {
   return {
-    id: r._id ?? `${r.fromUid}->${r.relType}:${r.toUid}`,
-    fromUid: r.fromUid ?? r.src ?? '',
-    toUid: r.toUid ?? r.dst ?? '',
-    type: (r.relType ?? r.type ?? 'CALLS') as EdgeType,
-    confidence: Number(r.confidence ?? 1.0),
-    reason: r.reason ?? undefined,
-    step: r.step ?? undefined,
+    id: r.uid ?? r['n.uid'] ?? '',
+    fromUid: r.rel_from ?? r['n.rel_from'] ?? '',
+    toUid: r.rel_to ?? r['n.rel_to'] ?? '',
+    type: (r.rel_type ?? r['n.rel_type'] ?? r.type ?? r['n.type'] ?? 'CALLS') as EdgeType,
+    confidence: Number(r.rel_confidence ?? r['n.rel_confidence'] ?? r.confidence ?? r['n.confidence'] ?? 1.0),
+    reason: r.rel_reason ?? r['n.rel_reason'] ?? r.reason ?? r['n.reason'] ?? undefined,
+    step: r.rel_step ?? r['n.rel_step'] ?? r.step ?? r['n.step'] ?? undefined,
   }
 }
 
@@ -107,7 +126,13 @@ function rowToProcess(r: Record<string, any>): Process {
 }
 
 function esc(s: string): string {
-  return String(s ?? '').replace(/"/g, '\\"')
+  return String(s ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "''")   // Cypher single-quote: double it
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
 }
 
 /** Unwrap querySync result (single or multiple) to a single QueryResult */
@@ -115,7 +140,7 @@ function unwrapResult(result: any): any {
   return Array.isArray(result) ? result[0] : result
 }
 
-function sqlRowToProps(n: CodeNode, embedding?: number[]): Record<string, any> {
+function sqlRowToProps(n: CodeNode, _embedding?: number[]): Record<string, any> {
   return {
     uid: esc(n.uid),
     type: esc(n.type),
@@ -123,15 +148,14 @@ function sqlRowToProps(n: CodeNode, embedding?: number[]): Record<string, any> {
     filePath: esc(n.filePath),
     line: n.line,
     endLine: n.endLine,
-    columnNum: n.column ?? 'NULL',
+    columnNum: n.column ?? 0,
     returnType: n.returnType ? `"${esc(n.returnType)}"` : 'NULL',
-    paramCount: n.parameterCount ?? 'NULL',
+    paramCount: n.parameterCount ?? 0,
     declaredType: n.declaredType ? `"${esc(n.declaredType)}"` : 'NULL',
     language: n.language ? `"${esc(n.language)}"` : 'NULL',
     signature: n.signature ? `"${esc(n.signature)}"` : 'NULL',
     community: n.community ? `"${esc(n.community)}"` : 'NULL',
     process: n.process ? `"${esc(n.process)}"` : 'NULL',
-    embedding: embedding ? `"${esc(JSON.stringify(embedding))}"` : 'NULL',
   }
 }
 
@@ -163,13 +187,34 @@ export class ForgeDB {
   private conn: InstanceType<typeof Connection>
   private queue: QueuedOp[] = []
   private flushTimer: ReturnType<typeof setTimeout> | null = null
+  private edgeUidCounter = 0
 
   /** Expose raw db for low-level operations (indexer needs DELETE/UPDATE) */
   get rawDb(): InstanceType<typeof Database> {
     return this.db
   }
 
+  /** Expose raw connection for KuzuDB Cypher queries (indexer, groups) */
+  get connection(): InstanceType<typeof Connection> {
+    return this.conn
+  }
+
   constructor(dbPath: string) {
+    // Detect legacy SQLite file and reset it
+    const format = detectDbFormat(dbPath)
+    if (format === 'sqlite') {
+      console.error(`[ForgeNexus] Detected legacy SQLite index — resetting for KuzuDB.`)
+      try {
+        // Remove all SQLite files so KuzuDB can create fresh ones
+        ;['', '-shm', '-wal'].forEach((suffix) => {
+          const f = dbPath + suffix
+          if (existsSync(f)) unlinkSync(f)
+        })
+      } catch (e: any) {
+        console.warn(`[ForgeNexus] Could not remove old index: ${e.message}`)
+      }
+    }
+
     this.db = new Database(dbPath)
     this.conn = new Connection(this.db)
 
@@ -182,6 +227,9 @@ export class ForgeDB {
         this.conn.querySync(stmt)
       } catch (e: any) {
         // "already exists" errors are safe to ignore
+        if (!e.message?.includes('already exists') && !e.message?.includes('Duplicate')) {
+          console.warn(`[ForgeNexus] Schema init warning: ${e.message}`)
+        }
       }
     }
 
@@ -200,51 +248,90 @@ export class ForgeDB {
     if (this.queue.length === 0) return
     const ops = this.queue.splice(0)
 
-    for (const op of ops) {
-      if (op.kind === 'node') {
-        const p = sqlRowToProps(op.node, op.embedding)
+    const nodes = ops.filter((op) => op.kind === 'node')
+    const edges = ops.filter((op) => op.kind === 'edge')
+    const communities = ops.filter((op) => op.kind === 'community')
+    const processes = ops.filter((op) => op.kind === 'process')
+
+    // ── Batch nodes via UNWIND ───────────────────────────────────────────────
+    if (nodes.length > 0) {
+      const rows = nodes.map((op) => {
+        const p = sqlRowToProps((op as QueuedNode).node, (op as QueuedNode).embedding)
+        return `{uid: "${p.uid}", type: "${p.type}", name: "${p.name}", filePath: "${p.filePath}", line: ${p.line}, endLine: ${p.endLine}, columnNum: ${p.columnNum}, returnType: ${p.returnType}, paramCount: ${p.paramCount}, declaredType: ${p.declaredType}, language: ${p.language}, signature: ${p.signature}, community: ${p.community}, process: ${p.process}}`
+      })
+
+      const batchSize = 200
+      for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = rows.slice(i, i + batchSize)
         try {
           this.conn.querySync(
-            `MERGE (n:CodeNode {uid: "${p.uid}"}) SET n.type = "${p.type}", n.name = "${p.name}", n.filePath = "${p.filePath}", n.line = ${p.line}, n.endLine = ${p.endLine}, n.columnNum = ${p.columnNum}, n.returnType = ${p.returnType}, n.paramCount = ${p.paramCount}, n.declaredType = ${p.declaredType}, n.language = ${p.language}, n.signature = ${p.signature}, n.community = ${p.community}, n.process = ${p.process}, n.embedding = ${p.embedding}`,
+            `UNWIND [${batch.join(', ')}] AS row CREATE (n:CodeNode {uid: row.uid, type: row.type, name: row.name, filePath: row.filePath, line: row.line, endLine: row.endLine, columnNum: row.columnNum, returnType: row.returnType, paramCount: row.paramCount, declaredType: row.declaredType, language: row.language, signature: row.signature, community: row.community, process: row.process})`,
           )
-        } catch {
-          /* duplicate/missing ok */
+        } catch (e: any) {
+          if (!e.message?.includes('already exists') && !e.message?.includes('duplicate')) {
+            console.warn(`[ForgeNexus] UNWIND node batch failed: ${e.message?.substring(0, 100)}`)
+          }
         }
-      } else if (op.kind === 'edge') {
-        const e = op.edge
-        const relType = e.type
-        const fromUid = esc(e.fromUid)
-        const toUid = esc(e.toUid)
-        const conf = e.confidence ?? 1.0
-        const reason = e.reason ? `"${esc(e.reason)}"` : 'NULL'
-        const step = e.step ?? 'NULL'
+      }
+    }
+
+    // ── Batch edges via CodeNode rows with rel_type column ─────────────────────────
+    if (edges.length > 0) {
+      const edgeRows = edges.map((op) => {
+        const e = (op as QueuedEdge).edge
+        // Use a truly unique UID to avoid primary key collisions
+        // (original e.id may collide when the same call appears multiple times)
+        const uid = `EDGE_${this.edgeUidCounter++}_${esc(e.fromUid)}_${esc(e.type)}_${esc(e.toUid)}`
+        const rel_type = esc(e.type)
+        const rel_from = esc(e.fromUid)
+        const rel_to = esc(e.toUid)
+        const rel_confidence = e.confidence ?? 1.0
+        const rel_reason = e.reason ? `"${esc(e.reason)}"` : 'NULL'
+        const rel_step = e.step !== undefined && e.step !== null ? `"${esc(String(e.step))}"` : 'NULL'
+        return `{uid: "${uid}", type: "${rel_type}", name: "${rel_type}", rel_type: "${rel_type}", rel_from: "${rel_from}", rel_to: "${rel_to}", rel_confidence: ${rel_confidence}, rel_reason: ${rel_reason}, rel_step: ${rel_step}}`
+      })
+
+      const batchSize = 200
+      for (let i = 0; i < edgeRows.length; i += batchSize) {
+        const batch = edgeRows.slice(i, i + batchSize)
         try {
           this.conn.querySync(
-            `CREATE (a:CodeNode {uid: "${fromUid}"})-[r:${relType} {confidence: ${conf}, reason: ${reason}, step: ${step}}]->(b:CodeNode {uid: "${toUid}"})`,
+            `UNWIND [${batch.join(', ')}] AS row CREATE (e:CodeNode {uid: row.uid, type: row.rel_type, name: row.rel_type, rel_type: row.rel_type, rel_from: row.rel_from, rel_to: row.rel_to, rel_confidence: row.rel_confidence, rel_reason: row.rel_reason, rel_step: row.rel_step})`,
           )
-        } catch {
-          /* exists */
+        } catch (e: any) {
+          if (e.message?.includes('already exists') || e.message?.includes('duplicate')) continue
+          console.error(`[ForgeNexus] UNWIND edge batch failed (${i}-${i + batch.length}): ${e.message?.substring(0, 200)}`)
         }
-      } else if (op.kind === 'community') {
-        const c = op.community
-        const keywords = esc(JSON.stringify(c.keywords))
-        try {
-          this.conn.querySync(
-            `MERGE (m:Community {id: "${esc(c.id)}"}) SET m.name = "${esc(c.name)}", m.keywords = "${keywords}", m.description = "${esc(c.description)}", m.cohesion = ${c.cohesion}`,
-          )
-        } catch {
-          /* */
+      }
+    }
+
+    // ── Communities ──────────────────────────────────────────────────────────
+    for (const op of communities) {
+      const c = (op as QueuedCommunity).community
+      const keywords = esc(JSON.stringify(c.keywords))
+      try {
+        this.conn.querySync(
+          `CREATE (m:Community {id: "${esc(c.id)}", name: "${esc(c.name)}", keywords: "${keywords}", description: "${esc(c.description)}", cohesion: ${c.cohesion}})`,
+        )
+      } catch (e: any) {
+        if (!e.message?.includes('already exists') && !e.message?.includes('duplicate')) {
+          console.warn(`[ForgeNexus] Community write failed: ${e.message?.substring(0, 100)}`)
         }
-      } else if (op.kind === 'process') {
-        const p = op.process
-        const terminals = esc(JSON.stringify(p.terminalUids))
-        const comms = esc(JSON.stringify(p.communities))
-        try {
-          this.conn.querySync(
-            `MERGE (pr:Process {id: "${esc(p.id)}"}) SET pr.name = "${esc(p.name)}", pr.type = "${p.type}", pr.entryPointUid = "${esc(p.entryPointUid)}", pr.terminalUids = "${terminals}", pr.communities = "${comms}"`,
-          )
-        } catch {
-          /* */
+      }
+    }
+
+    // ── Processes ──────────────────────────────────────────────────────────
+    for (const op of processes) {
+      const pr = (op as QueuedProcess).process
+      const terminals = esc(JSON.stringify(pr.terminalUids))
+      const comms = esc(JSON.stringify(pr.communities))
+      try {
+        this.conn.querySync(
+          `CREATE (pr2:Process {id: "${esc(pr.id)}", name: "${esc(pr.name)}", type: "${pr.type}", entryPointUid: "${esc(pr.entryPointUid)}", terminalUids: "${terminals}", communities: "${comms}"})`,
+        )
+      } catch (e: any) {
+        if (!e.message?.includes('already exists') && !e.message?.includes('duplicate')) {
+          console.warn(`[ForgeNexus] Process write failed: ${e.message?.substring(0, 100)}`)
         }
       }
     }
@@ -287,8 +374,10 @@ export class ForgeDB {
   exec(sql: string): void {
     try {
       this.conn.querySync(sql)
-    } catch {
-      /* ignore */
+    } catch (e: any) {
+      if (e.message) {
+        console.warn(`[ForgeNexus] DB exec failed: ${e.message}`)
+      }
     }
   }
 
@@ -300,21 +389,24 @@ export class ForgeDB {
       const result = this.conn.querySync(sql)
       const r = Array.isArray(result) ? result[0] : result
       return (r as any).getAllSync() as Record<string, any>[]
-    } catch {
+    } catch (e: any) {
+      if (e.message) {
+        console.warn(`[ForgeNexus] DB query failed (returning []): ${e.message}`)
+      }
       return []
     }
   }
 
   getNode(uid: string): CodeNode | null {
     const rows = this.q(
-      `MATCH (n:CodeNode {uid: "${esc(uid)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding LIMIT 1`,
+      `MATCH (n:CodeNode {uid: "${esc(uid)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process LIMIT 1`,
     )
     return rows.length > 0 ? rowToNode(rows[0]) : null
   }
 
   getNodesByName(name: string): CodeNode[] {
     return this.q(
-      `MATCH (n:CodeNode {name: "${esc(name)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding ORDER BY n.filePath`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.name = "${esc(name)}" RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process ORDER BY n.filePath`,
     ).map(rowToNode)
   }
 
@@ -324,47 +416,57 @@ export class ForgeDB {
     type?: NodeType,
     limit = 200,
   ): CodeNode[] {
-    const like =
-      op === 'starts' ? `${esc(search)}%` : op === 'ends' ? `%${esc(search)}` : `%${esc(search)}%`
-    const typeFilter = type ? ` AND n.type = "${type}"` : ''
+    // KuzuDB does NOT support LIKE — use CONTAINS / STARTS WITH / regex
+    const typeFilter = type ? ` AND n.type = "${esc(type)}"` : ''
+    let where = `n.rel_type IS NULL AND n.name ${esc(search)} IS NOT NULL${typeFilter}`
+    if (op === 'contains') {
+      where = `n.rel_type IS NULL AND n.name CONTAINS '${esc(search)}'${typeFilter}`
+    } else if (op === 'starts') {
+      where = `n.rel_type IS NULL AND n.name STARTS WITH '${esc(search)}'${typeFilter}`
+    } else if (op === 'ends') {
+      where = `n.rel_type IS NULL AND n.name CONTAINS '${esc(search)}'${typeFilter}`
+    }
     return this.q(
-      `MATCH (n:CodeNode) WHERE n.name LIKE "${like}"${typeFilter} RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding LIMIT ${limit}`,
+      `MATCH (n:CodeNode) WHERE ${where} RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process LIMIT ${limit}`,
     ).map(rowToNode)
   }
 
   getNodesByType(type: NodeType, limit?: number): CodeNode[] {
     const limitClause = limit ? ` LIMIT ${limit}` : ''
     return this.q(
-      `MATCH (n:CodeNode {type: "${type}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding${limitClause}`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.type = "${esc(type)}" RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process${limitClause}`,
     ).map(rowToNode)
   }
 
   getNodesByFile(filePath: string): CodeNode[] {
     return this.q(
-      `MATCH (n:CodeNode {filePath: "${esc(filePath)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.filePath = "${esc(filePath)}" RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process`,
     ).map(rowToNode)
   }
 
   getNodesByCommunity(communityId: string): CodeNode[] {
+    // Nodes have a `community` field set by the indexer
     return this.q(
-      `MATCH (n:CodeNode)-[:IN_COMMUNITY]->(c:Community {id: "${esc(communityId)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding ORDER BY n.line`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.community = "${esc(communityId)}" RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process ORDER BY n.line`,
     ).map(rowToNode)
   }
 
   getNodesByProcess(processId: string): CodeNode[] {
+    // Nodes have a `process` field set by the indexer
     return this.q(
-      `MATCH (n:CodeNode)-[:STEP_IN_PROCESS]->(pr:Process {id: "${esc(processId)}"}) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding ORDER BY n.line`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.process = "${esc(processId)}" RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process ORDER BY n.line`,
     ).map(rowToNode)
   }
 
   getAllNodes(): CodeNode[] {
+    // Filter out edge records (stored as CodeNode rows with rel_type IS NOT NULL)
     return this.q(
-      `MATCH (n:CodeNode) RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process, n.embedding AS embedding`,
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process`,
     ).map(rowToNode)
   }
 
   getAllFilePaths(): string[] {
-    return this.q(`MATCH (n:CodeNode) RETURN DISTINCT n.filePath AS filePath`).map(
+    return this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN DISTINCT n.filePath AS filePath`).map(
       (r) => r.filePath as string,
     )
   }
@@ -376,29 +478,29 @@ export class ForgeDB {
   }
 
   getIncomingEdges(uid: string, type?: EdgeType): CodeEdge[] {
-    const relFilter = type ? `:${type}` : ''
-    return this.edgeQuery(
-      `MATCH (a)-[r${relFilter}]->(b:CodeNode {uid: "${esc(uid)}"}) RETURN a.uid AS fromUid, b.uid AS toUid, type(r) AS relType, r.confidence AS confidence, r.reason AS reason, r.step AS step`,
-    )
+    const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
+    return this.q(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL AND n.rel_to = "${esc(uid)}"${typeFilter} RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to, n.rel_type AS rel_type, n.rel_confidence AS rel_confidence, n.rel_reason AS rel_reason, n.rel_step AS rel_step`,
+    ).map(rowToEdge)
   }
 
   getOutgoingEdges(uid: string, type?: EdgeType): CodeEdge[] {
-    const relFilter = type ? `:${type}` : ''
-    return this.edgeQuery(
-      `MATCH (a:CodeNode {uid: "${esc(uid)}"})-[r${relFilter}]->(b) RETURN a.uid AS fromUid, b.uid AS toUid, type(r) AS relType, r.confidence AS confidence, r.reason AS reason, r.step AS step`,
-    )
+    const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
+    return this.q(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL AND n.rel_from = "${esc(uid)}"${typeFilter} RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to, n.rel_type AS rel_type, n.rel_confidence AS rel_confidence, n.rel_reason AS rel_reason, n.rel_step AS rel_step`,
+    ).map(rowToEdge)
   }
 
   getAllEdges(type?: EdgeType): CodeEdge[] {
-    const relFilter = type ? `:${type}` : ''
-    return this.edgeQuery(
-      `MATCH (a)-[r${relFilter}]->(b) RETURN a.uid AS fromUid, b.uid AS toUid, type(r) AS relType, r.confidence AS confidence, r.reason AS reason, r.step AS step`,
-    )
+    const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
+    return this.q(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL${typeFilter} RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to, n.rel_type AS rel_type, n.rel_confidence AS rel_confidence, n.rel_reason AS rel_reason, n.rel_step AS rel_step`,
+    ).map(rowToEdge)
   }
 
   getEdgeCount(type?: EdgeType): number {
-    const relFilter = type ? `:${type}` : ''
-    const rows = this.q(`MATCH (a)-[r${relFilter}]->(b) RETURN count(r) AS cnt`)
+    const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
+    const rows = this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL${typeFilter} RETURN count(n) AS cnt`)
     return rows.length > 0 ? Number(rows[0].cnt) : 0
   }
 
@@ -472,21 +574,30 @@ export class ForgeDB {
   }
 
   getRouteHandlers(): { route: string; handler: CodeNode }[] {
-    return this.q(
-      `MATCH (routeNode:CodeNode)-[:HANDLES_ROUTE]->(h:CodeNode)
-       RETURN routeNode.uid AS route, h.uid AS handlerUid`,
+    // Edges stored as CodeNode rows with rel_type IS NOT NULL
+    const results = this.q(
+      `MATCH (n:CodeNode) WHERE n.rel_type = "HANDLES_ROUTE" RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to`,
     )
-      .map((r) => ({ route: r.route as string, handler: this.getNode(r.handlerUid as string)! }))
-      .filter((r) => r.handler !== null)
+    return results
+      .map((r) => ({
+        route: r.rel_from as string,
+        handlerUid: r.rel_to as string,
+      }))
+      .map((r) => ({ route: r.route, handler: this.getNode(r.handlerUid) }))
+      .filter((r) => r.handler !== null) as { route: string; handler: CodeNode }[]
   }
 
   getToolHandlers(): { tool: string; handler: CodeNode }[] {
-    return this.q(
-      `MATCH (toolNode:CodeNode)-[:HANDLES_TOOL]->(h:CodeNode)
-       RETURN toolNode.uid AS tool, h.uid AS handlerUid`,
+    const results = this.q(
+      `MATCH (n:CodeNode) WHERE n.rel_type = "HANDLES_TOOL" RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to`,
     )
-      .map((r) => ({ tool: r.tool as string, handler: this.getNode(r.handlerUid as string)! }))
-      .filter((r) => r.handler !== null)
+    return results
+      .map((r) => ({
+        tool: r.rel_from as string,
+        handlerUid: r.rel_to as string,
+      }))
+      .map((r) => ({ tool: r.tool, handler: this.getNode(r.handlerUid) }))
+      .filter((r) => r.handler !== null) as { tool: string; handler: CodeNode }[]
   }
 
   getQueryEdges(): CodeEdge[] {
@@ -554,12 +665,14 @@ export class ForgeDB {
   // ─── Stats ───────────────────────────────────────────────────────────────────
 
   getStats(): RepoStats {
-    const nodes = this.q(`MATCH (n:CodeNode) RETURN count(n) AS cnt`)
-    const edges = this.q(`MATCH ()-[r]->() RETURN count(r) AS cnt`)
-    const files = this.q(`MATCH (n:CodeNode) RETURN count(DISTINCT n.filePath) AS cnt`)
+    const nodes = this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN count(n) AS cnt`)
+    const edges = this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL RETURN count(n) AS cnt`)
+    const files = this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN count(DISTINCT n.filePath) AS cnt`)
     const comms = this.q(`MATCH (c:Community) RETURN count(c) AS cnt`)
     const procs = this.q(`MATCH (p:Process) RETURN count(p) AS cnt`)
-    const embs = this.q(`MATCH (n:CodeNode) WHERE n.embedding IS NOT NULL RETURN count(n) AS cnt`)
+    // Embeddings: no longer stored in CodeNode table (KuzuDB UNWIND CREATE + DOUBLE[] is incompatible)
+    // Embeddings are stored in a separate key-value store if needed
+    const embs = 0
 
     return {
       files: Number(files[0]?.cnt ?? 0),
@@ -567,7 +680,7 @@ export class ForgeDB {
       edges: Number(edges[0]?.cnt ?? 0),
       communities: Number(comms[0]?.cnt ?? 0),
       processes: Number(procs[0]?.cnt ?? 0),
-      hasEmbeddings: Number(embs[0]?.cnt ?? 0) > 0,
+      hasEmbeddings: false,
     }
   }
 
@@ -587,7 +700,7 @@ export class ForgeDB {
       byType[r.type as string] = Number(r.cnt)
     }
     const byEdgeType: Record<string, number> = {}
-    for (const r of this.q(`MATCH ()-[r]->() RETURN type(r) AS type, count(r) AS cnt`)) {
+    for (const r of this.q(`MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL RETURN n.rel_type AS type, count(n) AS cnt`)) {
       byEdgeType[r.type as string] = Number(r.cnt)
     }
     return { ...stats, byType, byEdgeType }
@@ -598,11 +711,17 @@ export class ForgeDB {
   setMeta(key: string, value: string): void {
     try {
       const result = this.conn.querySync(
-        `MERGE (m:CodeNode {uid: "META:${esc(key)}", type: "meta", name: "${esc(key)}", filePath: "", line: 0, endLine: 0}) SET m.signature = "${esc(value)}"`,
+        `MATCH (m:CodeNode {uid: "META:${esc(key)}"}) SET m.signature = "${esc(value)}"`,
       )
       void unwrapResult(result)
     } catch {
-      /* */
+      try {
+        this.conn.querySync(
+          `CREATE (m:CodeNode {uid: "META:${esc(key)}", type: "meta", name: "${esc(key)}", filePath: "", line: 0, endLine: 0, signature: "${esc(value)}"})`,
+        )
+      } catch (e: any) {
+        console.warn(`[ForgeNexus] setMeta("${key}") failed: ${e.message?.substring(0, 100)}`)
+      }
     }
   }
 
@@ -614,16 +733,11 @@ export class ForgeDB {
   }
 
   upsertEmbeddingsBatch(uids: string[], embeddings: number[][]): void {
-    for (let i = 0; i < uids.length; i++) {
-      try {
-        const r = this.conn.querySync(
-          `MATCH (n:CodeNode {uid: "${esc(uids[i])}"}) SET n.embedding = "${esc(JSON.stringify(embeddings[i]))}"`,
-        )
-        void unwrapResult(r)
-      } catch {
-        /* */
-      }
-    }
+    // Embeddings are no longer stored in the CodeNode table (KuzuDB DOUBLE[] limitation).
+    // If embeddings are needed, use a separate key-value store (e.g. LMDB, leveldb, or a JSON file).
+    // This is a no-op stub to keep the API signature compatible.
+    void uids
+    void embeddings
   }
 
   // ─── Registry ───────────────────────────────────────────────────────────────
@@ -639,14 +753,20 @@ export class ForgeDB {
   }): void {
     try {
       const r = this.conn.querySync(
-        `MERGE (reg:RepoRegistry {name: "${esc(repo.name)}"})
+        `MATCH (reg:RepoRegistry {name: "${esc(repo.name)}"})
          SET reg.path = "${esc(repo.path)}", reg.dbPath = "${esc(repo.dbPath)}",
              reg.indexedAt = "${esc(repo.indexedAt)}", reg.lastCommit = "${esc(repo.lastCommit)}",
              reg.stats = "${esc(JSON.stringify(repo.stats))}", reg.language = "${esc(repo.language)}"`,
       )
       void unwrapResult(r)
     } catch {
-      /* */
+      try {
+        this.conn.querySync(
+          `CREATE (reg:RepoRegistry {name: "${esc(repo.name)}", path: "${esc(repo.path)}", dbPath: "${esc(repo.dbPath)}", indexedAt: "${esc(repo.indexedAt)}", lastCommit: "${esc(repo.lastCommit)}", stats: "${esc(JSON.stringify(repo.stats))}", language: "${esc(repo.language)}"})`,
+        )
+      } catch (e: any) {
+        console.warn(`[ForgeNexus] registerRepo("${repo.name}") failed: ${e.message?.substring(0, 100)}`)
+      }
     }
   }
 

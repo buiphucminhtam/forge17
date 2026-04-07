@@ -96,7 +96,9 @@ async function main() {
 
   switch (cmd) {
     case 'analyze': {
-      const path = args[1] ?? process.cwd()
+      // args[1] is a path only if it doesn't start with '-' (not a flag)
+      const rawPath = args[1] ?? ''
+      const path = rawPath && !rawPath.startsWith('-') ? rawPath : process.cwd()
       const includeEmbeddings = args.includes('--embeddings')
       const embeddingProvider = extractFlag(args, '--embedding-provider') ?? undefined
       const incremental = !args.includes('--no-incremental')

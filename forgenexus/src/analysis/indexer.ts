@@ -44,6 +44,10 @@ import type { ForgeNexusConfig, RepoStats, CodeNode, CodeEdge } from '../types.j
 import type { ParseTask } from './parallel.js'
 import { defaultCodebaseDbPath } from '../paths.js'
 
+function esc(s: string): string {
+  return String(s ?? '').replace(/"/g, '\\"')
+}
+
 export type Phase =
   | 'scanning'
   | 'parsing'
@@ -473,27 +477,36 @@ export class Indexer {
 
   /**
    * Remove nodes and edges for a specific file.
-   * Uses indexed file_path column (not LIKE patterns).
+   * Uses KuzuDB MATCH + DELETE queries (not SQLite).
    */
   private removeNodesForFile(filePath: string): void {
-    // Use indexed file_path column for fast lookup
-    const nodesToDelete = (this.db as any).db
-      .prepare('SELECT uid FROM nodes WHERE file_path = ?')
-      .all(filePath) as any[]
+    try {
+      // Get uids of nodes in this file
+      const rows = this.db.connection.querySync(
+        `MATCH (n:CodeNode {filePath: "${esc(filePath)}"}) RETURN n.uid AS uid`,
+      )
+      const results = Array.isArray(rows) ? rows[0] : rows
+      const nodeRows = (results as any).getAllSync() as { uid: string }[]
+      const uids = nodeRows.map((r) => r.uid)
 
-    const uidsToDelete = new Set(nodesToDelete.map((r: any) => r.uid))
-
-    if (uidsToDelete.size > 0) {
-      // Delete edges referencing these nodes
-      const placeholders = [...uidsToDelete].map(() => '?').join(', ')
-      ;(this.db as any).db
-        .prepare(
-          `DELETE FROM edges WHERE from_uid IN (${placeholders}) OR to_uid IN (${placeholders})`,
-        )
-        .run(...[...uidsToDelete], ...[...uidsToDelete])
-
-      // Delete nodes
-      ;(this.db as any).db.prepare('DELETE FROM nodes WHERE file_path = ?').run(filePath)
+      if (uids.length > 0) {
+        // Delete all edge-records referencing these nodes (edges stored as CodeNode entries)
+        for (const uid of uids) {
+          try {
+            this.db.connection.querySync(
+              `MATCH (e:CodeNode) WHERE e.rel_from = "${esc(uid)}" OR e.rel_to = "${esc(uid)}" DELETE e`,
+            )
+          } catch { /* edges may not exist */ }
+        }
+        // Delete the nodes themselves
+        for (const uid of uids) {
+          try {
+            this.db.connection.querySync(`MATCH (n:CodeNode {uid: "${esc(uid)}"}) DELETE n`)
+          } catch { /* skip */ }
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[ForgeNexus] removeNodesForFile failed: ${e.message}`)
     }
   }
 
@@ -504,33 +517,34 @@ export class Indexer {
     // Find communities that have nodes in changed files
     const affectedComms = new Set<string>()
     for (const fp of changedFilePaths) {
-      const nodes = (this.db as any).db
-        .prepare(
-          'SELECT DISTINCT community FROM nodes WHERE file_path = ? AND community IS NOT NULL',
+      try {
+        const result = this.db.connection.querySync(
+          `MATCH (n:CodeNode {filePath: "${esc(fp)}"})-[:IN_COMMUNITY]->(c:Community) RETURN DISTINCT c.id AS community`,
         )
-        .all(fp) as any[]
-      for (const row of nodes) {
-        if (row.community) affectedComms.add(row.community)
-      }
+        const results = Array.isArray(result) ? result[0] : result
+        const rows = (results as any).getAllSync() as { community: string }[]
+        for (const row of rows) {
+          if (row.community) affectedComms.add(row.community)
+        }
+      } catch { /* skip */ }
     }
 
     if (affectedComms.size > 0 && affectedComms.size < 20) {
-      const sqlite = (this.db as any).db
-      const placeholders = [...affectedComms].map(() => '?').join(', ')
-      sqlite
-        .prepare(`DELETE FROM communities WHERE id IN (${placeholders})`)
-        .run(...[...affectedComms])
-
-      // Clear community assignment for affected nodes
-      const nodePlaceholders = [...changedFilePaths].map(() => '?').join(', ')
-      sqlite
-        .prepare(`UPDATE nodes SET community = NULL WHERE file_path IN (${nodePlaceholders})`)
-        .run(...[...changedFilePaths])
+      try {
+        const placeholders = [...affectedComms].map(() => '"' + esc([...affectedComms][0]) + '"').join(', ')
+        this.db.connection.querySync(`DELETE FROM Community WHERE id IN (${[...affectedComms].map((c) => `"${esc(c)}"`).join(', ')})`)
+        this.db.connection.querySync(`MATCH (n:CodeNode) WHERE n.community IN [${[...affectedComms].map((c) => `"${esc(c)}"`).join(', ')}] SET n.community = NULL`)
+      } catch (e: any) {
+        console.warn(`[ForgeNexus] deleteAffectedCommunities partial failed: ${e.message}`)
+      }
     } else {
       // Too many affected communities — full rebuild
-      const sqlite = (this.db as any).db
-      sqlite.exec('DELETE FROM communities')
-      sqlite.exec('UPDATE nodes SET community = NULL')
+      try {
+        this.db.connection.querySync(`DELETE FROM Community`)
+        this.db.connection.querySync(`MATCH (n:CodeNode) SET n.community = NULL`)
+      } catch (e: any) {
+        console.warn(`[ForgeNexus] deleteAffectedCommunities full failed: ${e.message}`)
+      }
     }
   }
 
