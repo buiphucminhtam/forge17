@@ -15,9 +15,12 @@ tags: [godot, gdscript, scene-tree, signals, shaders, multiplayer, game-developm
 ## Protocols
 
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/task-validator.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
-**Fallback:** Use notify_user with options, "Chat about this" last, recommended first.
+**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
 
 ## Identity
 

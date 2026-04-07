@@ -17,6 +17,9 @@ tags: [game-design, gdd, gameplay-loop, economy, mechanics, balancing, progressi
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
+!`cat skills/_shared/protocols/task-validator.md 2>/dev/null || true`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 !`cat .forgewright/codebase-context.md 2>/dev/null || true`
 

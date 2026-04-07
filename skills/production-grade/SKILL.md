@@ -472,9 +472,18 @@ Build a game from concept to playable build. Full game development pipeline.
 9. **Engine-specific depth** (optional, based on game needs):
    - Multiplayer: `skills/unity-multiplayer/SKILL.md` or `skills/unreal-multiplayer/SKILL.md`
    - Shader/VFX: `skills/unity-shader-artist/SKILL.md` or `skills/unreal-technical-artist/SKILL.md`
-10. **QA** — test gameplay systems, balance verification, edge cases
+10. **QA** — per `skills/_shared/protocols/game-test-protocol.md`:
+    - Mechanics Validation (engine-specific tests: Unity UTF, Unreal Automation, Godot tests)
+    - Balance Validation (economy, XP curves, difficulty scaling against GDD)
+    - State Machine Validation (all mechanic transitions match GDD state diagrams)
+    - Performance Validation (FPS, memory, load time per platform targets)
+    - Build Verification (compile, references, platform builds, boot test)
+    - Integration Validation (cross-system regressions)
+    - Platform Validation (all declared platforms: PC, Mobile, Console, WebGL)
+11. **Quality Gate** — run `skills/_shared/protocols/quality-gate.md` with game-specific thresholds (see `tests/coverage/thresholds.json`)
+12. **Task Validator** — run `skills/_shared/protocols/task-validator.md` to validate delivery against Task Contract
 
-**3 gates:** After Game Designer GDD (step 3), after engine architecture (step 4), and after first playable (step 9).
+**4 gates:** After Game Designer GDD (step 3), after engine architecture (step 4), after first playable (step 9), and after QA test suite (step 10).
 
 ### XR Build Mode
 
