@@ -1,0 +1,113 @@
+{
+  "global": {
+    "lines": 70,
+    "functions": 70,
+    "branches": 60,
+    "statements": 70
+  },
+  "packages": {
+    "forgenexus": {
+      "lines": 80,
+      "functions": 80,
+      "branches": 70,
+      "statements": 80,
+      "exclude": [
+        "**/*.d.ts",
+        "**/index.ts",
+        "**/cli/**"
+      ]
+    },
+    "mcp": {
+      "lines": 75,
+      "functions": 75,
+      "branches": 65,
+      "statements": 75,
+      "exclude": [
+        "**/*.d.ts",
+        "**/index.ts"
+      ]
+    }
+  },
+  "enforcement": {
+    "failOnThresholdBreach": true,
+    "reportOutput": ["text", "html", "json"],
+    "checkOnPrePush": true,
+    "checkOnCI": true
+  },
+  "game": {
+    "unity": {
+      "lines": 60,
+      "functions": 65,
+      "branches": 55,
+      "statements": 60
+    },
+    "unreal": {
+      "lines": 60,
+      "functions": 65,
+      "branches": 55,
+      "statements": 60
+    },
+    "godot": {
+      "lines": 65,
+      "functions": 70,
+      "branches": 60,
+      "statements": 65
+    },
+    "roblox": {
+      "lines": 65,
+      "functions": 70,
+      "branches": 60,
+      "statements": 65
+    }
+  },
+  "game_test_quality": {
+    "mechanics": {
+      "min_coverage": 90,
+      "critical_tests": ["Combat", "Movement", "Progression"],
+      "blocking": true
+    },
+    "balance": {
+      "min_coverage": 80,
+      "critical_tests": ["XP_curve", "Economy_sinks_sources"],
+      "blocking": true
+    },
+    "state_machines": {
+      "min_coverage": 95,
+      "critical_tests": ["All_transitions"],
+      "blocking": true
+    },
+    "performance": {
+      "min_coverage": 100,
+      "critical_tests": ["FPS", "Memory", "LoadTime"],
+      "blocking": true
+    },
+    "build": {
+      "min_coverage": 100,
+      "critical_tests": ["All_target_platforms"],
+      "blocking": true
+    },
+    "integration": {
+      "min_coverage": 70,
+      "critical_tests": ["Cross_system_scenarios"],
+      "blocking": false
+    },
+    "platform": {
+      "min_coverage": 80,
+      "critical_tests": ["All_declared_platforms"],
+      "blocking": true
+    }
+  },
+  "game_test_enforcement": {
+    "failOnGameTestThresholdBreach": true,
+    "gameEngine": "auto-detect",
+    "reportOutput": ["text", "json"],
+    "checkOnBuildGate": true,
+    "checkOnPrePush": false,
+    "checkOnCI": true,
+    "gracefulFailure": {
+      "retryAttempts": 3,
+      "flakyTestRetry": true,
+      "autoRollbackOnCriticalFailure": true
+    }
+  }
+}

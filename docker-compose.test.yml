@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
+      - ./tests/fixtures/seed-data:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d test_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - test-network
+
+  test-redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - test-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  test-api-mocks:
+    image: mockserver/mockserver:5.15.0
+    ports:
+      - '1080:1080'
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/mockserver-initialization.json
+    volumes:
+      - ./tests/mocks/handlers:/config:ro
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:1080/status']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - test-network
+
+  test-elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - '9200:9200'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - test-network
+
+volumes:
+  test-db-data:
+  test-redis-data:
+
+networks:
+  test-network:
+    driver: bridge
