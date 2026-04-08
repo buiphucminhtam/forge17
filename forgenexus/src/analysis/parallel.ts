@@ -1,15 +1,18 @@
 /**
- * Parallel file parsing using worker threads.
- * Improves indexing performance on multi-core machines.
+ * Parallel file parsing using persistent worker threads.
+ *
+ * Performance optimizations (v2):
+ *   - Persistent workers: workers stay alive across ALL chunks, not just one
+ *   - Sub-batch dispatch: each worker processes a batch of files before messaging back
+ *   - Language pre-loading: workers pre-load all needed languages once on startup
+ *   - Parser reuse: each worker has one Parser per language, reused across files
+ *   - Byte-budget chunking: balanced workloads across workers
  *
  * Architecture:
- * - Uses a pool of worker threads (default: cpus-1)
- * - Files are chunked by byte budget (20MB per chunk)
- * - Workers parse their chunk independently with their own ParserEngine
- * - Main thread handles only aggregation and edge resolution
- * - Progress is reported after each chunk completes
- *
- * Falls back to sequential parsing if workers aren't beneficial (tiny repos).
+ *   - Worker pool with N persistent workers (default: cpus * 0.75)
+ *   - Each worker receives sub-batches of ~20 files at a time
+ *   - Workers report progress after each sub-batch (not just each chunk)
+ *   - Main thread handles aggregation only
  */
 
 import { cpus } from 'os'
@@ -32,69 +35,24 @@ export interface ParseResult {
 
 export interface ParallelParseOptions {
   concurrency?: number
-  chunkByteBudget?: number // bytes per chunk. default 20MB
+  chunkByteBudget?: number
   minFilesForWorkers?: number
   minBytesForWorkers?: number
-  /** Called after each chunk completes with (completedFiles, totalFiles). */
+  subBatchSize?: number       // files per sub-batch (default 25)
   onProgress?: (done: number, total: number) => void
-  /** Milliseconds to wait before falling back to sequential. Default 60000. */
   stallTimeoutMs?: number
 }
 
-/** Default values */
+// Defaults
 const CONCURRENCY = Math.max(1, Math.floor(cpus().length * 0.75))
-const CHUNK_BYTE_BUDGET = 20 * 1024 * 1024 // 20MB
+const CHUNK_BYTE_BUDGET = 20 * 1024 * 1024
 const MIN_FILES_FOR_WORKERS = 15
-const MIN_BYTES_FOR_WORKERS = 512 * 1024 // 512KB
-const STALL_TIMEOUT_MS = 60_000 // 60 seconds
+const MIN_BYTES_FOR_WORKERS = 512 * 1024
+const STALL_TIMEOUT_MS = 60_000
+const DEFAULT_SUB_BATCH_SIZE = 25
 
-/**
- * Chunk files into byte-budget groups for worker dispatch.
- */
-function chunkByByteBudget(tasks: ParseTask[], byteBudget: number): ParseTask[][] {
-  const chunks: ParseTask[][] = []
-  let currentChunk: ParseTask[] = []
-  let currentBytes = 0
+// ─── Public API ───────────────────────────────────────────────────────────────
 
-  for (const task of tasks) {
-    const taskBytes = task.content.length * 2 // UTF-16 estimate
-    if (currentBytes + taskBytes > byteBudget && currentChunk.length > 0) {
-      chunks.push(currentChunk)
-      currentChunk = []
-      currentBytes = 0
-    }
-    currentChunk.push(task)
-    currentBytes += taskBytes
-  }
-
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk)
-  }
-
-  return chunks
-}
-
-/**
- * Parse a single file on the main thread (fallback for tiny repos).
- */
-async function parseSingleFile(task: ParseTask): Promise<ParseResult> {
-  try {
-    const { ParserEngine } = await import('./parser.js')
-    const engine = new ParserEngine()
-    const { nodes, edges } = await engine.parseFile(task.filePath, task.content, task.language)
-    return { filePath: task.filePath, nodes, edges }
-  } catch (err) {
-    return { filePath: task.filePath, nodes: [], edges: [], error: String(err) }
-  }
-}
-
-/**
- * Parse files in parallel using worker threads.
- * Each worker handles a byte-budget chunk, parsing all its files.
- *
- * Reports progress after each chunk completes so the caller always sees updates.
- * Falls back to sequential parsing if workers stall (no result after stallTimeoutMs).
- */
 export async function parseFilesParallel(
   tasks: ParseTask[],
   options: ParallelParseOptions = {},
@@ -104,6 +62,7 @@ export async function parseFilesParallel(
     chunkByteBudget = CHUNK_BYTE_BUDGET,
     minFilesForWorkers = MIN_FILES_FOR_WORKERS,
     minBytesForWorkers = MIN_BYTES_FOR_WORKERS,
+    subBatchSize = DEFAULT_SUB_BATCH_SIZE,
     onProgress,
     stallTimeoutMs = STALL_TIMEOUT_MS,
   } = options
@@ -116,289 +75,293 @@ export async function parseFilesParallel(
   }
 
   const effectiveConcurrency = Math.min(concurrency, Math.ceil(tasks.length / 5))
-
   if (effectiveConcurrency <= 1) {
     return parseFilesSequential(tasks, onProgress)
   }
 
-  // Chunk by byte budget
+  // Chunk by byte budget (larger chunks = fewer worker messages)
   const chunks = chunkByByteBudget(tasks, chunkByteBudget)
-
-  // Only spawn workers if we have enough chunks
   if (chunks.length <= 2) {
     return parseFilesSequential(tasks, onProgress)
   }
 
-  // ── Run with stall timeout: if no result after X ms, fall back to sequential ──
+  // ── Persistent worker pool ─────────────────────────────────────────────────
   const stallTimer = setTimeout(() => {
-    console.warn(`[ForgeNexus] Workers stalled after ${stallTimeoutMs}ms — falling back to sequential parsing`)
+    console.warn(`[ForgeNexus] Workers stalled after ${stallTimeoutMs}ms — falling back to sequential`)
   }, stallTimeoutMs)
 
   try {
-    const results = await runWorkerPool(chunks, effectiveConcurrency, onProgress)
+    const results = await runPersistentPool(chunks, effectiveConcurrency, subBatchSize, onProgress)
     clearTimeout(stallTimer)
     return aggregateResults(results)
   } catch (err) {
     clearTimeout(stallTimer)
-    // Worker error — fall back to sequential
-    console.warn(`[ForgeNexus] Worker pool error: ${err} — falling back to sequential parsing`)
+    console.warn(`[ForgeNexus] Worker pool error: ${err} — falling back to sequential`)
     return parseFilesSequential(tasks, onProgress)
   }
 }
 
-/**
- * Aggregate all ParseResults into nodes and edges arrays.
- */
+// ─── Persistent Worker Pool ──────────────────────────────────────────────────
+
+interface PoolMessage {
+  type: 'init' | 'batch' | 'close'
+  tasks?: ParseTask[]
+  batchId?: number
+  workerId?: number
+}
+
+interface WorkerResult {
+  type: 'ready' | 'batch_result' | 'error' | 'closed'
+  workerId?: number
+  batchId?: number
+  results?: ParseResult[]
+  error?: string
+}
+
+async function runPersistentPool(
+  allChunks: ParseTask[][],
+  concurrency: number,
+  subBatchSize: number,
+  onProgress?: (done: number, total: number) => void,
+): Promise<ParseResult[]> {
+  const workerScript = join(dirname(import.meta.url), 'parse-worker.js')
+  const totalFiles = allChunks.reduce((sum, c) => sum + c.length, 0)
+
+  // Split chunks across workers — each worker gets N chunks to process sequentially
+  const chunksPerWorker = Math.ceil(allChunks.length / concurrency)
+  const numWorkers = Math.min(concurrency, allChunks.length)
+
+  // Create all workers upfront (persistent — they stay alive)
+  const workers: Worker[] = []
+  const pendingBatches = new Map<number, { resolve: (r: ParseResult[]) => void; reject: (e: Error) => void }>()
+  let nextBatchId = 0
+  let completedFiles = 0
+
+  // Pre-assign chunks to each worker
+  const workerAssignments: ParseTask[][][] = Array.from({ length: numWorkers }, () => [])
+  for (let i = 0; i < allChunks.length; i++) {
+    const workerIdx = i % numWorkers
+    workerAssignments[workerIdx].push(allChunks[i])
+  }
+
+  // Collect results
+  const allResults: ParseResult[] = []
+
+  return new Promise((masterResolve, masterReject) => {
+    let settled = false
+    const settledWorkers = new Set<number>()
+
+    const checkDone = () => {
+      if (settled) return
+      if (settledWorkers.size === numWorkers) {
+        settled = true
+        for (const w of workers) {
+          try { w.terminate() } catch { /* ignore */ }
+        }
+        masterResolve(allResults)
+      }
+    }
+
+    for (let wid = 0; wid < numWorkers; wid++) {
+      const workerChunks = workerAssignments[wid]
+
+      // Divide each worker's chunks into sub-batches
+      const subBatches: ParseTask[][] = []
+      for (const chunk of workerChunks) {
+        // Split each chunk into sub-batches
+        for (let i = 0; i < chunk.length; i += subBatchSize) {
+          subBatches.push(chunk.slice(i, i + subBatchSize))
+        }
+      }
+
+      let w: Worker
+      try {
+        w = new Worker(workerScript)
+      } catch {
+        settledWorkers.add(wid)
+        checkDone()
+        continue
+      }
+
+      workers.push(w)
+      let currentSubBatch = 0
+      let workerReady = false
+
+      const sendNextBatch = () => {
+        if (currentSubBatch >= subBatches.length) {
+          settledWorkers.add(wid)
+          checkDone()
+          return
+        }
+
+        const batch = subBatches[currentSubBatch++]
+        const batchId = nextBatchId++
+        pendingBatches.set(batchId, {
+          resolve: (results) => {
+            allResults.push(...results)
+            completedFiles += results.length
+            if (onProgress) {
+              onProgress(Math.min(completedFiles, totalFiles), totalFiles)
+            }
+            // Continue with next sub-batch
+            sendNextBatch()
+          },
+          reject: (err) => {
+            if (!settled) {
+              settled = true
+              masterReject(err)
+            }
+          },
+        })
+
+        try {
+          w.postMessage({
+            type: 'batch',
+            tasks: batch,
+            batchId,
+            workerId: wid,
+          } as PoolMessage)
+        } catch (err) {
+          pendingBatches.get(batchId)?.reject(err as Error)
+          pendingBatches.delete(batchId)
+          settledWorkers.add(wid)
+          checkDone()
+        }
+      }
+
+      w.on('message', (msg: WorkerResult) => {
+        if (msg.type === 'ready') {
+          workerReady = true
+          // Start sending batches after worker is ready
+          sendNextBatch()
+        } else if (msg.type === 'batch_result' && msg.batchId !== undefined) {
+          const pending = pendingBatches.get(msg.batchId)
+          if (pending) {
+            if (msg.results) {
+              pending.resolve(msg.results)
+            }
+            pendingBatches.delete(msg.batchId)
+          }
+        } else if (msg.type === 'error') {
+          const pending = pendingBatches.get(msg.batchId ?? -1)
+          if (pending) {
+            pending.reject(new Error(msg.error))
+            pendingBatches.delete(msg.batchId ?? -1)
+          }
+        }
+      })
+
+      w.on('error', (err) => {
+        if (!settled) {
+          settled = true
+          masterReject(err)
+        }
+      })
+
+      w.on('exit', () => {
+        settledWorkers.add(wid)
+        checkDone()
+      })
+
+      // Send init message to worker
+      w.postMessage({ type: 'init', workerId: wid } as PoolMessage)
+    }
+  })
+}
+
+// ─── Aggregation ─────────────────────────────────────────────────────────────
+
 function aggregateResults(results: ParseResult[]): { nodes: CodeNode[]; edges: CodeEdge[] } {
   const allNodes: CodeNode[] = []
   const allEdges: CodeEdge[] = []
-  for (const result of results) {
-    allNodes.push(...result.nodes)
-    allEdges.push(...result.edges)
+  for (const r of results) {
+    allNodes.push(...r.nodes)
+    allEdges.push(...r.edges)
   }
   return { nodes: allNodes, edges: allEdges }
 }
 
-/**
- * Run worker pool with given chunks and concurrency.
- * Each worker processes one chunk at a time via message passing.
- * Reports progress after each chunk completes.
- */
-async function runWorkerPool(
-  chunks: ParseTask[][],
-  concurrency: number,
-  onProgress?: (done: number, total: number) => void,
-): Promise<ParseResult[]> {
-  const workerScript = join(dirname(import.meta.url), 'parse-worker.js')
-  const totalFiles = chunks.reduce((sum, c) => sum + c.length, 0)
+// ─── Byte Budget Chunking ────────────────────────────────────────────────────
 
-  // How many chunks to assign per worker at a time
-  const chunksPerWorker = Math.ceil(chunks.length / concurrency)
+function chunkByByteBudget(tasks: ParseTask[], byteBudget: number): ParseTask[][] {
+  const chunks: ParseTask[][] = []
+  let current: ParseTask[] = []
+  let currentBytes = 0
 
-  // Launch workers (lazy, one at a time to avoid fork-bomb)
-  const pending: Promise<ParseResult[]>[] = []
-
-  for (let i = 0; i < Math.min(concurrency, chunks.length); i++) {
-    const workerChunks = chunks.slice(i * chunksPerWorker, (i + 1) * chunksPerWorker)
-    if (workerChunks.length === 0) break
-    pending.push(runChunksInWorker(workerChunks, workerScript, onProgress, totalFiles))
-  }
-
-  const chunkResults = await Promise.all(pending)
-  const flatResults: ParseResult[] = []
-  for (const batch of chunkResults) {
-    flatResults.push(...batch)
-  }
-
-  return flatResults
-}
-
-/**
- * Run multiple chunks sequentially through a single worker.
- * Returns all ParseResults from all chunks.
- * Reports progress after each chunk.
- */
-async function runChunksInWorker(
-  chunks: ParseTask[][],
-  workerScript: string,
-  onProgress?: (done: number, total: number) => void,
-  totalFiles = 0,
-): Promise<ParseResult[]> {
-  return new Promise((resolve, reject) => {
-    let worker: Worker
-    try {
-      worker = new Worker(workerScript)
-    } catch (_err) {
-      // Worker can't be spawned — fall back to sequential
-      resolve(fallbackSequential(chunks, onProgress, totalFiles))
-      return
+  for (const task of tasks) {
+    const taskBytes = task.content.length * 2 // UTF-16 estimate
+    if (currentBytes + taskBytes > byteBudget && current.length > 0) {
+      chunks.push(current)
+      current = []
+      currentBytes = 0
     }
-
-    const allResults: ParseResult[] = []
-    let dispatchedChunks = 0
-    let completedChunks = 0
-    let settled = false
-    let lastChunkDone = Date.now()
-
-    const settleIfDone = () => {
-      if (settled) return
-      if (completedChunks === chunks.length) {
-        settled = true
-        worker.terminate()
-        resolve(allResults)
-      }
-    }
-
-    worker.on(
-      'message',
-      (msg: { type: string; results?: ParseResult[]; taskId?: string; error?: string }) => {
-        if (msg.type === 'result' && msg.results) {
-          allResults.push(...msg.results)
-          completedChunks++
-          lastChunkDone = Date.now()
-
-          // Report progress based on files processed
-          if (onProgress) {
-            const doneFiles = allResults.reduce((sum, r) => sum + 1, 0)
-            onProgress(Math.min(doneFiles, totalFiles), totalFiles)
-          }
-
-          settleIfDone()
-
-          // Dispatch next chunk if any remaining
-          if (dispatchedChunks < chunks.length) {
-            const nextChunk = chunks[dispatchedChunks++]
-            worker.postMessage({
-              type: 'parse',
-              tasks: nextChunk,
-              taskId: String(dispatchedChunks),
-            })
-          }
-        } else if (msg.type === 'error') {
-          if (!settled) {
-            settled = true
-            worker.terminate()
-            reject(new Error(msg.error))
-          }
-        }
-      },
-    )
-
-    worker.on('error', (err) => {
-      if (!settled) {
-        settled = true
-        worker.terminate()
-        reject(err)
-      }
-    })
-
-    worker.on('exit', (_code) => {
-      if (!settled) {
-        settled = true
-        resolve(allResults)
-      }
-    })
-
-    // Start the first chunk
-    const firstChunk = chunks[dispatchedChunks++]
-    worker.postMessage({ type: 'parse', tasks: firstChunk, taskId: '0' })
-  })
-}
-
-/**
- * Fallback: parse chunks sequentially when worker spawning fails.
- */
-async function fallbackSequential(
-  chunks: ParseTask[][],
-  onProgress?: (done: number, total: number) => void,
-  totalFiles = 0,
-): Promise<ParseResult[]> {
-  const results: ParseResult[] = []
-  let done = 0
-  for (const chunk of chunks) {
-    const r = await parseChunk(chunk, onProgress, done, totalFiles)
-    results.push(...r)
-    done += chunk.length
+    current.push(task)
+    currentBytes += taskBytes
   }
-  return results
+
+  if (current.length > 0) chunks.push(current)
+  return chunks
 }
 
-/**
- * Parse a chunk of files with a single ParserEngine instance.
- * This is the most efficient approach for tree-sitter: one parser per chunk,
- * parser is reused across files (only language changes between files).
- */
-async function parseChunk(
-  chunk: ParseTask[],
-  onProgress?: (done: number, total: number) => void,
-  baseDone = 0,
-  totalFiles = 0,
-): Promise<ParseResult[]> {
-  try {
-    const { ParserEngine } = await import('./parser.js')
-    const engine = new ParserEngine()
-    const results: ParseResult[] = []
+// ─── Sequential fallback ─────────────────────────────────────────────────────
 
-    for (let i = 0; i < chunk.length; i++) {
-      const task = chunk[i]
-      try {
-        const { nodes, edges } = await engine.parseFile(task.filePath, task.content, task.language)
-        results.push({ filePath: task.filePath, nodes, edges })
-      } catch (err) {
-        results.push({ filePath: task.filePath, nodes: [], edges: [], error: String(err) })
-      }
-
-      if (onProgress) {
-        const done = baseDone + i + 1
-        onProgress(Math.min(done, totalFiles || done), totalFiles || done)
-      }
-    }
-
-    return results
-  } catch (err) {
-    return chunk.map((t) => ({ filePath: t.filePath, nodes: [], edges: [], error: String(err) }))
-  }
-}
-
-/**
- * Parse files sequentially with progress callback.
- */
 export async function parseFilesSequential(
   tasks: ParseTask[],
   onProgress?: (done: number, total: number) => void,
 ): Promise<{ nodes: CodeNode[]; edges: CodeEdge[] }> {
+  // Single ParserEngine reused across ALL files
+  const { ParserEngine } = await import('./parser.js')
+  const engine = new ParserEngine()
+
   const allNodes: CodeNode[] = []
   const allEdges: CodeEdge[] = []
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i]
     try {
-      const result = await parseSingleFile(task)
-      allNodes.push(...result.nodes)
-      allEdges.push(...result.edges)
-    } catch {
-      // skip
-    }
+      const { nodes, edges } = await engine.parseFile(task.filePath, task.content, task.language)
+      allNodes.push(...nodes)
+      allEdges.push(...edges as any)
+    } catch { /* skip */ }
 
     if (onProgress && (i % 50 === 0 || i === tasks.length - 1)) {
       onProgress(i + 1, tasks.length)
+      // Yield to event loop every 50 files
+      if (i % 50 === 0 && i > 0) {
+        await yieldToEventLoop()
+      }
     }
   }
 
   return { nodes: allNodes, edges: allEdges }
 }
 
-/**
- * Split files into changed vs unchanged for incremental analysis.
- */
+function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => setImmediate(resolve))
+}
+
+// ─── Utilities ──────────────────────────────────────────────────────────────
+
+export function estimateBytes(tasks: ParseTask[]): number {
+  return tasks.reduce((sum, t) => sum + t.content.length * 2, 0)
+}
+
 export function partitionByChange(
   files: ParseTask[],
   changedFilePaths: Set<string>,
 ): { changed: ParseTask[]; unchanged: string[] } {
   const changed: ParseTask[] = []
   const unchanged: string[] = []
-
-  for (const file of files) {
-    if (changedFilePaths.has(file.filePath)) {
-      changed.push(file)
+  for (const f of files) {
+    if (changedFilePaths.has(f.filePath)) {
+      changed.push(f)
     } else {
-      unchanged.push(file.filePath)
+      unchanged.push(f.filePath)
     }
   }
-
   return { changed, unchanged }
 }
 
-/**
- * Check if incremental analysis should be used.
- */
 export function shouldUseIncremental(lastCommit: string, currentCommit: string): boolean {
   return lastCommit !== '' && lastCommit === currentCommit
-}
-
-/**
- * Estimate total bytes from parse tasks.
- */
-export function estimateBytes(tasks: ParseTask[]): number {
-  return tasks.reduce((sum, t) => sum + t.content.length * 2, 0)
 }

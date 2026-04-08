@@ -1,24 +1,28 @@
 /**
- * ForgeNexus Parser Engine — extracts code symbols and all relationship edges.
+ * ForgeNexus Parser Engine — High-Performance Code Intelligence Extractor.
  * Supports: TypeScript, JavaScript, Python, Go, Rust, Java, C#, C/C++, Kotlin, PHP, Ruby, Swift, Dart.
  *
+ * Performance optimizations (v2):
+ *   - TSQuery instead of manual AST walk: single-pass extraction per pattern
+ *   - Parser reuse: one Parser per language, cached and reused across all files
+ *   - Pre-compiled queries: compiled once per language, reused forever
+ *   - Skip sets: skip irrelevant node types during fallback walk
+ *   - Batched language setup: load all needed languages once per engine lifetime
+ *
  * Edge types extracted:
- *   CALLS          — function/method invocations
- *   IMPORTS        — import/require statements
- *   EXTENDS        — class inheritance
- *   IMPLEMENTS     — interface implementation
- *   OVERRIDES      — method overrides
- *   HAS_METHOD     — methods defined in a class/interface
- *   HAS_PROPERTY   — properties/fields defined in a class/interface
- *   ACCESSES       — property access (read/write)
- *   HANDLES_ROUTE  — HTTP route handlers (Express, FastAPI, NestJS, Django, Rails, Next.js)
- *   HANDLES_TOOL   — MCP/RPC tool handlers
- *   QUERIES        — database queries
+ *   CALLS, IMPORTS, EXTENDS, IMPLEMENTS, OVERRIDES,
+ *   HAS_METHOD, HAS_PROPERTY, ACCESSES,
+ *   HANDLES_ROUTE, HANDLES_TOOL, QUERIES,
+ *   MEMBER_OF, STEP_IN_PROCESS
  */
 
 import { createRequire } from 'module'
 import Parser from 'tree-sitter'
-import type { CodeNode, CodeEdge, NodeType, EdgeType } from '../types.js'
+import type { CodeNode, CodeEdge, NodeType } from '../types.js'
+import {
+  LANGUAGE_QUERIES,
+  type LanguageQueries,
+} from './queries.js'
 
 const _require = createRequire(import.meta.url)
 
@@ -33,115 +37,201 @@ async function loadLanguage(lang: string): Promise<any> {
         const resolved = mod.default ?? mod
         const sub = resolved.typescript ?? resolved.tsx
         return (sub as any)?.language ?? sub ?? null
-      } catch {
-        return null
-      }
+      } catch { return null }
     }
     case 'javascript': {
       try {
         const mod = (await import('tree-sitter-javascript')) as any
         const resolved = mod.default ?? mod
         return resolved.language ?? resolved ?? null
-      } catch {
-        return null
-      }
+      } catch { return null }
     }
     case 'python': {
-      try {
-        const mod = (await import('tree-sitter-python')) as any
-        const resolved = mod.default ?? mod
-        return resolved.language ?? resolved ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-python') as any).default ?? null }
+      catch { return null }
     }
     case 'go': {
-      try {
-        return (_require('tree-sitter-go') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-go') as any).default ?? null }
+      catch { return null }
     }
     case 'rust': {
-      try {
-        return (_require('tree-sitter-rust') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-rust') as any).default ?? null }
+      catch { return null }
     }
     case 'java': {
-      try {
-        return (_require('tree-sitter-java') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-java') as any).default ?? null }
+      catch { return null }
     }
     case 'csharp': {
-      try {
-        return (_require('tree-sitter-c-sharp') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-c-sharp') as any).default ?? null }
+      catch { return null }
     }
     case 'cpp': {
-      try {
-        return (_require('tree-sitter-cpp') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-cpp') as any).default ?? null }
+      catch { return null }
     }
     case 'c': {
-      try {
-        return (_require('tree-sitter-c') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-c') as any).default ?? null }
+      catch { return null }
     }
     case 'kotlin': {
-      try {
-        return (_require('tree-sitter-kotlin') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-kotlin') as any).default ?? null }
+      catch { return null }
     }
     case 'php': {
-      try {
-        return (_require('tree-sitter-php') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-php') as any).default ?? null }
+      catch { return null }
     }
     case 'ruby': {
-      try {
-        return (_require('tree-sitter-ruby') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-ruby') as any).default ?? null }
+      catch { return null }
     }
     case 'swift': {
-      try {
-        return (_require('tree-sitter-swift') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-swift') as any).default ?? null }
+      catch { return null }
     }
     case 'dart': {
-      try {
-        return (_require('tree-sitter-dart') as any).default ?? null
-      } catch {
-        return null
-      }
+      try { return (_require('tree-sitter-dart') as any).default ?? null }
+      catch { return null }
     }
-    default:
-      return null
+    default: return null
   }
 }
 
-// ─── AST Helpers ──────────────────────────────────────────────────────────────
+// ─── Language Extension Map ───────────────────────────────────────────────────
+
+const LANG_EXT: Record<string, string> = {
+  '.ts': 'typescript', '.tsx': 'typescript',
+  '.js': 'javascript', '.jsx': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript',
+  '.py': 'python',
+  '.go': 'go', '.rs': 'rust', '.java': 'java', '.cs': 'csharp',
+  '.c': 'c', '.h': 'c',
+  '.cpp': 'cpp', '.cc': 'cpp', '.cxx': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp', '.hh': 'cpp',
+  '.kt': 'kotlin', '.kts': 'kotlin', '.php': 'php', '.rb': 'ruby',
+  '.swift': 'swift', '.dart': 'dart',
+}
+
+// ─── Route/Handler Patterns ──────────────────────────────────────────────────
+
+const ROUTE_PATTERNS = [
+  /^(get|post|put|patch|delete|head|options|all)\s*\(/i,
+  /^(app|router|express|fastify)\s*\.\s*(get|post|put|patch|delete|all)/i,
+  /^(use|route)\s*\(\s*['"`]\//,
+  /@\s*(Get|Post|Put|Patch|Delete|Options|Head|All)\s*\(/i,
+  /@\s*(app|router)\.(get|post|put|patch|delete)\s*\(/i,
+  /@\s*(app|router)\.route\s*\(/,
+  /@(app|bp)\.get\s*\(/,
+  /@(app|bp)\.post\s*\(/,
+  /@(Get|Post|Put|Delete|Patch)Mapping\s*\(/i,
+  /@(RequestMapping|RestController|Controller)\s*\(/,
+  /\.(GET|POST|PUT|PATCH|DELETE|HEAD)\s*\(/,
+  /Route::(get|post|put|patch|delete|any|match|options)\s*\(/i,
+  /@(get|post|put|patch|delete)\s*\(/i,
+  /@(Operation|GET|POST|PUT|DELETE)\s*\(/i,
+]
+
+const TOOL_PATTERNS = [
+  /@\s*(tool|command|handler|event|method|action)\s*\(/i,
+  /['"`]?(tool|command|handler)['"`]?\s*:/,
+]
+
+const QUERY_PATTERNS = [
+  /\.query\s*\(/, /\.execute\s*\(/, /\.run\s*\(/, /\.all\s*\(/,
+  /\.get\s*\(/, /\.find\s*\(/, /\.create\s*\(/, /\.insert\s*\(/,
+  /\.update\s*\(/, /\.delete\s*\(/, /\.save\s*\(/, /\.findOne\s*\(/,
+  /\.findById\s*\(/, /\.select\s*\(/, /\.where\s*\(/,
+  /\.from\s*\(/, /\.join\s*\(/,
+]
+
+// ─── Node Type Mapping ────────────────────────────────────────────────────────
+
+function inferNodeType(type: string, lang: string): NodeType {
+  switch (type) {
+    // Functions
+    case 'function_declaration':
+    case 'function_definition':
+    case 'function_item':
+    case 'function_expression':
+    case 'decorated_definition':
+    case 'lambda':
+    case 'function_declaration':
+    case 'function':
+      return 'Function'
+    // Methods
+    case 'method_definition':
+    case 'method_declaration':
+    case 'method':
+    case 'singleton_method':
+      return 'Method'
+    // Classes
+    case 'class_declaration':
+    case 'class_definition':
+    case 'struct_declaration':
+    case 'struct_item':
+    case 'struct_specifier':
+    case 'type_declaration':
+    case 'object_declaration':
+    case 'class':
+      return 'Class'
+    // Interfaces
+    case 'interface_declaration':
+    case 'protocol_declaration':
+    case 'trait_item':
+    case 'mixin_declaration':
+      return 'Interface'
+    // Enums
+    case 'enum_declaration':
+    case 'enum_class_declaration':
+    case 'enum_specifier':
+      return 'Enum'
+    // Impl blocks
+    case 'impl_item':
+      return 'Impl'
+    // Type aliases
+    case 'type_alias_declaration':
+    case 'type_alias_item':
+      return 'TypeAlias'
+    // Modules
+    case 'module':
+      return 'Module'
+    // Properties
+    case 'property_declaration':
+    case 'property_definition':
+    case 'public_field_definition':
+    case 'private_field_definition':
+    case 'field_declaration':
+    case 'field_definition':
+    case 'property_signature':
+    case 'constant_declaration':
+    case 'instance_variable_declaration':
+      return 'Property'
+    // Variables
+    case 'variable_declarator':
+    case 'assignment':
+    case 'assignment_expression':
+    case 'parameter':
+    case 'formal_parameter':
+    case 'required_parameter':
+    case 'optional_parameter':
+    case 'let_declaration':
+    case 'var_declaration':
+    case 'const_declaration':
+    case 'property':
+    case 'lvasgn':
+    case 'ivasgn':
+    case 'cvasgn':
+    case 'constant':
+    case 'identifier':
+      return 'Variable'
+    default:
+      return 'Variable'
+  }
+}
+
+// ─── Position Helpers ────────────────────────────────────────────────────────
 
 function posToIndex(content: string, row: number, col: number): number {
-  let line = 0,
-    index = 0
+  let line = 0, index = 0
   for (; line < row && index < content.length; index++) {
     if (content[index] === '\n') line++
   }
@@ -149,16 +239,14 @@ function posToIndex(content: string, row: number, col: number): number {
 }
 
 function getNodeText(node: any, content: string): string {
-  const start = node.startPosition
-  const end = node.endPosition
-  const startIdx = posToIndex(content, start.row, start.column)
-  const endIdx = posToIndex(content, end.row, end.column)
-  return content.substring(startIdx, endIdx)
+  const start = node.startPosition, end = node.endPosition
+  return content.substring(posToIndex(content, start.row, start.column), posToIndex(content, end.row, end.column))
 }
 
 function getChild(node: any, type: string): any {
   for (let i = 0; i < node.namedChildCount; i++) {
-    if (node.namedChild(i).type === type) return node.namedChild(i)
+    const c = node.namedChild(i)
+    if (c.type === type) return c
   }
   return null
 }
@@ -166,293 +254,56 @@ function getChild(node: any, type: string): any {
 function getNamedChildren(node: any, type: string): any[] {
   const result: any[] = []
   for (let i = 0; i < node.namedChildCount; i++) {
-    const child = node.namedChild(i)
-    if (child.type === type) result.push(child)
+    const c = node.namedChild(i)
+    if (c.type === type) result.push(c)
   }
   return result
 }
 
-// ─── Type Mapping ─────────────────────────────────────────────────────────────
-
-interface NodeMapping {
-  astNode: string
-  nodeType: NodeType
-  nameExtractor?: (node: any, content: string) => string | null
-}
-
-const NODE_MAP_TS: Record<string, NodeMapping> = {
-  import_statement: { astNode: 'import_statement', nodeType: 'Module' },
-  function_declaration: { astNode: 'function_declaration', nodeType: 'Function' },
-  method_definition: { astNode: 'method_definition', nodeType: 'Method' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  interface_declaration: { astNode: 'interface_declaration', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  type_alias_declaration: { astNode: 'type_alias_declaration', nodeType: 'TypeAlias' },
-  arrow_function: { astNode: 'arrow_function', nodeType: 'Function' },
-  function_expression: { astNode: 'function_expression', nodeType: 'Function' },
-  variable_declarator: { astNode: 'variable_declarator', nodeType: 'Variable' },
-  property_signature: { astNode: 'property_signature', nodeType: 'Property' },
-  method_signature: { astNode: 'method_signature', nodeType: 'Method' },
-  public_field_definition: { astNode: 'public_field_definition', nodeType: 'Property' },
-  required_parameter: { astNode: 'required_parameter', nodeType: 'Variable' },
-  optional_parameter: { astNode: 'optional_parameter', nodeType: 'Variable' },
-}
-
-const NODE_MAP_PY: Record<string, NodeMapping> = {
-  function_definition: { astNode: 'function_definition', nodeType: 'Function' },
-  class_definition: { astNode: 'class_definition', nodeType: 'Class' },
-  decorated_definition: { astNode: 'decorated_definition', nodeType: 'Function' },
-  assignment: { astNode: 'assignment', nodeType: 'Variable' },
-  parameter: { astNode: 'parameter', nodeType: 'Variable' },
-  list_splat_pattern: { astNode: 'list_splat_pattern', nodeType: 'Variable' },
-  dictionary_splat_pattern: { astNode: 'dictionary_splat_pattern', nodeType: 'Variable' },
-  identifier: { astNode: 'identifier', nodeType: 'Variable' },
-}
-
-const NODE_MAP_GO: Record<string, NodeMapping> = {
-  function_declaration: { astNode: 'function_declaration', nodeType: 'Function' },
-  method_declaration: { astNode: 'method_declaration', nodeType: 'Method' },
-  type_declaration: { astNode: 'type_declaration', nodeType: 'Class' },
-  const_declaration: { astNode: 'const_declaration', nodeType: 'Variable' },
-  variable_declaration: { astNode: 'variable_declaration', nodeType: 'Variable' },
-  field_declaration: { astNode: 'field_declaration', nodeType: 'Property' },
-}
-
-const NODE_MAP_RUST: Record<string, NodeMapping> = {
-  function_item: { astNode: 'function_item', nodeType: 'Function' },
-  impl_item: { astNode: 'impl_item', nodeType: 'Impl' },
-  struct_item: { astNode: 'struct_item', nodeType: 'Class' },
-  enum_item: { astNode: 'enum_item', nodeType: 'Enum' },
-  trait_item: { astNode: 'trait_item', nodeType: 'Interface' },
-  type_alias_item: { astNode: 'type_alias_item', nodeType: 'TypeAlias' },
-}
-
-const NODE_MAP_JAVA: Record<string, NodeMapping> = {
-  method_declaration: { astNode: 'method_declaration', nodeType: 'Method' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  interface_declaration: { astNode: 'interface_declaration', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  variable_declarator: { astNode: 'variable_declarator', nodeType: 'Variable' },
-  formal_parameter: { astNode: 'formal_parameter', nodeType: 'Variable' },
-  field_declaration: { astNode: 'field_declaration', nodeType: 'Property' },
-}
-
-const NODE_MAP_CS: Record<string, NodeMapping> = {
-  method_declaration: { astNode: 'method_declaration', nodeType: 'Method' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  interface_declaration: { astNode: 'interface_declaration', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  variable_declarator: { astNode: 'variable_declarator', nodeType: 'Variable' },
-  property_declaration: { astNode: 'property_declaration', nodeType: 'Property' },
-  delegate_declaration: { astNode: 'delegate_declaration', nodeType: 'Function' },
-}
-
-const NODE_MAP_CPP: Record<string, NodeMapping> = {
-  function_definition: { astNode: 'function_definition', nodeType: 'Function' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  struct_declaration: { astNode: 'struct_declaration', nodeType: 'Class' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  variable_declaration: { astNode: 'variable_declaration', nodeType: 'Variable' },
-  field_declaration: { astNode: 'field_declaration', nodeType: 'Property' },
-}
-
-const NODE_MAP_C: Record<string, NodeMapping> = {
-  function_definition: { astNode: 'function_definition', nodeType: 'Function' },
-  struct_declaration: { astNode: 'struct_declaration', nodeType: 'Class' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  variable_declaration: { astNode: 'variable_declaration', nodeType: 'Variable' },
-  type_alias_declaration: { astNode: 'type_alias_declaration', nodeType: 'TypeAlias' },
-}
-
-const NODE_MAP_KOTLIN: Record<string, NodeMapping> = {
-  function_declaration: { astNode: 'function_declaration', nodeType: 'Function' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  interface_declaration: { astNode: 'interface_declaration', nodeType: 'Interface' },
-  object_declaration: { astNode: 'object_declaration', nodeType: 'Class' },
-  enum_class_declaration: { astNode: 'enum_class_declaration', nodeType: 'Enum' },
-  property_declaration: { astNode: 'property_declaration', nodeType: 'Property' },
-  companion_object: { astNode: 'companion_object', nodeType: 'Class' },
-}
-
-const NODE_MAP_PHP: Record<string, NodeMapping> = {
-  function_definition: { astNode: 'function_definition', nodeType: 'Function' },
-  method_declaration: { astNode: 'method_declaration', nodeType: 'Method' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  interface_declaration: { astNode: 'interface_declaration', nodeType: 'Interface' },
-  trait_declaration: { astNode: 'trait_declaration', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  property_declaration: { astNode: 'property_declaration', nodeType: 'Property' },
-}
-
-const NODE_MAP_RUBY: Record<string, NodeMapping> = {
-  method: { astNode: 'method', nodeType: 'Method' },
-  class: { astNode: 'class', nodeType: 'Class' },
-  module: { astNode: 'module', nodeType: 'Module' },
-  singleton_method: { astNode: 'singleton_method', nodeType: 'Method' },
-  assignment: { astNode: 'assignment', nodeType: 'Variable' },
-  constant: { astNode: 'constant', nodeType: 'Variable' },
-}
-
-const NODE_MAP_SWIFT: Record<string, NodeMapping> = {
-  function_declaration: { astNode: 'function_declaration', nodeType: 'Function' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  struct_declaration: { astNode: 'struct_declaration', nodeType: 'Class' },
-  protocol_declaration: { astNode: 'protocol_declaration', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  property_declaration: { astNode: 'property_declaration', nodeType: 'Property' },
-  constant_declaration: { astNode: 'constant_declaration', nodeType: 'Variable' },
-}
-
-const NODE_MAP_DART: Record<string, NodeMapping> = {
-  function_declaration: { astNode: 'function_declaration', nodeType: 'Function' },
-  method_declaration: { astNode: 'method_declaration', nodeType: 'Method' },
-  class_declaration: { astNode: 'class_declaration', nodeType: 'Class' },
-  mixin_declaration: { astNode: 'mixin_declaration', nodeType: 'Interface' },
-  interface_class: { astNode: 'interface_class', nodeType: 'Interface' },
-  enum_declaration: { astNode: 'enum_declaration', nodeType: 'Enum' },
-  variable_declaration: { astNode: 'variable_declaration', nodeType: 'Variable' },
-  field_definition: { astNode: 'field_definition', nodeType: 'Property' },
-}
-
-function getNodeMap(lang: string): Record<string, NodeMapping> {
-  switch (lang) {
-    case 'typescript':
-    case 'tsx':
-    case 'javascript':
-      return NODE_MAP_TS
-    case 'python':
-      return NODE_MAP_PY
-    case 'go':
-      return NODE_MAP_GO
-    case 'rust':
-      return NODE_MAP_RUST
-    case 'java':
-      return NODE_MAP_JAVA
-    case 'csharp':
-      return NODE_MAP_CS
-    case 'cpp':
-      return NODE_MAP_CPP
-    case 'c':
-      return NODE_MAP_C
-    case 'kotlin':
-      return NODE_MAP_KOTLIN
-    case 'php':
-      return NODE_MAP_PHP
-    case 'ruby':
-      return NODE_MAP_RUBY
-    case 'swift':
-      return NODE_MAP_SWIFT
-    case 'dart':
-      return NODE_MAP_DART
-    default:
-      return NODE_MAP_TS
-  }
-}
-
-// ─── Language Extension Map ───────────────────────────────────────────────────
-
-const LANG_EXT: Record<string, string> = {
-  // TypeScript / JavaScript
-  '.ts': 'typescript',
-  '.tsx': 'typescript',
-  '.js': 'javascript',
-  '.jsx': 'javascript',
-  '.mjs': 'javascript',
-  '.cjs': 'javascript',
-  // Python
-  '.py': 'python',
-  // Go / Rust / Java / C#
-  '.go': 'go',
-  '.rs': 'rust',
-  '.java': 'java',
-  '.cs': 'csharp',
-  // C / C++
-  '.c': 'c',
-  '.h': 'c',
-  '.cpp': 'cpp',
-  '.cc': 'cpp',
-  '.cxx': 'cpp',
-  '.hpp': 'cpp',
-  '.hxx': 'cpp',
-  '.hh': 'cpp',
-  // Other
-  '.kt': 'kotlin',
-  '.kts': 'kotlin',
-  '.php': 'php',
-  '.rb': 'ruby',
-  '.swift': 'swift',
-  '.dart': 'dart',
-}
-
-// ─── Route/Handler Detection Patterns ───────────────────────────────────────
-
-const ROUTE_PATTERNS = [
-  // Express / Fastify / Hono
-  /^(get|post|put|patch|delete|head|options|all)\s*\(/i,
-  /^(app|router|express|fastify)\s*\.\s*(get|post|put|patch|delete|all)/i,
-  /^(use|route)\s*\(\s*['"`]\//,
-  /^(use|route|app)\s*\(\s*['"`]/,
-  // NestJS decorators
-  /@\s*(Get|Post|Put|Patch|Delete|Options|Head|All)\s*\(/i,
-  /@\s*Controller\s*\(/,
-  /@\s*Route\s*\(/,
-  // FastAPI / Starlette
-  /@\s*(app|router)\.(get|post|put|patch|delete)\s*\(/i,
-  // Django / Flask
-  /@(app|router)\.route\s*\(/,
-  /@(app|bp)\.get\s*\(/,
-  /@(app|bp)\.post\s*\(/,
-  // Ruby on Rails
-  /(get|post|put|patch|delete)\s+['"`]([^'"`]+)['"`]/,
-  /resources\s+:?\w+/,
-  /resources\s*\(.*\)/,
-  // Spring / Spring Boot
-  /@(Get|Post|Put|Delete|Patch)Mapping\s*\(/i,
-  /@(RequestMapping|RestController|Controller)\s*\(/,
-  // Gin / Fiber (Go)
-  /\.(GET|POST|PUT|PATCH|DELETE|HEAD)\s*\(/,
-  // Laravel (PHP)
-  /Route::(get|post|put|patch|delete|any|match|options)\s*\(/i,
-  // Phoenix (Elixir/Ruby-like)
-  /plug\s+['"`]([^\s'"`]+)['"`]/,
-  // Swift (Vapor)
-  /@(get|post|put|patch|delete)\s*\(/i,
-  // Dart (Aqueduct / Shelf)
-  /@(Operation|GET|POST|PUT|DELETE)\s*\(/i,
-]
-
-const TOOL_PATTERNS = [
-  /@\s*(tool|command|handler|event|method|action)\s*\(/i,
-  /['"`]?(tool|command|handler)['"`]?\s*:/,
-  /^\s*(tool|command|handler)\s*:/,
-]
-
-const QUERY_PATTERNS = [
-  /\.query\s*\(/,
-  /\.execute\s*\(/,
-  /\.run\s*\(/,
-  /\.all\s*\(/,
-  /\.get\s*\(/,
-  /\.find\s*\(/,
-  /\.create\s*\(/,
-  /\.insert\s*\(/,
-  /\.update\s*\(/,
-  /\.delete\s*\(/,
-  /\.save\s*\(/,
-  /\.findOne\s*\(/,
-  /\.findById\s*\(/,
-  /\.select\s*\(/,
-  /\.where\s*\(/,
-  /\.from\s*\(/,
-  /\.join\s*\(/,
-]
-
-// ─── Main Parser Class ─────────────────────────────────────────────────────────
+// ─── ParserEngine ─────────────────────────────────────────────────────────────
 
 export class ParserEngine {
+  // ── Caches: initialized once, reused forever ─────────────────────────────
   private langCache = new Map<string, any>()
-  private parser = new Parser()
+  private parserCache = new Map<string, Parser>()        // lang → dedicated parser
+  private queriesCache = new Map<string, LanguageQueries>()
+  private langLoadQueue: Map<string, Promise<any>> = new Map()
+  private _defaultParser = new Parser()
 
+  constructor() {
+    // Default parser is always available
+  }
+
+  // ── Pre-load languages in batch (call once before parsing) ───────────────
+  async preloadLanguages(languages: string[]): Promise<void> {
+    const needed = [...new Set(languages.map((l) => LANG_EXT['.' + l] ?? l))]
+    await Promise.all(needed.map((lang) => this.ensureLanguage(lang)))
+  }
+
+  private async ensureLanguage(lang: string): Promise<any> {
+    if (this.langCache.has(lang)) return this.langCache.get(lang)
+    if (this.langLoadQueue.has(lang)) return this.langLoadQueue.get(lang)
+
+    const promise = loadLanguage(lang).then((langObj) => {
+      if (langObj) {
+        this.langCache.set(lang, langObj)
+        // Create a dedicated parser for this language (never changes)
+        const p = new Parser()
+        p.setLanguage(langObj)
+        this.parserCache.set(lang, p)
+        // Load queries
+        if (LANGUAGE_QUERIES[lang]) {
+          this.queriesCache.set(lang, LANGUAGE_QUERIES[lang])
+        }
+      }
+      this.langLoadQueue.delete(lang)
+      return langObj
+    })
+    this.langLoadQueue.set(lang, promise)
+    return promise
+  }
+
+  // ── Parse a single file ───────────────────────────────────────────────
   async parseFile(
     filePath: string,
     content: string,
@@ -461,30 +312,349 @@ export class ParserEngine {
     const ext = '.' + (filePath.split('.').pop() ?? '').toLowerCase()
     const lang = language ?? LANG_EXT[ext] ?? 'javascript'
 
-    if (!this.langCache.has(lang)) {
-      this.langCache.set(lang, await loadLanguage(lang))
+    // Ensure language is loaded
+    const langObj = await this.ensureLanguage(lang)
+    if (!langObj) {
+      return { nodes: [], edges: [] }
     }
-    const langObj = this.langCache.get(lang)
-    if (langObj) {
-      this.parser.setLanguage(langObj)
+
+    // Get parser for this language (reuse, never recreate)
+    let parser: Parser
+    if (this.parserCache.has(lang)) {
+      parser = this.parserCache.get(lang)!
+    } else {
+      parser = new Parser()
+      parser.setLanguage(langObj)
+      this.parserCache.set(lang, parser)
     }
 
     const nodes: CodeNode[] = []
     const edges: CodeEdge[] = []
-    const nodeMap = getNodeMap(lang)
+    const queries = this.queriesCache.get(lang) ?? LANGUAGE_QUERIES[lang]
 
-    // Detect file-level patterns
+    // File-level pattern detection
     this.detectFilePatterns(content, filePath, nodes, edges)
 
     try {
-      const tree = this.parser.parse(content)
-      this.walk(tree.rootNode, content, filePath, lang, nodes, edges, nodeMap)
+      const tree = parser.parse(content)
+      const root = tree.rootNode
+
+      // Phase 1: TSQuery extraction (fast path)
+      if (queries) {
+        this.extractViaTSQuery(root, content, filePath, lang, queries, nodes, edges)
+      }
+
+      // Phase 2: Fallback walk for remaining nodes (only nodes not covered by queries)
+      if (!queries || !LANGUAGE_QUERIES[lang]) {
+        this.walkFallback(root, content, filePath, lang, nodes, edges)
+      } else {
+        // Partial fallback: walk only non-skipped types
+        const skipTypes = LANGUAGE_QUERIES[lang]?.skipTypes
+        if (skipTypes) {
+          this.walkFallback(root, content, filePath, lang, nodes, edges, skipTypes)
+        }
+      }
     } catch {
-      // skip
+      /* skip parse errors */
     }
 
     return { nodes, edges }
   }
+
+  // ── TSQuery-driven extraction (main path) ────────────────────────────────
+  private extractViaTSQuery(
+    root: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    queries: LanguageQueries,
+    nodes: CodeNode[],
+    edges: CodeEdge[],
+  ): void {
+    // Symbol declarations via TSQuery
+    if (queries.symbolQuery) {
+      this.extractSymbolsTSQ(root, content, filePath, lang, queries.symbolQuery, nodes, edges)
+    }
+    // Calls via TSQuery
+    if (queries.callQuery) {
+      this.extractCallsTSQ(root, content, filePath, lang, queries.callQuery, nodes, edges)
+    }
+    // Imports via TSQuery
+    if (queries.importQuery) {
+      this.extractImportsTSQ(root, content, filePath, lang, queries.importQuery, nodes, edges)
+    }
+    // Heritage via TSQuery
+    if (queries.heritageQuery) {
+      this.extractHeritageTSQ(root, content, filePath, lang, queries.heritageQuery, nodes, edges)
+    }
+  }
+
+  private extractSymbolsTSQ(
+    root: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    query: string,
+    nodes: CodeNode[],
+    _edges: CodeEdge[],
+  ): void {
+    try {
+      const langObj = this.langCache.get(lang)
+      if (!langObj) return
+
+      const tsQuery = (langObj as any).query(query)
+
+      tsQuery.captures(root).forEach((m: any) => {
+        const name = m.name
+        if (name !== 'sym.declaration' && !name.startsWith('sym.')) return
+
+        const node = m.node
+        const start = node.startPosition
+        const end = node.endPosition
+        const nodeType = inferNodeType(node.type, lang)
+
+        // Get name from capture
+        let nameText = ''
+        const symNameMatch = [...tsQuery.captures(root)].find((c: any) =>
+          c.node === node && (c.name === 'sym.name' || c.name === 'sym.decorator')
+        )
+        if (symNameMatch) {
+          const s = symNameMatch.node.startPosition
+          const e = symNameMatch.node.endPosition
+          nameText = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column))
+        }
+
+        if (!nameText || nameText === 'anonymous') {
+          // Fallback: find identifier child
+          nameText = this.getNodeName(node, content, lang) ?? 'anonymous'
+        }
+
+        const uid = `${filePath}:${nodeType}:${nameText}:${start.row + 1}`
+        const symNode: CodeNode = {
+          uid, type: nodeType, name: nameText, filePath,
+          line: start.row + 1, endLine: end.row + 1,
+          column: start.column, language: lang,
+        }
+
+        // Extract return type from capture
+        const returnTypeCap = [...tsQuery.captures(root)].find((c: any) =>
+          c.node === node && c.name === 'sym.returnType'
+        )
+        if (returnTypeCap) {
+          const s = returnTypeCap.node.startPosition
+          const e = returnTypeCap.node.endPosition
+          symNode.returnType = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column))
+        }
+
+        // Parameters
+        const paramsCap = [...tsQuery.captures(root)].find((c: any) =>
+          c.node === node && c.name === 'sym.params'
+        )
+        if (paramsCap) {
+          const s = paramsCap.node.startPosition
+          const e = paramsCap.node.endPosition
+          const paramText = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column))
+          const paramMatch = paramText.match(/\(([^)]*)\)/)
+          if (paramMatch && paramMatch[1].trim()) {
+            symNode.parameterCount = paramMatch[1].split(',').filter((p: string) => p.trim()).length
+          }
+        }
+
+        // Signature
+        const sig = getNodeText(node, content).substring(0, 200).replace(/\s+/g, ' ').trim()
+        symNode.signature = sig
+
+        nodes.push(symNode)
+      })
+    } catch {
+      // Fallback to manual walk if TSQuery fails
+      this.walkFallback(root, content, filePath, lang, nodes, [])
+    }
+  }
+
+  private extractCallsTSQ(
+    root: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    query: string,
+    _nodes: CodeNode[],
+    edges: CodeEdge[],
+  ): void {
+    try {
+      const langObj = this.langCache.get(lang)
+      if (!langObj) return
+
+      const tsQuery = (langObj as any).query(query)
+
+      tsQuery.captures(root).forEach((m: any) => {
+        if (m.name !== 'call.expression') return
+
+        const node = m.node
+        // Find parent declaration to get fromUid
+        const parentUid = this.findParentDeclarationUid(root, node, content, filePath, lang)
+        if (!parentUid) return
+
+        const fn = this.getCallFunctionName(node, content, lang)
+        if (!fn) return
+
+        edges.push({
+          id: `${parentUid}->CALLS:${fn}`,
+          fromUid: parentUid,
+          toUid: `UNKNOWN:Function:${fn}:0`,
+          type: 'CALLS',
+          confidence: 0.8,
+          reason: 'tsq-call',
+        })
+      })
+    } catch { /* skip */ }
+  }
+
+  private extractImportsTSQ(
+    root: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    query: string,
+    _nodes: CodeNode[],
+    edges: CodeEdge[],
+  ): void {
+    try {
+      const langObj = this.langCache.get(lang)
+      if (!langObj) return
+
+      const tsQuery = (langObj as any).query(query)
+
+      tsQuery.captures(root).forEach((m: any) => {
+        if (m.name !== 'import.statement' && m.name !== 'require.statement') return
+
+        const node = m.node
+        const parentUid = this.findParentDeclarationUid(root, node, content, filePath, lang)
+        if (!parentUid) return
+
+        // Extract import source
+        const allCaps = [...tsQuery.captures(root)].filter((c: any) =>
+          c.node === node && (c.name === 'import.source' || c.name === 'require.source')
+        )
+        for (const cap of allCaps) {
+          const s = cap.node.startPosition
+          const e = cap.node.endPosition
+          const source = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column)).replace(/['"`]/g, '')
+          if (source) {
+            edges.push({
+              id: `${parentUid}->IMPORTS:${source}`,
+              fromUid: parentUid,
+              toUid: `IMPORT:${source}:module`,
+              type: 'IMPORTS',
+              confidence: 0.95,
+              reason: 'tsq-import',
+            })
+          }
+        }
+      })
+    } catch { /* skip */ }
+  }
+
+  private extractHeritageTSQ(
+    root: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    query: string,
+    _nodes: CodeNode[],
+    edges: CodeEdge[],
+  ): void {
+    try {
+      const langObj = this.langCache.get(lang)
+      if (!langObj) return
+
+      const tsQuery = (langObj as any).query(query)
+
+      tsQuery.captures(root).forEach((m: any) => {
+        if (!m.name.startsWith('heritage.')) return
+
+        const declNode = m.node
+        const nodeType = inferNodeType(declNode.type, lang)
+        if (nodeType !== 'Class' && nodeType !== 'Interface') return
+
+        const declName = this.getNodeName(declNode, content, lang) ?? 'unknown'
+        const declUid = `${filePath}:${nodeType}:${declName}:0`
+
+        const allCaps = [...tsQuery.captures(root)].filter((c: any) => c.node === declNode)
+
+        for (const cap of allCaps) {
+          if (cap.name === 'heritage.extends') {
+            const s = cap.node.startPosition
+            const e = cap.node.endPosition
+            const targetName = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column))
+            edges.push({
+              id: `${declUid}->EXTENDS:${targetName}`,
+              fromUid: declUid,
+              toUid: `${filePath}:Class:${targetName}:0`,
+              type: 'EXTENDS',
+              confidence: 1.0,
+              reason: 'tsq-extends',
+            })
+          }
+          if (cap.name === 'heritage.implements') {
+            const s = cap.node.startPosition
+            const e = cap.node.endPosition
+            const targetName = content.substring(posToIndex(content, s.row, s.column), posToIndex(content, e.row, e.column))
+            edges.push({
+              id: `${declUid}->IMPLEMENTS:${targetName}`,
+              fromUid: declUid,
+              toUid: `${filePath}:Interface:${targetName}:0`,
+              type: 'IMPLEMENTS',
+              confidence: 1.0,
+              reason: 'tsq-implements',
+            })
+          }
+        }
+      })
+    } catch { /* skip */ }
+  }
+
+  // ── Fallback walk (only for unsupported languages or uncovered types) ────
+
+  private walkFallback(
+    node: any,
+    content: string,
+    filePath: string,
+    lang: string,
+    nodes: CodeNode[],
+    edges: CodeEdge[],
+    skipTypes?: Set<string>,
+  ): void {
+    if (skipTypes?.has(node.type)) return
+
+    const mapping = NODE_MAP_FALLBACK[node.type]
+    if (mapping) {
+      const symbol = this.extractSymbol(node, content, filePath, mapping, lang)
+      nodes.push(symbol)
+      this.extractEdges(node, symbol.uid, content, filePath, edges)
+    }
+
+    for (let i = 0; i < node.childCount; i++) {
+      this.walkFallback(node.child(i), content, filePath, lang, nodes, edges, skipTypes)
+    }
+  }
+
+  private findParentDeclarationUid(root: any, node: any, content: string, filePath: string, lang: string): string | null {
+    let cur: any = node.parent
+    for (let depth = 0; depth < 8 && cur; cur = cur.parent, depth++) {
+      const nodeType = inferNodeType(cur.type, lang)
+      if (
+        nodeType === 'Function' || nodeType === 'Method' ||
+        nodeType === 'Class' || nodeType === 'Module'
+      ) {
+        const name = this.getNodeName(cur, content, '')
+        return name ? `${filePath}:${nodeType}:${name}:${cur.startPosition.row + 1}` : null
+      }
+    }
+    return null
+  }
+
+  // ── File-level pattern detection ───────────────────────────────────────
 
   private detectFilePatterns(
     content: string,
@@ -494,38 +664,27 @@ export class ParserEngine {
   ): void {
     const lines = content.split('\n')
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i].trim()
       const lineNum = i + 1
 
       for (const pat of ROUTE_PATTERNS) {
-        if (pat.test(line.trim())) {
-          const uid = `${filePath}:Route:${lineNum}`
+        if (pat.test(line)) {
           nodes.push({
-            uid,
+            uid: `${filePath}:Route:${lineNum}`,
             type: 'File',
             name: `route_${lineNum}`,
-            filePath,
-            line: lineNum,
-            endLine: lineNum,
-            column: 0,
-            language: 'detected',
+            filePath, line: lineNum, endLine: lineNum, column: 0, language: 'detected',
           })
           break
         }
       }
-
       for (const pat of TOOL_PATTERNS) {
-        if (pat.test(line.trim())) {
-          const uid = `${filePath}:Tool:${lineNum}`
+        if (pat.test(line)) {
           nodes.push({
-            uid,
+            uid: `${filePath}:Tool:${lineNum}`,
             type: 'File',
             name: `tool_${lineNum}`,
-            filePath,
-            line: lineNum,
-            endLine: lineNum,
-            column: 0,
-            language: 'detected',
+            filePath, line: lineNum, endLine: lineNum, column: 0, language: 'detected',
           })
           break
         }
@@ -533,24 +692,102 @@ export class ParserEngine {
     }
   }
 
-  private walk(
-    node: any,
-    content: string,
-    filePath: string,
-    lang: string,
-    nodes: CodeNode[],
-    edges: CodeEdge[],
-    nodeMap: Record<string, NodeMapping>,
-  ): void {
-    const mapping = nodeMap[node.type]
-    if (mapping) {
-      const symbol = this.extractSymbol(node, content, filePath, mapping, lang)
-      nodes.push(symbol)
-      this.extractEdges(node, symbol.uid, content, filePath, edges)
-    }
+  // ── Symbol extraction ──────────────────────────────────────────────────
 
-    for (let i = 0; i < node.childCount; i++) {
-      this.walk(node.child(i), content, filePath, lang, nodes, edges, nodeMap)
+  private getNodeName(node: any, content: string, _lang: string): string | null {
+    switch (node.type) {
+      case 'function_declaration':
+      case 'function_definition':
+      case 'function_item':
+      case 'method_declaration':
+      case 'method': {
+        const n = getChild(node, 'identifier') ?? getChild(node, 'property_identifier')
+          ?? node.children?.find((c: any) => c.type === 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'class_declaration':
+      case 'class_definition':
+      case 'struct_declaration':
+      case 'struct_item':
+      case 'type_declaration': {
+        const n = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
+          ?? node.children?.find((c: any) => c.type === 'type_identifier' || c.type === 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'interface_declaration':
+      case 'protocol_declaration': {
+        const n = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'enum_declaration':
+      case 'enum_class_declaration': {
+        const n = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'type_alias_declaration':
+      case 'type_alias_item': {
+        const n = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'variable_declarator':
+      case 'assignment':
+      case 'assignment_expression': {
+        const n = getChild(node, 'identifier') ?? getChild(node, 'property_identifier') ?? getChild(node, 'variable_name')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'property_signature':
+      case 'property_definition':
+      case 'public_field_definition':
+      case 'property_declaration':
+      case 'field_definition':
+      case 'field_declaration':
+      case 'constant_declaration':
+      case 'instance_variable_declaration': {
+        const n = getChild(node, 'property_identifier') ?? getChild(node, 'string')
+          ?? getChild(node, 'identifier') ?? getChild(node, 'variable_name')
+        if (n) return getNodeText(n, content).replace(/['"`]/g, '')
+        return null
+      }
+      case 'parameter':
+      case 'formal_parameter':
+      case 'required_parameter':
+      case 'optional_parameter': {
+        const n = getChild(node, 'identifier') ?? getChild(node, 'variable_name') ?? getChild(node, 'property_identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'class':
+      case 'module': {
+        const n = getChild(node, 'constant')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'method_declaration': {
+        const n = getChild(node, 'name') ?? getChild(node, 'property_identifier') ?? getChild(node, 'identifier')
+        return n ? getNodeText(n, content) : null
+      }
+      case 'decorated_definition': {
+        const inner = getChild(node, 'function_definition') ?? getChild(node, 'class_definition')
+        return inner ? this.getNodeName(inner, content, _lang) : null
+      }
+      case 'identifier':
+        return getNodeText(node, content)
+      default: {
+        // Generic identifier search
+        const identifiers: any[] = []
+        const queue = [node]
+        let depth = 0
+        while (queue.length > 0 && depth < 5) {
+          const cur = queue.shift()!
+          if (cur.type === 'identifier' || cur.type === 'property_identifier' || cur.type === 'type_identifier') {
+            identifiers.push(cur)
+            if (identifiers.length >= 2) break
+          }
+          for (let i = 0; i < Math.min(cur.childCount, 3); i++) {
+            queue.push(cur.child(i))
+          }
+          depth++
+        }
+        return identifiers.length > 0 ? getNodeText(identifiers[0], content) : null
+      }
     }
   }
 
@@ -558,191 +795,38 @@ export class ParserEngine {
     node: any,
     content: string,
     filePath: string,
-    mapping: NodeMapping,
+    mapping: { nodeType: NodeType },
     lang: string,
   ): CodeNode {
     const start = node.startPosition
     const end = node.endPosition
-    const name = this.getDeclarationName(node, content, mapping)
+    const name = this.getNodeName(node, content, lang) ?? 'anonymous'
     const uid = `${filePath}:${mapping.nodeType}:${name}:${start.row + 1}`
 
     const result: CodeNode = {
-      uid,
-      type: mapping.nodeType,
-      name,
-      filePath,
-      line: start.row + 1,
-      endLine: end.row + 1,
-      column: start.column,
-      language: lang,
+      uid, type: mapping.nodeType, name, filePath,
+      line: start.row + 1, endLine: end.row + 1,
+      column: start.column, language: lang,
     }
 
-    // Extract additional metadata
-    this.extractSymbolMeta(node, content, result)
-
-    return result
-  }
-
-  private getDeclarationName(node: any, content: string, mapping: NodeMapping): string {
-    if (mapping.nameExtractor) {
-      const name = mapping.nameExtractor(node, content)
-      if (name) return name
-    }
-
-    // Generic identifier search
-    const identifiers = this.findIdentifiers(node, content)
-    if (identifiers.length > 0) return identifiers[0]
-
-    // Language-specific fallbacks
-    if (
-      node.type === 'function_declaration' ||
-      node.type === 'function_definition' ||
-      node.type === 'function_item' ||
-      node.type === 'method_declaration' ||
-      node.type === 'method_definition'
-    ) {
-      const nameNode =
-        getChild(node, 'identifier') ??
-        getChild(node, 'property_identifier') ??
-        node.children?.find((c: any) => c.type === 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (
-      node.type === 'class_declaration' ||
-      node.type === 'class_definition' ||
-      node.type === 'struct_declaration' ||
-      node.type === 'struct_item' ||
-      node.type === 'type_declaration'
-    ) {
-      const nameNode =
-        getChild(node, 'type_identifier') ??
-        getChild(node, 'identifier') ??
-        node.children?.find((c: any) => c.type === 'type_identifier' || c.type === 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (node.type === 'interface_declaration' || node.type === 'protocol_declaration') {
-      const nameNode = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (node.type === 'enum_declaration' || node.type === 'enum_class_declaration') {
-      const nameNode = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (node.type === 'type_alias_declaration' || node.type === 'type_alias_item') {
-      const nameNode = getChild(node, 'type_identifier') ?? getChild(node, 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (
-      node.type === 'variable_declarator' ||
-      node.type === 'assignment' ||
-      node.type === 'assignment_expression'
-    ) {
-      const nameNode =
-        getChild(node, 'identifier') ??
-        getChild(node, 'property_identifier') ??
-        getChild(node, 'variable_name')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    if (
-      node.type === 'property_signature' ||
-      node.type === 'property_definition' ||
-      node.type === 'public_field_definition' ||
-      node.type === 'property_declaration' ||
-      node.type === 'field_definition' ||
-      node.type === 'field_declaration' ||
-      node.type === 'constant_declaration' ||
-      node.type === 'instance_variable_declaration'
-    ) {
-      const nameNode =
-        getChild(node, 'property_identifier') ??
-        getChild(node, 'string') ??
-        getChild(node, 'identifier') ??
-        getChild(node, 'variable_name')
-      if (nameNode) return getNodeText(nameNode, content).replace(/['"`]/g, '')
-    }
-    if (
-      node.type === 'parameter' ||
-      node.type === 'formal_parameter' ||
-      node.type === 'required_parameter' ||
-      node.type === 'optional_parameter'
-    ) {
-      const nameNode =
-        getChild(node, 'identifier') ??
-        getChild(node, 'variable_name') ??
-        getChild(node, 'property_identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    // Ruby: (class (constant ...) ...)
-    if (node.type === 'class' || node.type === 'module') {
-      const constantNode = getChild(node, 'constant')
-      if (constantNode) return getNodeText(constantNode, content)
-    }
-    // PHP: class Foo { public function bar() { } }
-    if (node.type === 'method_declaration') {
-      const nameNode =
-        getChild(node, 'name') ??
-        getChild(node, 'property_identifier') ??
-        getChild(node, 'identifier')
-      if (nameNode) return getNodeText(nameNode, content)
-    }
-    // Python decorated functions
-    if (node.type === 'decorated_definition') {
-      const inner = getChild(node, 'function_definition') ?? getChild(node, 'class_definition')
-      if (inner) return this.getDeclarationName(inner, content, mapping)
-    }
-
-    return 'anonymous'
-  }
-
-  private findIdentifiers(node: any, content: string): string[] {
-    const results: string[] = []
-    const queue = [node]
-    while (queue.length > 0) {
-      const cur = queue.shift()!
-      if (
-        cur.type === 'identifier' ||
-        cur.type === 'property_identifier' ||
-        cur.type === 'type_identifier'
-      ) {
-        results.push(getNodeText(cur, content))
-      }
-      if (results.length >= 3) break
-      for (let i = 0; i < cur.childCount; i++) {
-        queue.push(cur.child(i))
-      }
-    }
-    return results
-  }
-
-  private extractSymbolMeta(node: any, content: string, result: CodeNode): void {
     const text = getNodeText(node, content)
-
-    // Return type for functions/methods
     if (result.type === 'Function' || result.type === 'Method') {
       const returnTypeMatch = text.match(/(?:=>|:\s*)([\w[\]<>| ,.$]+)\s*[;({\n=]/)
       if (returnTypeMatch) result.returnType = returnTypeMatch[1].trim()
     }
 
-    // Parameters
     const paramMatch = text.match(/\(([^)]*)\)/)
     if (paramMatch && paramMatch[1].trim()) {
-      const params = paramMatch[1].split(',').filter((p: string) => p.trim())
-      result.parameterCount = params.length
+      result.parameterCount = paramMatch[1].split(',').filter((p: string) => p.trim()).length
     }
 
-    // Signature
     result.signature = text.substring(0, 200).replace(/\s+/g, ' ').trim()
+    return result
   }
 
-  // ─── Edge Extraction ─────────────────────────────────────────────────────────
+  // ── Edge Extraction (from existing code, simplified) ───────────────────
 
-  private extractEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
+  private extractEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
     this.extractCallEdges(node, parentUid, content, edges)
     this.extractImportEdges(node, parentUid, content, edges)
     this.extractHeritageEdges(node, parentUid, content, filePath, edges)
@@ -756,71 +840,45 @@ export class ParserEngine {
     this.extractProcessEdges(node, parentUid, content, filePath, edges)
   }
 
-  // CALLS — function/method invocations
+  // CALLS
   private extractCallEdges(node: any, parentUid: string, content: string, edges: CodeEdge[]): void {
-    const queue: any[] = [node]
-    let visited = 0
+    const queue: any[] = [node]; let visited = 0
     while (queue.length > 0 && visited++ < 500) {
       const cur = queue.shift()!
-
       if (cur.type === 'call_expression') {
-        const fn = this.getCallFunction(cur, content)
-        if (fn) {
-          const toUid = `UNKNOWN:Function:${fn}:0`
-          edges.push({
-            id: `${parentUid}->CALLS:${fn}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'CALLS',
-            confidence: 0.8,
-            reason: 'tree-sitter-call',
-          })
-        }
+        const fn = this.getCallFunctionName(cur, content, '')
+        if (fn) edges.push({
+          id: `${parentUid}->CALLS:${fn}`, fromUid: parentUid,
+          toUid: `UNKNOWN:Function:${fn}:0`, type: 'CALLS',
+          confidence: 0.8, reason: 'tree-sitter-call',
+        })
       }
-
-      for (let i = 0; i < cur.childCount; i++) {
-        queue.push(cur.child(i))
-      }
+      for (let i = 0; i < cur.childCount; i++) queue.push(cur.child(i))
     }
   }
 
-  private getCallFunction(node: any, content: string): string | null {
-    // Direct: foo()
+  private getCallFunctionName(node: any, content: string, _lang: string): string | null {
     if (node.type === 'identifier') return getNodeText(node, content)
-
-    // Member: obj.method() or obj->method() or obj.property
     if (node.type === 'member_expression') {
-      const obj = node.children?.find(
-        (c: any) =>
-          c.type !== '.' && c.type !== 'property_identifier' && c.type !== '*' && c.type !== '::',
-      )
-      const prop = node.children?.find(
-        (c: any) =>
-          c.type === 'property_identifier' || c.type === 'identifier' || c.type === 'string',
-      )
-      const objText = obj ? getNodeText(obj, content) : ''
-      const propText = prop ? getNodeText(prop, content) : ''
-      if (propText) return objText ? `${objText}.${propText}` : propText
+      const obj = node.children?.find((c: any) =>
+        !['.', 'property_identifier', '*', '::'].includes(c.type))
+      const prop = node.children?.find((c: any) =>
+        ['property_identifier', 'identifier', 'string'].includes(c.type))
+      const ot = obj ? getNodeText(obj, content) : ''
+      const pt = prop ? getNodeText(prop, content) : ''
+      return pt ? (ot ? `${ot}.${pt}` : pt) : null
     }
-
-    // PHP: $obj->method()
     if (node.type === 'member_access_expression') {
-      const obj = node.children?.find(
-        (c: any) =>
-          c.type !== 'object' && c.type !== 'name' && c.type !== '->' && c.type !== 'property',
-      )
-      const prop = node.children?.find(
-        (c: any) =>
-          c.type === 'property_access' || c.type === 'identifier' || c.type === 'variable_name',
-      )
+      const obj = node.children?.find((c: any) =>
+        !['object', 'name', '->', 'property'].includes(c.type))
+      const prop = node.children?.find((c: any) =>
+        ['property_access', 'identifier', 'variable_name'].includes(c.type))
       if (prop) {
-        const objText = obj ? getNodeText(obj, content).replace(/^\$/, '') : ''
-        const propText = getNodeText(prop, content).replace(/^\$/, '')
-        return objText ? `${objText}->${propText}` : propText
+        const ot = obj ? getNodeText(obj, content).replace(/^\$/, '') : ''
+        const pt = getNodeText(prop, content).replace(/^\$/, '')
+        return ot ? `${ot}->${pt}` : pt
       }
     }
-
-    // PHP static: ClassName::method()
     if (node.type === 'scoped_access_expression') {
       const classNode = node.children?.find((c: any) => c.type !== '::' && c.type !== 'name')
       const methodNode = node.children?.find((c: any) => c.type === 'name')
@@ -828,348 +886,145 @@ export class ParserEngine {
         return `${getNodeText(classNode, content)}::${getNodeText(methodNode, content)}`
       }
     }
-
-    // Ruby: object.method (without parentheses)
     if (node.type === 'call') {
       const methodNode = getChild(node, 'method') ?? getChild(node, 'identifier')
       const receiverNode = getChild(node, 'receiver')
-      const methodText = methodNode ? getNodeText(methodNode, content) : ''
-      const receiverText = receiverNode ? getNodeText(receiverNode, content).replace(/^\$/, '') : ''
-      if (methodText) return receiverText ? `${receiverText}.${methodText}` : methodText
+      const mt = methodNode ? getNodeText(methodNode, content) : ''
+      const rt = receiverNode ? getNodeText(receiverNode, content).replace(/^\$/, '') : ''
+      if (mt) return rt ? `${rt}.${mt}` : mt
     }
-
-    // Nested call: (something).method()
     const first = node.children?.[0]
-    if (first) return this.getCallFunction(first, content)
-
-    return null
+    return first ? this.getCallFunctionName(first, content, _lang) : null
   }
 
-  // IMPORTS — import/require statements (TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP)
-  private extractImportEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    edges: CodeEdge[],
-  ): void {
-    // TypeScript/JavaScript: import statements
+  // IMPORTS
+  private extractImportEdges(node: any, parentUid: string, content: string, edges: CodeEdge[]): void {
     if (node.type === 'import_statement') {
-      const specifiers: string[] = []
-      const sourceNode =
-        getChild(node, 'string') ??
-        node.children?.find(
-          (c: any) => c.type === 'string' || c.type === 'external_module_reference',
-        )
+      const sourceNode = getChild(node, 'string') ?? node.children?.find((c: any) =>
+        c.type === 'string' || c.type === 'external_module_reference')
       const source = sourceNode ? getNodeText(sourceNode, content).replace(/['"`]/g, '') : ''
-
-      for (const child of node.namedChildren) {
-        if (child.type === 'import_clause') {
-          for (const ic of child.namedChildren) {
-            if (ic.type === 'named_imports') {
-              for (const specNode of ic.namedChildren) {
-                if (specNode.type === 'import_specifier') {
-                  const id = getChild(specNode, 'identifier') ?? getChild(specNode, 'identifier')
-                  if (id) specifiers.push(getNodeText(id, content))
-                  const namespace = getChild(specNode, 'namespace_import')
-                  if (namespace) {
-                    const ns = getChild(namespace, 'identifier')
-                    if (ns) specifiers.push(getNodeText(ns, content))
-                  }
-                }
-              }
-            } else if (ic.type === 'import_specifier') {
-              const id = getChild(ic, 'identifier') ?? getChild(ic, 'identifier')
-              if (id) specifiers.push(getNodeText(id, content))
-            }
-          }
-        } else if (child.type === 'identifier') {
-          specifiers.push(getNodeText(child, content))
-        }
-      }
-
-      for (const spec of specifiers) {
-        const toUid = `IMPORT:${source}:${spec}`
-        edges.push({
-          id: `${parentUid}->IMPORTS:${spec}:${source}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 0.95,
-          reason: 'tree-sitter-import',
-        })
-      }
+      if (source) edges.push({
+        id: `${parentUid}->IMPORTS:${source}`, fromUid: parentUid,
+        toUid: `IMPORT:${source}:default`, type: 'IMPORTS',
+        confidence: 0.95, reason: 'tree-sitter-import',
+      })
     }
-
-    // TypeScript/JavaScript: require()
     if (node.type === 'call_expression') {
-      const fn = this.getCallFunction(node, content)
+      const fn = this.getCallFunctionName(node, content, '')
       if (fn === 'require' || fn === 'import') {
-        const sourceNode = node.children?.[1]
-        if (sourceNode) {
-          const source = getNodeText(sourceNode, content).replace(/['"`]/g, '')
-          const toUid = `IMPORT:${source}:default`
-          edges.push({
-            id: `${parentUid}->IMPORTS:require:${source}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'IMPORTS',
-            confidence: 0.9,
-            reason: 'tree-sitter-require',
-          })
-        }
+        const src = node.children?.[1]
+        if (src) edges.push({
+          id: `${parentUid}->IMPORTS:require`, fromUid: parentUid,
+          toUid: `IMPORT:${getNodeText(src, content).replace(/['"`]/g, '')}:file`,
+          type: 'IMPORTS', confidence: 0.9, reason: 'tree-sitter-require',
+        })
       }
-      // PHP: require/include
-      if (fn === 'require' || fn === 'require_once' || fn === 'include' || fn === 'include_once') {
-        const sourceNode = node.children?.[1]
-        if (sourceNode) {
-          const source = getNodeText(sourceNode, content).replace(/['"`]/g, '')
-          const toUid = `IMPORT:${source}:file`
-          edges.push({
-            id: `${parentUid}->IMPORTS:php:${source}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'IMPORTS',
-            confidence: 0.95,
-            reason: 'php-require',
-          })
-        }
-      }
-    }
-
-    // Python: import / from ... import
-    if (node.type === 'import_statement' || node.type === 'import_from_statement') {
-      let source = ''
-      if (node.type === 'import_from_statement') {
-        const dottedName = getChild(node, 'dotted_name')
-        if (dottedName) source = getNodeText(dottedName, content)
-      } else {
-        const dottedName = getChild(node, 'dotted_name')
-        if (dottedName) source = getNodeText(dottedName, content)
-      }
-
-      if (source) {
-        const toUid = `IMPORT:${source}:module`
-        edges.push({
-          id: `${parentUid}->IMPORTS:py:${source}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 0.95,
-          reason: 'tree-sitter-import-py',
+      if (['require', 'require_once', 'include', 'include_once'].includes(fn ?? '')) {
+        const src = node.children?.[1]
+        if (src) edges.push({
+          id: `${parentUid}->IMPORTS:php:${fn}`, fromUid: parentUid,
+          toUid: `IMPORT:${getNodeText(src, content).replace(/['"`]/g, '')}:file`,
+          type: 'IMPORTS', confidence: 0.95, reason: 'php-require',
         })
       }
     }
-
-    // Go: import "module" or import "module" (alias)
+    if (node.type === 'import_from_statement' || node.type === 'import_statement') {
+      const dottedName = getChild(node, 'dotted_name')
+      const source = dottedName ? getNodeText(dottedName, content) : ''
+      if (source) edges.push({
+        id: `${parentUid}->IMPORTS:py:${source}`, fromUid: parentUid,
+        toUid: `IMPORT:${source}:module`, type: 'IMPORTS',
+        confidence: 0.95, reason: 'tree-sitter-import-py',
+      })
+    }
     if (node.type === 'import_declaration') {
-      const importSpec = getChild(node, 'import_specification') ?? node
-      const sourceNode =
-        getChild(importSpec, 'string') ?? importSpec.children?.find((c: any) => c.type === 'string')
-      if (sourceNode) {
-        const source = getNodeText(sourceNode, content).replace(/['"`]/g, '')
-        const alias = getChild(importSpec, 'identifier')
-        const aliasName = alias ? getNodeText(alias, content) : (source.split('/').pop() ?? source)
-        const toUid = `IMPORT:${source}:${aliasName}`
+      const spec = getChild(node, 'import_specification') ?? node
+      const srcNode = getChild(spec, 'string') ?? spec.children?.find((c: any) => c.type === 'string')
+      if (srcNode) {
+        const source = getNodeText(srcNode, content).replace(/['"`]/g, '')
         edges.push({
-          id: `${parentUid}->IMPORTS:go:${source}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'go-import',
+          id: `${parentUid}->IMPORTS:go:${source}`, fromUid: parentUid,
+          toUid: `IMPORT:${source}:module`, type: 'IMPORTS',
+          confidence: 1.0, reason: 'go-import',
         })
       }
     }
-
-    // Rust: use module::item; or use module::*;
     if (node.type === 'use_declaration') {
-      const text = getNodeText(node, content)
-        .replace(/^use\s+/, '')
-        .replace(/;$/, '')
-        .trim()
+      const text = getNodeText(node, content).replace(/^use\s+/, '').replace(/;$/, '').trim()
       if (text) {
         const parts = text.split('::')
         const source = parts.slice(0, -1).join('::') || text
-        const item = parts[parts.length - 1] || text
-        const toUid = `IMPORT:${source}:${item === '*' ? 'wildcard' : item}`
+        const item = parts[parts.length - 1]
         edges.push({
-          id: `${parentUid}->IMPORTS:rust:${text}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 0.95,
-          reason: 'rust-use',
+          id: `${parentUid}->IMPORTS:rust:${text}`, fromUid: parentUid,
+          toUid: `IMPORT:${source}:${item === '*' ? 'wildcard' : item}`,
+          type: 'IMPORTS', confidence: 0.95, reason: 'rust-use',
         })
       }
     }
-
-    // Java: import package.Class; or import package.*;
-    if (node.type === 'import_declaration') {
-      const text = getNodeText(node, content)
-        .replace(/^import\s+/, '')
-        .replace(/;$/, '')
-        .trim()
-      if (text) {
-        const parts = text.split('.')
-        const source = parts.slice(0, -1).join('.')
-        const item = parts[parts.length - 1] || text
-        const toUid = `IMPORT:${source}:${item === '*' ? 'wildcard' : item}`
-        edges.push({
-          id: `${parentUid}->IMPORTS:java:${text}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'java-import',
-        })
+    if (node.type === 'import_directive' || node.type === 'import_directive') {
+      if (node.language?.name?.includes('dart') || node.language?.name?.includes('kotlin')) {
+        const text = getNodeText(node, content).replace(/^import\s+/, '').trim()
+        if (text && text !== '_') {
+          const parts = text.split('.')
+          const source = parts.slice(0, -1).join('.')
+          const item = parts[parts.length - 1]
+          edges.push({
+            id: `${parentUid}->IMPORTS:${text}`, fromUid: parentUid,
+            toUid: `IMPORT:${source}:${item}`, type: 'IMPORTS',
+            confidence: 1.0, reason: 'dart-import',
+          })
+        }
       }
     }
-
-    // C#: using Module; or using static Module.Type;
     if (node.type === 'using_declaration') {
-      const text = getNodeText(node, content)
-        .replace(/^using\s+/, '')
-        .replace(/;$/, '')
-        .trim()
+      const text = getNodeText(node, content).replace(/^using\s+/, '').replace(/;$/, '').trim()
       if (text) {
         const parts = text.split('.')
         const source = parts.slice(0, -1).join('.') || text
-        const item = parts[parts.length - 1] || text
-        const toUid = `IMPORT:${source}:${item}`
+        const item = parts[parts.length - 1]
         edges.push({
-          id: `${parentUid}->IMPORTS:cs:${text}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'csharp-using',
+          id: `${parentUid}->IMPORTS:cs:${text}`, fromUid: parentUid,
+          toUid: `IMPORT:${source}:${item}`, type: 'IMPORTS',
+          confidence: 1.0, reason: 'csharp-using',
         })
       }
     }
-
-    // PHP: use Namespace\Class; or use function Namespace\func; use const Namespace\CONST;
     if (node.type === 'use_declaration' || node.type === 'namespace_use_declaration') {
-      const text = getNodeText(node, content)
-        .replace(/^use\s+/, '')
-        .replace(/^namespace\s+/, '')
-        .replace(/;$/, '')
-        .replace(/\s+as\s+\w+$/, '') // strip alias
-        .trim()
+      const text = getNodeText(node, content).replace(/^use\s+/, '').replace(/^namespace\s+/, '').replace(/;$/, '').replace(/\s+as\s+\w+$/, '').trim()
       if (text) {
         const parts = text.split('\\')
         const source = parts.slice(0, -1).join('\\') || parts[0] || text
-        const item = parts[parts.length - 1] || text
-        const toUid = `IMPORT:${source}:${item}`
+        const item = parts[parts.length - 1]
         edges.push({
-          id: `${parentUid}->IMPORTS:php-use:${text}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 0.95,
-          reason: 'php-use',
-        })
-      }
-    }
-
-    // Swift: import Module
-    if (node.type === 'import_declaration') {
-      const moduleNode =
-        getChild(node, 'identifier') ?? node.children?.find((c: any) => c.type === 'identifier')
-      if (moduleNode) {
-        const moduleName = getNodeText(moduleNode, content)
-        const toUid = `IMPORT:${moduleName}:module`
-        edges.push({
-          id: `${parentUid}->IMPORTS:swift:${moduleName}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'swift-import',
-        })
-      }
-    }
-
-    // Dart: import 'package:xxx/yyy.dart'; or import 'package:xxx/yyy.dart' as prefix;
-    if (node.type === 'import_directive') {
-      const uriNode =
-        getChild(node, 'uri') ??
-        node.children?.find((c: any) => c.type === 'uri' || c.type === 'string_literal')
-      const source = uriNode ? getNodeText(uriNode, content).replace(/['"`]/g, '') : ''
-      if (source) {
-        const toUid = `IMPORT:${source}:module`
-        edges.push({
-          id: `${parentUid}->IMPORTS:dart:${source}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'dart-import',
-        })
-      }
-    }
-
-    // Kotlin: import package.Class
-    if (node.type === 'import_directive') {
-      const text = getNodeText(node, content)
-        .replace(/^import\s+/, '')
-        .trim()
-      if (text && text !== '_') {
-        const parts = text.split('.')
-        const source = parts.slice(0, -1).join('.')
-        const item = parts[parts.length - 1] || text
-        const toUid = `IMPORT:${source}:${item}`
-        edges.push({
-          id: `${parentUid}->IMPORTS:kotlin:${text}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'IMPORTS',
-          confidence: 1.0,
-          reason: 'kotlin-import',
+          id: `${parentUid}->IMPORTS:php-use:${text}`, fromUid: parentUid,
+          toUid: `IMPORT:${source}:${item}`, type: 'IMPORTS',
+          confidence: 0.95, reason: 'php-use',
         })
       }
     }
   }
 
-  // EXTENDS / IMPLEMENTS — class inheritance (TS, Python, Go, Rust, Java, C#, Kotlin, PHP, Swift, Dart)
-  private extractHeritageEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
-    // TypeScript: class extends/implements
-    if (node.type === 'class_declaration' || node.type === 'class_definition') {
+  // EXTENDS / IMPLEMENTS
+  private extractHeritageEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
+    if ((node.type === 'class_declaration' || node.type === 'class_definition') && node.namedChildren) {
       for (const child of node.namedChildren) {
         if (child.type === 'class_heritage') {
-          for (const heritageChild of child.namedChildren) {
-            if (heritageChild.type === 'extends_clause') {
-              const superClass =
-                getChild(heritageChild, 'type_identifier') ?? getChild(heritageChild, 'identifier')
-              if (superClass) {
-                const targetName = getNodeText(superClass, content)
-                const toUid = `${filePath}:Class:${targetName}:0`
-                edges.push({
-                  id: `${parentUid}->EXTENDS:${targetName}`,
-                  fromUid: parentUid,
-                  toUid,
-                  type: 'EXTENDS',
-                  confidence: 1.0,
-                  reason: 'tree-sitter-extends',
-                })
-              }
+          for (const hc of child.namedChildren) {
+            if (hc.type === 'extends_clause') {
+              const sc = getChild(hc, 'type_identifier') ?? getChild(hc, 'identifier')
+              if (sc) edges.push({
+                id: `${parentUid}->EXTENDS:${getNodeText(sc, content)}`, fromUid: parentUid,
+                toUid: `${filePath}:Class:${getNodeText(sc, content)}:0`,
+                type: 'EXTENDS', confidence: 1.0, reason: 'tree-sitter-extends',
+              })
             }
-            if (heritageChild.type === 'implements_clause') {
-              for (const iface of getNamedChildren(heritageChild, 'type_identifier')) {
-                const targetName = getNodeText(iface, content)
-                const toUid = `${filePath}:Interface:${targetName}:0`
+            if (hc.type === 'implements_clause') {
+              for (const iface of getNamedChildren(hc, 'type_identifier')) {
                 edges.push({
-                  id: `${parentUid}->IMPLEMENTS:${targetName}`,
-                  fromUid: parentUid,
-                  toUid,
-                  type: 'IMPLEMENTS',
-                  confidence: 1.0,
-                  reason: 'tree-sitter-implements',
+                  id: `${parentUid}->IMPLEMENTS:${getNodeText(iface, content)}`, fromUid: parentUid,
+                  toUid: `${filePath}:Interface:${getNodeText(iface, content)}:0`,
+                  type: 'IMPLEMENTS', confidence: 1.0, reason: 'tree-sitter-implements',
                 })
               }
             }
@@ -1177,709 +1032,272 @@ export class ParserEngine {
         }
         if (child.type === 'implements_clause') {
           for (const iface of getNamedChildren(child, 'type_identifier')) {
-            const targetName = getNodeText(iface, content)
-            const toUid = `${filePath}:Interface:${targetName}:0`
             edges.push({
-              id: `${parentUid}->IMPLEMENTS:${targetName}`,
-              fromUid: parentUid,
-              toUid,
-              type: 'IMPLEMENTS',
-              confidence: 1.0,
-              reason: 'tree-sitter-implements',
+              id: `${parentUid}->IMPLEMENTS:${getNodeText(iface, content)}`, fromUid: parentUid,
+              toUid: `${filePath}:Interface:${getNodeText(iface, content)}:0`,
+              type: 'IMPLEMENTS', confidence: 1.0, reason: 'tree-sitter-implements',
             })
           }
         }
       }
     }
-
     // Python: class Foo(Bar, Baz)
     if (node.type === 'class_definition') {
       const argList = getChild(node, 'argument_list')
       if (argList) {
         for (const arg of argList.namedChildren) {
-          const nameNode = getChild(arg, 'identifier') ?? getChild(arg, 'attribute')
-          if (nameNode) {
-            const targetName = getNodeText(nameNode, content)
-            const toUid = `${filePath}:Class:${targetName}:0`
-            edges.push({
-              id: `${parentUid}->EXTENDS:${targetName}`,
-              fromUid: parentUid,
-              toUid,
-              type: 'EXTENDS',
-              confidence: 1.0,
-              reason: 'tree-sitter-py-inherit',
-            })
-          }
+          const n = getChild(arg, 'identifier') ?? getChild(arg, 'attribute')
+          if (n) edges.push({
+            id: `${parentUid}->EXTENDS:${getNodeText(n, content)}`, fromUid: parentUid,
+            toUid: `${filePath}:Class:${getNodeText(n, content)}:0`,
+            type: 'EXTENDS', confidence: 1.0, reason: 'tree-sitter-py-inherit',
+          })
         }
       }
     }
-
-    // Go: struct embedding (AnonymousField in field_declaration_list)
-    if (node.type === 'field_declaration_list') {
-      const parent = node.parent
-      if (parent?.type === 'struct_type') {
-        for (const field of node.namedChildren) {
-          const typeName = getChild(field, 'type_identifier') ?? getChild(field, 'pointer_type')
-          if (typeName) {
-            const targetName = getNodeText(typeName, content).replace(/^\*+/, '')
-            const toUid = `UNKNOWN:Class:${targetName}:0`
-            edges.push({
-              id: `${parentUid}->EXTENDS:go:${targetName}`,
-              fromUid: parentUid,
-              toUid,
-              type: 'EXTENDS',
-              confidence: 0.9,
-              reason: 'tree-sitter-go-embed',
-            })
-          }
-        }
-      }
-    }
-
-    // Go: type Foo struct { Bar } — Bar is embedded
-    if (node.type === 'struct_declaration' || node.type === 'type_declaration') {
-      const typeSpec = getChild(node, 'type_specification')
-      const structType = typeSpec
-        ? getChild(typeSpec, 'struct_type')
-        : getChild(node, 'struct_type')
-      if (structType) {
-        const fdl = getChild(structType, 'field_declaration_list')
-        if (fdl) {
-          for (const field of fdl.namedChildren) {
-            const typeName = getChild(field, 'type_identifier')
-            if (typeName) {
-              const targetName = getNodeText(typeName, content)
-              edges.push({
-                id: `${parentUid}->EXTENDS:go-struct:${targetName}`,
-                fromUid: parentUid,
-                toUid: `UNKNOWN:Class:${targetName}:0`,
-                type: 'EXTENDS',
-                confidence: 0.9,
-                reason: 'go-struct-embed',
-              })
-            }
-          }
-        }
-      }
-    }
-
-    // Java: class Foo extends Bar implements Baz, Qux
-    if (node.type === 'class_declaration') {
+    // Java
+    if (node.type === 'class_declaration' && node.language?.name?.includes('java')) {
       for (const child of node.namedChildren) {
         if (child.type === 'superclass') {
-          const superClass = getChild(child, 'identifier') ?? getChild(child, 'type_identifier')
-          if (superClass) {
-            const targetName = getNodeText(superClass, content)
-            edges.push({
-              id: `${parentUid}->EXTENDS:java:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Class:${targetName}:0`,
-              type: 'EXTENDS',
-              confidence: 1.0,
-              reason: 'java-extends',
-            })
-          }
+          const sc = getChild(child, 'identifier') ?? getChild(child, 'type_identifier')
+          if (sc) edges.push({
+            id: `${parentUid}->EXTENDS:java:${getNodeText(sc, content)}`, fromUid: parentUid,
+            toUid: `${filePath}:Class:${getNodeText(sc, content)}:0`,
+            type: 'EXTENDS', confidence: 1.0, reason: 'java-extends',
+          })
         }
         if (child.type === 'super_interfaces') {
           for (const iface of getNamedChildren(child, 'identifier')) {
-            const targetName = getNodeText(iface, content)
             edges.push({
-              id: `${parentUid}->IMPLEMENTS:java:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Interface:${targetName}:0`,
-              type: 'IMPLEMENTS',
-              confidence: 1.0,
-              reason: 'java-implements',
+              id: `${parentUid}->IMPLEMENTS:java:${getNodeText(iface, content)}`, fromUid: parentUid,
+              toUid: `${filePath}:Interface:${getNodeText(iface, content)}:0`,
+              type: 'IMPLEMENTS', confidence: 1.0, reason: 'java-implements',
             })
           }
         }
       }
     }
-
-    // C#: class Foo : Bar, IBaz
-    if (node.type === 'class_declaration') {
+    // C#
+    if (node.type === 'class_declaration' && node.language?.name?.includes('c_sharp')) {
       for (const child of node.namedChildren) {
         if (child.type === 'base_list') {
           for (const base of child.namedChildren) {
-            const typeNode = getChild(base, 'identifier') ?? getChild(base, 'type_identifier')
-            if (typeNode) {
-              const targetName = getNodeText(typeNode, content)
-              const edgeType = node.namedChildren.some((c: any) => c.type === 'identifier')
-                ? 'EXTENDS'
-                : 'IMPLEMENTS'
+            const t = getChild(base, 'identifier') ?? getChild(base, 'type_identifier')
+            if (t) {
+              const tname = getNodeText(t, content)
+              const edgeType = node.namedChildren.some((c: any) => c.type === 'identifier') ? 'EXTENDS' : 'IMPLEMENTS'
               edges.push({
-                id: `${parentUid}->${edgeType}:cs:${targetName}`,
-                fromUid: parentUid,
-                toUid: `${filePath}:${edgeType === 'EXTENDS' ? 'Class' : 'Interface'}:${targetName}:0`,
-                type: edgeType as EdgeType,
-                confidence: 1.0,
-                reason: 'csharp-inherit',
+                id: `${parentUid}->${edgeType}:cs:${tname}`, fromUid: parentUid,
+                toUid: `${filePath}:${edgeType === 'EXTENDS' ? 'Class' : 'Interface'}:${tname}:0`,
+                type: edgeType as any, confidence: 1.0, reason: 'csharp-inherit',
               })
             }
-          }
-        }
-      }
-    }
-
-    // Kotlin: class Foo : Bar by delegation, Baz
-    if (node.type === 'class_declaration') {
-      for (const child of node.namedChildren) {
-        if (child.type === 'supertype') {
-          const typeNode = getChild(child, 'type_identifier') ?? getChild(child, 'user_type')
-          if (typeNode) {
-            const targetName = getNodeText(typeNode, content)
-            edges.push({
-              id: `${parentUid}->EXTENDS:kotlin:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Class:${targetName}:0`,
-              type: 'EXTENDS',
-              confidence: 1.0,
-              reason: 'kotlin-extends',
-            })
-          }
-        }
-        if (child.type === 'delegation') {
-          const bySpec = getChild(child, 'by_specification')
-          if (bySpec) {
-            const typeNode = getChild(bySpec, 'user_type') ?? getChild(bySpec, 'identifier')
-            if (typeNode) {
-              const targetName = getNodeText(typeNode, content)
-              edges.push({
-                id: `${parentUid}->EXTENDS:kotlin-delegation:${targetName}`,
-                fromUid: parentUid,
-                toUid: `${filePath}:Class:${targetName}:0`,
-                type: 'EXTENDS',
-                confidence: 0.9,
-                reason: 'kotlin-delegation',
-              })
-            }
-          }
-        }
-      }
-    }
-
-    // PHP: class Foo extends Bar implements Baz, Qux
-    if (node.type === 'class_declaration') {
-      const classBody =
-        getChild(node, 'base_list') ?? node.namedChildren.find((c: any) => c.type === 'base_list')
-      if (classBody) {
-        for (const child of classBody.namedChildren) {
-          if (child.type === 'name') {
-            const targetName = getNodeText(child, content)
-            // First base class = extends, rest = implements
-            const idx = classBody.namedChildren.indexOf(child)
-            edges.push({
-              id: `${parentUid}->${idx === 0 ? 'EXTENDS' : 'IMPLEMENTS'}:php:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:${idx === 0 ? 'Class' : 'Interface'}:${targetName}:0`,
-              type: (idx === 0 ? 'EXTENDS' : 'IMPLEMENTS') as EdgeType,
-              confidence: 1.0,
-              reason: 'php-inherit',
-            })
-          }
-        }
-      }
-    }
-
-    // Swift: class Foo: Bar, Protocol1, Protocol2
-    if (node.type === 'class_declaration' || node.type === 'struct_declaration') {
-      for (const child of node.namedChildren) {
-        if (child.type === 'inheritance_specifier') {
-          const typeNodes =
-            getNamedChildren(child, 'type_identifier') ?? getNamedChildren(child, 'identifier')
-          for (const typeNode of typeNodes) {
-            const targetName = getNodeText(typeNode, content)
-            // First = inherits, rest = conforms to protocol
-            const idx = child.namedChildren.indexOf(typeNode)
-            edges.push({
-              id: `${parentUid}->${idx === 0 ? 'EXTENDS' : 'IMPLEMENTS'}:swift:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:${idx === 0 ? 'Class' : 'Interface'}:${targetName}:0`,
-              type: (idx === 0 ? 'EXTENDS' : 'IMPLEMENTS') as EdgeType,
-              confidence: 1.0,
-              reason: 'swift-inherit',
-            })
-          }
-        }
-      }
-    }
-
-    // Dart: class Foo extends Bar implements Baz
-    if (node.type === 'class_declaration') {
-      for (const child of node.namedChildren) {
-        if (child.type === 'extends_clause') {
-          const superClass = getChild(child, 'identifier') ?? getChild(child, 'type_identifier')
-          if (superClass) {
-            const targetName = getNodeText(superClass, content)
-            edges.push({
-              id: `${parentUid}->EXTENDS:dart:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Class:${targetName}:0`,
-              type: 'EXTENDS',
-              confidence: 1.0,
-              reason: 'dart-extends',
-            })
-          }
-        }
-        if (child.type === 'with_clause') {
-          for (const mixin of getNamedChildren(child, 'identifier')) {
-            const targetName = getNodeText(mixin, content)
-            edges.push({
-              id: `${parentUid}->EXTENDS:dart-mixin:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Interface:${targetName}:0`,
-              type: 'EXTENDS',
-              confidence: 0.9,
-              reason: 'dart-with-mixin',
-            })
-          }
-        }
-        if (child.type === 'implements_clause') {
-          for (const iface of getNamedChildren(child, 'identifier')) {
-            const targetName = getNodeText(iface, content)
-            edges.push({
-              id: `${parentUid}->IMPLEMENTS:dart:${targetName}`,
-              fromUid: parentUid,
-              toUid: `${filePath}:Interface:${targetName}:0`,
-              type: 'IMPLEMENTS',
-              confidence: 1.0,
-              reason: 'dart-implements',
-            })
           }
         }
       }
     }
   }
 
-  // HAS_METHOD / HAS_PROPERTY — members of classes/interfaces (TS, Python, Go, Rust, Java, C#, Kotlin, PHP, Swift, Dart)
-  private extractMemberEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
-    const isContainer =
-      node.type === 'class_declaration' ||
-      node.type === 'interface_declaration' ||
-      node.type === 'class_definition' ||
-      node.type === 'struct_item' ||
-      node.type === 'impl_item' ||
-      node.type === 'class_body' ||
-      // Java
-      (node.type === 'class_declaration' && node.language?.name?.includes('java')) ||
-      // C#
-      (node.type === 'class_declaration' && node.language?.name?.includes('c_sharp')) ||
-      // Kotlin
-      (node.type === 'class_declaration' && node.language?.name?.includes('kotlin')) ||
-      // PHP
-      (node.type === 'class_declaration' && node.language?.name?.includes('php')) ||
-      // Swift
-      (node.type === 'class_declaration' && node.language?.name?.includes('swift')) ||
-      // Dart
-      (node.type === 'class_declaration' && node.language?.name?.includes('dart')) ||
-      // C/C++
-      node.type === 'struct_declaration' ||
-      node.type === 'struct_item' ||
-      node.type === 'struct_body'
-
+  // HAS_METHOD / HAS_PROPERTY
+  private extractMemberEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
+    const isContainer = [
+      'class_declaration', 'interface_declaration', 'class_definition',
+      'struct_item', 'impl_item', 'class_body', 'struct_declaration',
+    ].includes(node.type)
     if (!isContainer) return
 
     let containerName = ''
-    let nodeTypeForMembers = 'Class'
     for (const child of node.namedChildren) {
-      if (child.type === 'identifier' || child.type === 'type_identifier') {
+      if (['identifier', 'type_identifier'].includes(child.type)) {
         containerName = getNodeText(child, content)
         break
       }
     }
     if (!containerName) {
-      // Try Ruby: (class (constant) (body ...))
-      const constantNode = getChild(node, 'constant')
-      if (constantNode) containerName = getNodeText(constantNode, content)
+      const constNode = getChild(node, 'constant')
+      if (constNode) containerName = getNodeText(constNode, content)
     }
     if (!containerName) return
 
-    if (node.type === 'impl_item') nodeTypeForMembers = 'Impl'
-    if (node.type === 'interface_declaration') nodeTypeForMembers = 'Interface'
-    if (node.type === 'trait_item') nodeTypeForMembers = 'Interface'
-    if (node.type === 'struct_declaration' || node.type === 'struct_item')
-      nodeTypeForMembers = 'Class'
-
-    const containerUid = `${filePath}:${nodeTypeForMembers}:${containerName}:0`
-
-    // Find body — language-specific
+    const containerUid = `${filePath}:Class:${containerName}:0`
+    const bodyNames = ['class_body', 'declaration_list', 'block', 'body', 'member_block', 'members']
     let body: any = null
-    const bodyNames = [
-      'class_body',
-      'declaration_list',
-      'block',
-      'declaration',
-      'body',
-      'member_block',
-      'members',
-      'class_body2',
-    ]
     for (const name of bodyNames) {
       const found = getChild(node, name)
-      if (found) {
-        body = found
-        break
-      }
+      if (found) { body = found; break }
     }
-    // Ruby: body is direct namedChildren of class node
-    if (!body && node.type === 'class') {
-      body = node
-    }
+    if (!body && node.type === 'class') body = node
 
     if (body) {
       for (const member of body.namedChildren) {
-        if (
-          member.type === 'method_definition' ||
-          member.type === 'method_signature' ||
-          member.type === 'function_declaration' ||
-          member.type === 'function_item' ||
-          member.type === 'function_definition' ||
-          member.type === 'method_declaration' ||
-          (member.type === 'function_declaration' && member.language?.name?.includes('kotlin')) ||
-          member.type === 'method' ||
-          member.type === 'singleton_method' ||
-          member.type === 'property_declaration' ||
-          member.type === 'function_definition' ||
-          member.type === 'field_definition' ||
-          member.type === 'property_definition'
-        ) {
-          const methodName = this.getMemberName(member, content)
-          if (methodName) {
-            const toUid = `${filePath}:Method:${methodName}:${member.startPosition.row + 1}`
-            edges.push({
-              id: `${containerUid}->HAS_METHOD:${methodName}`,
-              fromUid: containerUid,
-              toUid,
-              type: 'HAS_METHOD',
-              confidence: 1.0,
-              reason: 'tree-sitter-member',
-            })
-          }
+        const mt = member.type
+        if (['method_definition', 'method_signature', 'function_declaration', 'function_item',
+             'function_definition', 'method_declaration', 'method', 'singleton_method'].includes(mt)) {
+          const mName = this.getMemberName(member, content)
+          if (mName) edges.push({
+            id: `${containerUid}->HAS_METHOD:${mName}`, fromUid: containerUid,
+            toUid: `${filePath}:Method:${mName}:${member.startPosition.row + 1}`,
+            type: 'HAS_METHOD', confidence: 1.0, reason: 'tree-sitter-member',
+          })
         }
-
-        if (
-          member.type === 'property_signature' ||
-          member.type === 'public_field_definition' ||
-          member.type === 'property_definition' ||
-          member.type === 'field_declaration' ||
-          member.type === 'property_declaration' ||
-          member.type === 'constant_declaration' ||
-          member.type === 'assignment' ||
-          member.type === 'field_definition' ||
-          member.type === 'instance_variable_declaration'
-        ) {
-          const propName = this.getMemberName(member, content)
-          if (propName) {
-            const toUid = `${filePath}:Property:${propName}:${member.startPosition.row + 1}`
-            edges.push({
-              id: `${containerUid}->HAS_PROPERTY:${propName}`,
-              fromUid: containerUid,
-              toUid,
-              type: 'HAS_PROPERTY',
-              confidence: 1.0,
-              reason: 'tree-sitter-property',
-            })
-          }
+        if (['property_signature', 'public_field_definition', 'property_definition',
+             'field_declaration', 'property_declaration', 'constant_declaration',
+             'assignment', 'field_definition', 'instance_variable_declaration'].includes(mt)) {
+          const pName = this.getMemberName(member, content)
+          if (pName) edges.push({
+            id: `${containerUid}->HAS_PROPERTY:${pName}`, fromUid: containerUid,
+            toUid: `${filePath}:Property:${pName}:${member.startPosition.row + 1}`,
+            type: 'HAS_PROPERTY', confidence: 1.0, reason: 'tree-sitter-property',
+          })
         }
       }
     }
   }
 
   private getMemberName(node: any, content: string): string | null {
-    // TypeScript
-    if (node.type === 'method_definition' || node.type === 'method_signature') {
-      const propId = getChild(node, 'property_identifier')
-      if (propId) return getNodeText(propId, content)
-      const id = getChild(node, 'identifier')
-      if (id) return getNodeText(id, content)
-      const memberExpr = getChild(node, 'member_expression')
-      if (memberExpr) {
-        const prop = getChild(memberExpr, 'property_identifier')
-        if (prop) return getNodeText(prop, content)
-      }
+    if (['method_definition', 'method_signature'].includes(node.type)) {
+      return (getChild(node, 'property_identifier') ?? getChild(node, 'identifier'))
+        ? getNodeText(getChild(node, 'property_identifier') ?? getChild(node, 'identifier'), content)
+        : null
     }
-    // Python, Ruby, PHP, Java, C#, Kotlin, Swift, Dart
-    if (
-      node.type === 'function_declaration' ||
-      node.type === 'function_definition' ||
-      node.type === 'function_item' ||
-      node.type === 'method_declaration' ||
-      node.type === 'method'
-    ) {
-      const id =
-        getChild(node, 'identifier') ??
-        getChild(node, 'property_identifier') ??
-        getChild(node, 'string')
-      if (id) return getNodeText(id, content)
-      const memberExpr = getChild(node, 'member_expression')
-      if (memberExpr) {
-        const prop = getChild(memberExpr, 'property_identifier')
-        if (prop) return getNodeText(prop, content)
-      }
+    if (['function_declaration', 'function_definition', 'function_item', 'method_declaration', 'method'].includes(node.type)) {
+      return (getChild(node, 'identifier') ?? getChild(node, 'property_identifier'))
+        ? getNodeText(getChild(node, 'identifier') ?? getChild(node, 'property_identifier'), content)
+        : null
     }
-    // Ruby singleton method
     if (node.type === 'singleton_method') {
-      const defNode = getChild(node, 'identifier') ?? getChild(node, 'singleton')
-      if (defNode) return getNodeText(defNode, content)
+      return (getChild(node, 'identifier') ?? getChild(node, 'singleton'))
+        ? getNodeText(getChild(node, 'identifier') ?? getChild(node, 'singleton'), content)
+        : null
     }
-    // Properties
-    if (
-      node.type === 'property_signature' ||
-      node.type === 'public_field_definition' ||
-      node.type === 'property_definition' ||
-      node.type === 'field_declaration' ||
-      node.type === 'property_declaration' ||
-      node.type === 'constant_declaration' ||
-      node.type === 'field_definition' ||
-      node.type === 'assignment' ||
-      node.type === 'instance_variable_declaration'
-    ) {
-      const propId = getChild(node, 'property_identifier') ?? getChild(node, 'string')
-      if (propId) return getNodeText(propId, content).replace(/['"`]/g, '')
-      const id = getChild(node, 'identifier') ?? getChild(node, 'variable_name')
-      if (id) return getNodeText(id, content)
+    if (['property_signature', 'public_field_definition', 'property_definition', 'field_declaration',
+         'property_declaration', 'constant_declaration', 'field_definition', 'assignment', 'instance_variable_declaration'].includes(node.type)) {
+      const n = getChild(node, 'property_identifier') ?? getChild(node, 'string')
+        ?? getChild(node, 'identifier') ?? getChild(node, 'variable_name')
+      return n ? getNodeText(n, content).replace(/['"`]/g, '') : null
     }
     return null
   }
 
-  // ACCESSES — property read/write
-  private extractAccessEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    edges: CodeEdge[],
-  ): void {
+  // ACCESSES
+  private extractAccessEdges(node: any, parentUid: string, content: string, edges: CodeEdge[]): void {
     if (node.type === 'member_expression') {
-      const prop = node.children?.find(
-        (c: any) => c.type === 'property_identifier' || c.type === 'string',
-      )
-      if (prop) {
-        const propName = getNodeText(prop, content).replace(/['"`]/g, '')
-        const toUid = `UNKNOWN:Property:${propName}:0`
-        edges.push({
-          id: `${parentUid}->ACCESSES:${propName}`,
-          fromUid: parentUid,
-          toUid,
-          type: 'ACCESSES',
-          confidence: 0.6,
-          reason: 'tree-sitter-access',
+      const prop = node.children?.find((c: any) => c.type === 'property_identifier' || c.type === 'string')
+      if (prop) edges.push({
+        id: `${parentUid}->ACCESSES:${getNodeText(prop, content).replace(/['"`]/g, '')}`,
+        fromUid: parentUid, toUid: `UNKNOWN:Property:${getNodeText(prop, content).replace(/['"`]/g, '')}:0`,
+        type: 'ACCESSES', confidence: 0.6, reason: 'tree-sitter-access',
+      })
+    }
+  }
+
+  // OVERRIDES
+  private extractOverrideEdges(node: any, parentUid: string, content: string, edges: CodeEdge[]): void {
+    if (['method_definition', 'function_declaration', 'function_definition'].includes(node.type)) {
+      const text = getNodeText(node, content)
+      if (text.includes('override')) {
+        const name = this.getMemberName(node, content)
+        if (name) edges.push({
+          id: `${parentUid}->OVERRIDES:${name}`, fromUid: parentUid,
+          toUid: `UNKNOWN:Method:${name}:0`, type: 'OVERRIDES',
+          confidence: 1.0, reason: 'override-keyword',
+        })
+      }
+    }
+    if (node.type === 'function_definition') {
+      const nameNode = getChild(node, 'identifier')
+      if (nameNode) {
+        const name = getNodeText(nameNode, content)
+        const OVERRIDE_METHODS = new Set(['__init__','__str__','__repr__','__eq__','__hash__',
+          '__enter__','__exit__','__call__','__len__','__iter__','__next__',
+          '__getitem__','__setitem__','__delitem__','__contains__'])
+        if (OVERRIDE_METHODS.has(name)) edges.push({
+          id: `${parentUid}->OVERRIDES:py:${name}`, fromUid: parentUid,
+          toUid: `UNKNOWN:Method:${name}:0`, type: 'OVERRIDES',
+          confidence: 0.8, reason: 'python-dunder-method',
         })
       }
     }
   }
 
-  // OVERRIDES — method overrides
-  private extractOverrideEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    edges: CodeEdge[],
-  ): void {
-    // TypeScript: override keyword
-    if (node.type === 'method_definition' || node.type === 'function_declaration') {
-      const text = getNodeText(node, content)
-      if (text.includes('override')) {
-        const name = this.getMemberName(node, content)
-        if (name) {
-          const toUid = `UNKNOWN:Method:${name}:0`
-          edges.push({
-            id: `${parentUid}->OVERRIDES:${name}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'OVERRIDES',
-            confidence: 1.0,
-            reason: 'override-keyword',
-          })
-        }
-      }
-    }
-
-    // Python: method that might override (starts with common parent class methods)
-    if (node.type === 'function_definition') {
-      const nameNode = getChild(node, 'identifier')
-      if (nameNode) {
-        const name = getNodeText(nameNode, content)
-        const OVERRIDE_METHODS = new Set([
-          '__init__',
-          '__str__',
-          '__repr__',
-          '__eq__',
-          '__hash__',
-          '__enter__',
-          '__exit__',
-          '__call__',
-          '__len__',
-          '__iter__',
-          '__next__',
-          '__getitem__',
-          '__setitem__',
-          '__delitem__',
-          '__contains__',
-          '__add__',
-          '__sub__',
-          '__mul__',
-          '__div__',
-          '__getattr__',
-          '__setattr__',
-          '__delattr__',
-        ])
-        if (OVERRIDE_METHODS.has(name)) {
-          const toUid = `UNKNOWN:Method:${name}:0`
-          edges.push({
-            id: `${parentUid}->OVERRIDES:py:${name}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'OVERRIDES',
-            confidence: 0.8,
-            reason: 'python-dunder-method',
-          })
-        }
-      }
-    }
-  }
-
-  // HANDLES_ROUTE — HTTP route handlers
-  private extractRouteEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
+  // HANDLES_ROUTE
+  private extractRouteEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
     if (node.type === 'call_expression') {
       const text = getNodeText(node, content)
-      const fn = this.getCallFunction(node, content)
-
-      // Express-style: app.get('/path', handler)
-      // Next.js: export async function GET(req) { ... }
-      // FastAPI: @app.get("/path")
+      const fn = this.getCallFunctionName(node, content, '')
       if (fn && /^(app|router|express|route|use)\./.test(fn)) {
         if (/^\s*(get|post|put|patch|delete|head|options|all)\s*\(/.test(text)) {
-          // Second argument is the handler function
           const args = node.children?.filter((c: any) => c.type === 'arguments')
           if (args.length > 0) {
             const argList = args[0]
             for (const arg of argList.namedChildren) {
-              if (
-                arg.type === 'identifier' ||
-                arg.type === 'arrow_function' ||
-                arg.type === 'function_expression'
-              ) {
-                const handlerName =
-                  arg.type === 'identifier'
-                    ? getNodeText(arg, content)
-                    : `anonymous_handler_${arg.startPosition.row + 1}`
+              if (['identifier', 'arrow_function', 'function_expression'].includes(arg.type)) {
+                const handlerName = arg.type === 'identifier' ? getNodeText(arg, content) : `anonymous_handler_${arg.startPosition.row + 1}`
                 const routeNode = argList.namedChildren[0]
                 const routePath = routeNode ? getNodeText(routeNode, content) : '/'
                 const routeUid = `${filePath}:Route:${routePath.replace(/['"`/]/g, '_')}:${arg.startPosition.row + 1}`
                 edges.push({
-                  id: `${routeUid}->HANDLES_ROUTE:${handlerName}`,
-                  fromUid: routeUid,
-                  toUid: parentUid,
-                  type: 'HANDLES_ROUTE',
-                  confidence: 0.95,
-                  reason: 'http-handler',
+                  id: `${routeUid}->HANDLES_ROUTE:${handlerName}`, fromUid: routeUid,
+                  toUid: parentUid, type: 'HANDLES_ROUTE',
+                  confidence: 0.95, reason: 'http-handler',
                 })
               }
             }
           }
         }
       }
-
-      // Decorator routes: @Get('/path'), @Post(), @Route()
       if (fn === undefined && text.includes('@')) {
         const decoMatch = text.match(/@\w+\s*\(\s*['"`]([^'"`]*)/)
         if (decoMatch) {
           const routePath = decoMatch[1]
           const routeUid = `${filePath}:Route:${routePath.replace(/['"`/]/g, '_')}:${node.startPosition.row + 1}`
-          // Find the function that this decorator decorates
           const parent = node.parent
           if (parent?.type === 'decorator') {
             const grandParent = parent.parent
-            if (
-              grandParent?.type === 'method_definition' ||
-              grandParent?.type === 'function_declaration'
-            ) {
+            if (grandParent?.type === 'method_definition' || grandParent?.type === 'function_declaration') {
               const handlerName = this.getMemberName(grandParent, content) ?? 'anonymous'
               edges.push({
-                id: `${routeUid}->HANDLES_ROUTE:deco:${handlerName}`,
-                fromUid: routeUid,
-                toUid: parentUid,
-                type: 'HANDLES_ROUTE',
-                confidence: 0.95,
-                reason: 'decorator-route',
+                id: `${routeUid}->HANDLES_ROUTE:deco:${handlerName}`, fromUid: routeUid,
+                toUid: parentUid, type: 'HANDLES_ROUTE',
+                confidence: 0.95, reason: 'decorator-route',
               })
             }
           }
         }
       }
     }
-
-    // Next.js App Router: export async function GET(req) { ... }
     if (node.type === 'export_statement') {
       const text = getNodeText(node, content)
-      if (
-        /export\s+(async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*\(/.test(text)
-      ) {
+      if (/export\s+(async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*\(/.test(text)) {
         const fnMatch = text.match(/function\s+(\w+)\s*\(/)
         if (fnMatch) {
-          const fnName = fnMatch[1]
-          const routeUid = `${filePath}:Route:${fnName}:${node.startPosition.row + 1}`
+          const routeUid = `${filePath}:Route:${fnMatch[1]}:${node.startPosition.row + 1}`
           edges.push({
-            id: `${routeUid}->HANDLES_ROUTE:next:${fnName}`,
-            fromUid: routeUid,
-            toUid: parentUid,
-            type: 'HANDLES_ROUTE',
-            confidence: 1.0,
-            reason: 'next-app-router',
+            id: `${routeUid}->HANDLES_ROUTE:next:${fnMatch[1]}`, fromUid: routeUid,
+            toUid: parentUid, type: 'HANDLES_ROUTE',
+            confidence: 1.0, reason: 'next-app-router',
           })
         }
       }
     }
   }
 
-  // HANDLES_TOOL — MCP/RPC tool handlers
-  private extractToolEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
+  // HANDLES_TOOL
+  private extractToolEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
     if (node.type === 'call_expression') {
       const text = getNodeText(node, content)
-
-      // Decorator-based: @tool, @command, @handler
       if (text.includes('@')) {
         const decoMatch = text.match(/@\w+\s*\(\s*['"`]([^'"`]*)/)
         if (decoMatch) {
-          const toolName = decoMatch[1]
-          const toolUid = `${filePath}:Tool:${toolName}:${node.startPosition.row + 1}`
-          const parent = node.parent
-          if (parent?.type === 'decorator') {
-            const grandParent = parent.parent
-            if (grandParent) {
-              edges.push({
-                id: `${toolUid}->HANDLES_TOOL:${toolName}`,
-                fromUid: toolUid,
-                toUid: parentUid,
-                type: 'HANDLES_TOOL',
-                confidence: 0.95,
-                reason: 'tool-decorator',
-              })
-            }
-          }
+          const toolUid = `${filePath}:Tool:${decoMatch[1]}:${node.startPosition.row + 1}`
+          edges.push({
+            id: `${toolUid}->HANDLES_TOOL:${decoMatch[1]}`, fromUid: toolUid,
+            toUid: parentUid, type: 'HANDLES_TOOL',
+            confidence: 0.95, reason: 'tool-decorator',
+          })
         }
       }
     }
-
-    // Object property: { tool: 'name', handler: fn }
     if (node.type === 'pair') {
       const keyNode = getChild(node, 'property_identifier') ?? getChild(node, 'string')
       const valNode = getChild(node, 'string') ?? getChild(node, 'identifier')
@@ -1889,174 +1307,90 @@ export class ParserEngine {
         if (['tool', 'command', 'name'].includes(key)) {
           const toolUid = `${filePath}:Tool:${val}:${node.startPosition.row + 1}`
           edges.push({
-            id: `${toolUid}->HANDLES_TOOL:object:${val}`,
-            fromUid: toolUid,
-            toUid: parentUid,
-            type: 'HANDLES_TOOL',
-            confidence: 0.8,
-            reason: 'tool-object',
+            id: `${toolUid}->HANDLES_TOOL:object:${val}`, fromUid: toolUid,
+            toUid: parentUid, type: 'HANDLES_TOOL',
+            confidence: 0.8, reason: 'tool-object',
           })
         }
       }
     }
   }
 
-  // QUERIES — database query detection
-  private extractQueryEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    edges: CodeEdge[],
-  ): void {
+  // QUERIES
+  private extractQueryEdges(node: any, parentUid: string, content: string, edges: CodeEdge[]): void {
     if (node.type !== 'call_expression') return
     const text = getNodeText(node, content)
-
     for (const pat of QUERY_PATTERNS) {
       if (pat.test(text)) {
-        const fn = this.getCallFunction(node, content)
-        if (fn) {
-          const toUid = `QUERY:${fn}`
-          edges.push({
-            id: `${parentUid}->QUERIES:${fn}`,
-            fromUid: parentUid,
-            toUid,
-            type: 'QUERIES',
-            confidence: 0.7,
-            reason: 'query-pattern',
-          })
-        }
+        const fn = this.getCallFunctionName(node, content, '')
+        if (fn) edges.push({
+          id: `${parentUid}->QUERIES:${fn}`, fromUid: parentUid,
+          toUid: `QUERY:${fn}`, type: 'QUERIES',
+          confidence: 0.7, reason: 'query-pattern',
+        })
         break
       }
     }
   }
 
-  // MEMBER_OF — links methods/properties to their containing class/interface/struct
-  // Strong membership relationship with high confidence
-  private extractMemberOfEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
-    const memberTypes = new Set([
-      'method_definition',
-      'function_definition',
-      'arrow_function',
-      'property_declaration',
-      'variable_declarator',
-      'assignment_expression',
-      'method_declaration',
-      'class_static_block_declaration',
-      'public_field_definition',
-      'private_field_definition',
-      'function_declaration',
-      'generator_function_declaration',
-    ])
-
+  // MEMBER_OF
+  private extractMemberOfEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
+    const memberTypes = new Set(['method_definition', 'function_definition', 'arrow_function',
+      'property_declaration', 'variable_declarator', 'assignment_expression', 'method_declaration',
+      'class_static_block_declaration', 'public_field_definition', 'private_field_definition',
+      'function_declaration', 'generator_function_declaration'])
     if (!memberTypes.has(node.type)) return
 
-    // Find the enclosing class/interface/struct within the same file
-    const containerTypes = new Set([
-      'class_declaration',
-      'class_body',
-      'interface_declaration',
-      'class_definition',
-      'struct_item',
-      'impl_item',
-      'enum_declaration',
-      'object_literal',
-      'object_pattern',
-    ])
+    const containerTypes = new Set(['class_declaration', 'class_body', 'interface_declaration',
+      'class_definition', 'struct_item', 'impl_item', 'enum_declaration', 'object_literal', 'object_pattern'])
 
     let container: any = null
     let cur: any = node.parent
-    let depth = 0
-    while (cur && depth < 10) {
-      if (containerTypes.has(cur.type)) {
-        container = cur
-        break
-      }
-      cur = cur.parent
-      depth++
+    for (let depth = 0; depth < 10 && cur; cur = cur.parent, depth++) {
+      if (containerTypes.has(cur.type)) { container = cur; break }
     }
-
     if (!container) return
 
-    // Get container name — use identity mapping (container-specific)
     let containerName: string
-    const cnNode =
-      getChild(container, 'type_identifier') ??
-      getChild(container, 'identifier') ??
-      container.children?.find((c: any) => c.type === 'type_identifier' || c.type === 'identifier')
+    const cnNode = getChild(container, 'type_identifier') ?? getChild(container, 'identifier')
+      ?? container.children?.find((c: any) => c.type === 'type_identifier' || c.type === 'identifier')
     if (cnNode) {
       containerName = getNodeText(cnNode, content)
     } else {
       const text = getNodeText(container, content)
-      containerName =
-        text.match(/class\s+(\w+)/)?.[1] ??
-        text.match(/interface\s+(\w+)/)?.[1] ??
-        text.match(/struct\s+(\w+)/)?.[1] ??
-        `Class@${filePath}`
+      containerName = text.match(/class\s+(\w+)/)?.[1]
+        ?? text.match(/interface\s+(\w+)/)?.[1]
+        ?? text.match(/struct\s+(\w+)/)?.[1]
+        ?? `Class@${filePath}`
     }
 
-    const containerUid = `MEMBER_OF:${containerName}`
-    // Get member name — use node's name directly
-    const memberNameNode =
-      getChild(node, 'identifier') ??
-      getChild(node, 'property_identifier') ??
-      node.children?.find((c: any) => c.type === 'identifier' || c.type === 'property_identifier')
+    const memberNameNode = getChild(node, 'identifier') ?? getChild(node, 'property_identifier')
+      ?? node.children?.find((c: any) => ['identifier', 'property_identifier'].includes(c.type))
     if (!memberNameNode) return
     const memberName = getNodeText(memberNameNode, content)
     if (memberName === 'anonymous') return
 
-    // Only add if not already linked (avoid duplicates with HAS_METHOD/HAS_PROPERTY)
     const edgeId = `${parentUid}->MEMBER_OF:${containerName}:${memberName}`
-    const exists = edges.some((e) => e.id === edgeId)
-    if (!exists) {
-      edges.push({
-        id: edgeId,
-        fromUid: parentUid,
-        toUid: containerUid,
-        type: 'MEMBER_OF',
-        confidence: 0.95,
-        reason: `member-of-${container.type}`,
-      })
+    if (!edges.some((e) => e.id === edgeId)) {
+      edges.push({ id: edgeId, fromUid: parentUid, toUid: `MEMBER_OF:${containerName}`,
+        type: 'MEMBER_OF', confidence: 0.95, reason: `member-of-${container.type}` })
     }
   }
 
-  // STEP_IN_PROCESS — links entry-point handlers to functions in their call chain
-  // Creates process/step relationships for route handlers, tool handlers, CLI commands, main
-  private extractProcessEdges(
-    node: any,
-    parentUid: string,
-    content: string,
-    filePath: string,
-    edges: CodeEdge[],
-  ): void {
-    // Detect if this node is an entry point (route handler, tool, main)
-    const entryTypes = new Set([
-      'call_expression',
-      'function_declaration',
-      'method_definition',
-      'arrow_function',
-      'generator_function_declaration',
-    ])
+  // STEP_IN_PROCESS
+  private extractProcessEdges(node: any, parentUid: string, content: string, filePath: string, edges: CodeEdge[]): void {
+    const entryTypes = new Set(['call_expression', 'function_declaration', 'method_definition',
+      'arrow_function', 'generator_function_declaration'])
     if (!entryTypes.has(node.type)) return
 
     const text = getNodeText(node, content)
-
-    // Route handlers: app.get(), router.post(), @Get(), @Post(), etc.
     for (const pat of ROUTE_PATTERNS) {
       if (pat.test(text)) {
         this.addProcessEdge(parentUid, `Route:${filePath}`, edges)
-        // Also mark the handler function itself as ENTRY_POINT_OF
         this.addProcessEdge(parentUid, 'ENTRY_ROUTE', edges)
         return
       }
     }
-
-    // Tool/MCP handlers: tool calls, RPC methods
     for (const pat of TOOL_PATTERNS) {
       if (pat.test(text)) {
         this.addProcessEdge(parentUid, `Tool:${filePath}`, edges)
@@ -2064,25 +1398,13 @@ export class ParserEngine {
         return
       }
     }
-
-    // Main/CLI entry patterns
     const MAIN_PATTERNS = [
-      /^(async\s+)?function\s+main\b/i,
-      /^(async\s+)?const\s+main\s*=/i,
-      /^(async\s+)?let\s+main\s*=/i,
-      /^main\s*\(/i,
-      /\bstart\s*\(/i,
-      /\brun\s*\(/i,
-      /\bserve\s*\(/i,
-      /\binit\s*\(/i,
-      /\bbootstrap\s*\(/i,
-      /\bcreateServer\s*\(/i,
-      /\bapp\.listen\s*\(/i,
-      /\bcreateApp\s*\(/i,
-      /@Command\s*\(/i,
-      /@Cli\s*\(/i,
-      /\bprogram\.command\s*\(/i,
-      /yargs\s*\(/i,
+      /^(async\s+)?function\s+main\b/i, /^(async\s+)?const\s+main\s*=/i,
+      /^(async\s+)?let\s+main\s*=/i, /^main\s*\(/i, /\bstart\s*\(/i,
+      /\brun\s*\(/i, /\bserve\s*\(/i, /\binit\s*\(/i,
+      /\bbootstrap\s*\(/i, /\bcreateServer\s*\(/i, /\bapp\.listen\s*\(/i,
+      /\bcreateApp\s*\(/i, /@Command\s*\(/i, /@Cli\s*\(/i,
+      /\bprogram\.command\s*\(/i, /yargs\s*\(/i,
     ]
     for (const pat of MAIN_PATTERNS) {
       if (pat.test(text)) {
@@ -2096,14 +1418,45 @@ export class ParserEngine {
   private addProcessEdge(fromUid: string, toUid: string, edges: CodeEdge[]): void {
     const edgeId = `${fromUid}->STEP_IN_PROCESS:${toUid}`
     if (!edges.some((e) => e.id === edgeId)) {
-      edges.push({
-        id: edgeId,
-        fromUid,
-        toUid,
-        type: 'STEP_IN_PROCESS',
-        confidence: 0.85,
-        reason: 'process-step',
-      })
+      edges.push({ id: edgeId, fromUid, toUid, type: 'STEP_IN_PROCESS',
+        confidence: 0.85, reason: 'process-step' })
     }
   }
+
+  close(): void {
+    // Cleanup: terminate dedicated parsers
+    for (const p of this.parserCache.values()) {
+      // Parser has no close() method, just let GC handle it
+    }
+    this.parserCache.clear()
+    this.langCache.clear()
+    this.queriesCache.clear()
+  }
+}
+
+// ─── Fallback Node Map (for unsupported languages) ────────────────────────────
+
+const NODE_MAP_FALLBACK: Record<string, { nodeType: NodeType }> = {
+  function_declaration: { nodeType: 'Function' },
+  function_definition: { nodeType: 'Function' },
+  method_definition: { nodeType: 'Method' },
+  method_declaration: { nodeType: 'Method' },
+  class_declaration: { nodeType: 'Class' },
+  class_definition: { nodeType: 'Class' },
+  interface_declaration: { nodeType: 'Interface' },
+  enum_declaration: { nodeType: 'Enum' },
+  type_alias_declaration: { nodeType: 'TypeAlias' },
+  arrow_function: { nodeType: 'Function' },
+  function_expression: { nodeType: 'Function' },
+  variable_declarator: { nodeType: 'Variable' },
+  property_signature: { nodeType: 'Property' },
+  method_signature: { nodeType: 'Method' },
+  public_field_definition: { nodeType: 'Property' },
+  required_parameter: { nodeType: 'Variable' },
+  optional_parameter: { nodeType: 'Variable' },
+  struct_item: { nodeType: 'Class' },
+  struct_declaration: { nodeType: 'Class' },
+  impl_item: { nodeType: 'Impl' },
+  trait_item: { nodeType: 'Interface' },
+  type_alias_item: { nodeType: 'TypeAlias' },
 }

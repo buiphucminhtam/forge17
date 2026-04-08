@@ -40,6 +40,7 @@ import {
 import { parseFilesParallel, estimateBytes } from './parallel.js'
 import { propagateBindings, shouldSkipBindingPropagation } from './binding-propagation.js'
 import { detectFrameworks } from './framework-detection.js'
+import { globalEnclosureCache } from './enclosure-cache.js'
 import type { ForgeNexusConfig, RepoStats, CodeNode, CodeEdge } from '../types.js'
 import type { ParseTask } from './parallel.js'
 import { defaultCodebaseDbPath } from '../paths.js'
@@ -112,6 +113,9 @@ export class Indexer {
     onProgress?: (phase: Phase, pct: number, message?: string) => void,
     incremental = true,
   ): Promise<RepoStats> {
+    // Reset per-session caches for fresh analysis
+    globalEnclosureCache.clear()
+
     const progress = (phase: Phase, pct: number, message?: string) => {
       if (onProgress) onProgress(phase, pct, message ?? PHASE_LABELS[phase])
     }
@@ -181,8 +185,11 @@ export class Indexer {
       newNodes = result.nodes
       newEdges = result.edges
     } else {
-      // Sequential for small repos (avoids worker spawn overhead)
+      // Sequential: single ParserEngine reused across ALL files + event loop yielding
       const engine = new ParserEngine()
+      const allLangs = [...new Set(tasks.map((t) => t.language))]
+      await engine.preloadLanguages(allLangs)
+
       for (let i = 0; i < tasks.length; i++) {
         const task = tasks[i]
         try {
@@ -198,6 +205,10 @@ export class Indexer {
         }
         if (i % 50 === 0 || i === tasks.length - 1) {
           progress('parsing', Math.round((i / tasks.length) * 100), `Parsing ${i + 1}/${tasks.length} files...`)
+        }
+        // Yield to event loop every 50 files to keep UI responsive
+        if (i % 50 === 0 && i > 0) {
+          await new Promise<void>((resolve) => setImmediate(resolve))
         }
       }
     }
