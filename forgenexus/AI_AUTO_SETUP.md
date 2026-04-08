@@ -219,9 +219,9 @@ Processes:   0    ← should be non-zero if analyze ran
 
 **Fix (source-level, already applied in indexer.ts):** Changed from `insertNode()` to `conn.querySync(`MATCH ... SET n.community = ...`)`.
 
-### Bug 5: getStats() returns 0 nodes despite DB having data (v2.2.0+)
+### Bug 5: getStats() returns 0 nodes despite DB having data (v2.2.1+)
 
-**Root causes (all fixed in v2.2.0):**
+**Root causes (all fixed in v2.2.1):**
 
 1. **RC1 — Missing `esc()` on node properties in `UNWIND CREATE`:** String properties (`name`, `filePath`, etc.) were interpolated without escaping. Special characters (quotes, backslashes) corrupted the Cypher query, causing silent failure. Fixed by applying `esc()` to all string values.
 
@@ -246,7 +246,7 @@ Processes:   0    ← should be non-zero if analyze ran
 | `404 Not Found` on `npm install forgenexus` | Use Step 3a (GitHub subdirectory) + Step 3b (build). |
 | `Cannot find module .../dist/cli/index.js` | Run Step 3b in `node_modules/forgenexus`. |
 | `database is locked` / `file is not a database` | Stop MCP server; or rebuild (db.ts now has `isLockError` helper + `hasLockError` flag). |
-| Stats show 0 nodes, N edges | Rebuild with v2.2.0 fixes (Bug 5 fix). |
+| Stats show 0 nodes, N edges | Rebuild with v2.2.1 fixes (Bug 5 fix). |
 | Communities/Processes always 0 in stats | Rebuild db.ts (Bug 3 fix). |
 | Duplicate nodes after incremental index | Rebuild indexer.ts (Bug 4 fix). |
 | Confused `husky` errors from Antigravity path | Stop using plugin paths; install only `forgenexus` from GitHub or `file:`. |
