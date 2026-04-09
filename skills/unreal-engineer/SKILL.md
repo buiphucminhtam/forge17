@@ -14,6 +14,7 @@ tags: [unreal-engine, cpp, blueprint, gas, nanite, lumen, multiplayer, game-deve
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -24,6 +25,14 @@ tags: [unreal-engine, cpp, blueprint, gas, nanite, lumen, multiplayer, game-deve
 !`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Unreal Engine delivers AAA visuals — intentional artistic direction is required to avoid "generic Unreal look." This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Visual style definition** (defining intentional style vs. default Unreal aesthetics)
+- **Color grading** (Unreal's color management for consistent cinematic tone)
+- **Post-processing** (Unreal's PP volume system for atmospheric control)
 
 ## Engagement Mode
 

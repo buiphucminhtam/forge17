@@ -14,6 +14,7 @@ tags: [godot, multiplayer, networking, enet, websocket, prediction, replication]
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
@@ -21,6 +22,12 @@ tags: [godot, multiplayer, networking, enet, websocket, prediction, replication]
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Multiplayer games need consistent visual language across all players. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Visual consistency** (same visual style across all connected clients)
 
 ## Identity
 

@@ -14,6 +14,7 @@ tags: [audio, sound-design, music, wwise, fmod, spatial-audio, adaptive-music, m
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -23,6 +24,14 @@ tags: [audio, sound-design, music, wwise, fmod, spatial-audio, adaptive-music, m
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Game audio and visuals are inseparable — audio-visual sync creates the "feel." This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Audio-visual sync principles** (how sound pairs with visual feedback)
+- **Spatial aesthetics** (audio panning and 3D positioning aligned with visual composition)
+- **Music and mood** (emotional palette for adaptive music matching visual tone)
 
 ## Engagement Mode
 

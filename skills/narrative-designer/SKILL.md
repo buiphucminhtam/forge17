@@ -14,6 +14,7 @@ tags: [narrative, dialogue, branching, lore, character-voice, ink, yarn, storyte
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -23,6 +24,16 @@ tags: [narrative, dialogue, branching, lore, character-voice, ink, yarn, storyte
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Narrative UI is the player's interface with the story. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Typography in narrative** (text roles, thematic font integration, voice matching)
+- **Visual hierarchy** (dialog hierarchy, choice weight, narrative pacing on screen)
+- **Color as narrative tool** (how color signals tone shifts, faction colors, emotional states)
+- **Composition** (where narrative UI appears, how it frames the scene)
+- **Motion in storytelling** (text reveal timing, panel transitions, typewriter effect semantics)
 
 ## Engagement Mode
 

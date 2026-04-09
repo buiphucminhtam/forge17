@@ -14,6 +14,7 @@ tags: [unreal, niagara, materials, lumen, nanite, vfx, shaders, tech-art]
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
@@ -21,6 +22,16 @@ tags: [unreal, niagara, materials, lumen, nanite, vfx, shaders, tech-art]
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Unreal's rendering power requires disciplined artistic direction. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Lighting aesthetics** (Lumen as emotional tool, color temperature per genre, atmospheric depth)
+- **Post-processing philosophy** (LUT-based color grading, when post-processing reinforces vs. masks poor lighting)
+- **Material emotional design** (PBR for realism vs. stylized for brand identity)
+- **VFX visual language** (particle color/shape/behavior as communication, not decoration)
+- **AI guardrails** (protecting deliberate lighting from neural upscaling homogenization)
 
 ## Identity
 

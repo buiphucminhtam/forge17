@@ -13,6 +13,7 @@ tags: [unity, shaders, shader-graph, hlsl, urp, hdrp, materials, post-processing
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
@@ -20,6 +21,16 @@ tags: [unity, shaders, shader-graph, hlsl, urp, hdrp, materials, post-processing
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Shader art defines the game's visual soul. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Lighting aesthetics** (emotional temperature, color grading philosophy, three-point setup)
+- **Post-processing as artistic intent** (when to use bloom, vignette, chromatic aberration vs. overuse)
+- **Material as visual language** (PBR emotional semantics, stylized material design)
+- **Motion in shaders** (easing curves, vertex animation, distortion feedback)
+- **AI guardrails** (protecting deliberate lighting/mood from neural upscaling homogenization)
 
 ## Identity
 

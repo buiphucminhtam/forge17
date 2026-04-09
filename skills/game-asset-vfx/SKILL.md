@@ -19,6 +19,7 @@ tags: [game-assets, vfx, sprites, particles, visual-polish, game-juice, phaser, 
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -28,6 +29,19 @@ tags: [game-assets, vfx, sprites, particles, visual-polish, game-juice, phaser, 
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+This skill operates within the **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`). All visual decisions reference this shared document for:
+
+- **Color theory** (60-30-10 rule, color psychology, harmonies)
+- **Shape language** (circle=safe, triangle=danger, silhouette design)
+- **Composition** (rule of thirds, visual hierarchy, atmospheric perspective)
+- **Typography** (scale ratios, font pairing, role hierarchy)
+- **Lighting aesthetics** (emotional temperature, three-point, post-processing)
+- **Motion** (easing semantics, squash/stretch, screen shake design)
+- **Accessibility** (colorblind pairing, WCAG contrast, inclusive design)
+- **AI guardrails** (protecting artistic intent from neural rendering homogenization)
 
 ## Overview
 

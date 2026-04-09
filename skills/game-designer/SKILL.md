@@ -14,6 +14,7 @@ tags: [game-design, gdd, gameplay-loop, economy, mechanics, balancing, progressi
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -24,6 +25,16 @@ tags: [game-design, gdd, gameplay-loop, economy, mechanics, balancing, progressi
 !`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly. Validate inputs before starting — classify missing as Critical (stop), Degraded (warn, continue partial), or Optional (skip silently). Use parallel tool calls for independent reads.
+
+## Aesthetic Foundation
+
+Game design drives visual intent. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Art style selection** (when to use pixel art, stylized 3D, realistic, voxel — and trade-offs)
+- **Visual style pillars** (defining 3-5 keywords that guide all visual decisions)
+- **Color psychology in design** (how color signals mechanics, danger, safety to players)
+- **Shape language in design** (silhouette for character identity, shape for interaction affordance)
+- **Visual feedback as design** (VFX/UI polish requirements that make mechanics feel good)
 
 ## Engagement Mode
 

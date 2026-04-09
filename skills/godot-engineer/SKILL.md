@@ -14,6 +14,7 @@ tags: [godot, gdscript, scene-tree, signals, shaders, multiplayer, game-developm
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
@@ -21,6 +22,15 @@ tags: [godot, gdscript, scene-tree, signals, shaders, multiplayer, game-developm
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Godot's rendering capabilities require intentional visual direction. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Art style guidelines** (what Godot 4.x's rendering can achieve vs. limitations)
+- **2D composition** (sprite layering, parallax depth, visual hierarchy in 2D)
+- **Lighting aesthetics** (Godot's 2D/3D lighting system for atmosphere)
+- **Post-processing** (Godot's Environment resource for color grading, glow)
 
 ## Identity
 

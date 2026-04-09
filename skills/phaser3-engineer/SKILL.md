@@ -15,6 +15,7 @@ tags: [phaser3, phaser, html5, web-game, typescript, javascript, canvas, webgl, 
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -25,6 +26,15 @@ tags: [phaser3, phaser, html5, web-game, typescript, javascript, canvas, webgl, 
 !`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Phaser 3 is a 2D engine — visual quality comes from deliberate sprite design, composition, and polish. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **2D sprite quality** (procedural art standards, color layering, visual depth)
+- **Composition in 2D games** (visual hierarchy, parallax layering, HUD readability)
+- **Typography in web games** (font loading, scale ratios, thematic integration)
+- **Color palettes for web** (curated palettes, 60-30-10 rule for game screens)
 
 ## Engagement Mode
 

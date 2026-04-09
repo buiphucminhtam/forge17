@@ -14,6 +14,7 @@ tags: [shaders, vfx, lod, performance, hlsl, shader-graph, niagara, materials, t
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/input-validation.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/tool-efficiency.md 2>/dev/null || true`
@@ -23,6 +24,17 @@ tags: [shaders, vfx, lod, performance, hlsl, shader-graph, niagara, materials, t
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Technical art bridges artistic vision and engineering. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Color theory** (value > hue, palette design for 3D lighting)
+- **Lighting aesthetics** (emotional temperature, post-processing philosophy)
+- **Material as visual language** (PBR emotional semantics, stylized aesthetics)
+- **Motion design** (shader-driven animation, VFX easing principles)
+- **AI guardrails** (protecting mood/lighting from neural rendering homogenization)
+- **Accessibility** (inclusive visual design for all players)
 
 ## Engagement Mode
 

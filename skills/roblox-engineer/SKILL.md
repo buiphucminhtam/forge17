@@ -14,6 +14,7 @@ tags: [roblox, luau, roblox-studio, experience, datastore, avatar, game-developm
 
 ## Protocols
 
+!`cat skills/_shared/game-visual-foundations.md 2>/dev/null || echo "=== Visual Foundations not loaded ==="`
 !`cat skills/_shared/protocols/ux-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/game-test-protocol.md 2>/dev/null || true`
 !`cat skills/_shared/protocols/quality-gate.md 2>/dev/null || true`
@@ -21,6 +22,14 @@ tags: [roblox, luau, roblox-studio, experience, datastore, avatar, game-developm
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 
 **Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
+
+## Aesthetic Foundation
+
+Roblox has a distinctive default aesthetic — intentional visual direction is essential. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
+
+- **Roblox visual identity** (overcoming the "default Roblox look" with style guide)
+- **Color psychology** (Roblox audience responds to specific color coding)
+- **Typography** (Roblox TextLabel styling hierarchy, font pairing)
 
 ## Identity
 
