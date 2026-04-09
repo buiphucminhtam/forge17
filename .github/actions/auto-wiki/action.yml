@@ -74,14 +74,14 @@ runs:
         fi
 
     - name: Incremental Reindex
-      if: inputs.force == 'true' || steps.detect.outputs.needs_reindex == 'true'
+      if: inputs.dry_run != 'true' && (inputs.force == 'true' || steps.detect.outputs.needs_reindex == 'true')
       shell: bash
       run: |
         echo "Running incremental reindex..."
         forgenexus analyze --incremental ${{ inputs.repo_path }}
 
     - name: Full Reindex
-      if: inputs.force == 'true'
+      if: inputs.dry_run != 'true' && inputs.force == 'true'
       shell: bash
       run: |
         echo "Running full reindex..."

@@ -81,8 +81,14 @@ jobs:
           echo "Base: ${{ steps.env.outputs.base_ref }}"
           echo ""
           
+          DRY_RUN_FLAG=""
+          if [ "${{ steps.env.outputs.mode }}" == "DRY RUN" ]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "🔍 DRY RUN MODE — No changes will be made"
+          fi
+          
           # Run PR Review (already includes blast radius analysis)
-          REPORT=$(npx forgenexus pr-review "${{ steps.env.outputs.base_ref }}" HEAD 2>&1 || echo "Analysis unavailable")
+          REPORT=$(npx forgenexus pr-review "${{ steps.env.outputs.base_ref }}" HEAD $DRY_RUN_FLAG 2>&1 || echo "Analysis unavailable")
           
           echo "$REPORT"
           

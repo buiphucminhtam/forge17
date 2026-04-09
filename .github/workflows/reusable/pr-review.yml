@@ -270,6 +270,7 @@ jobs:
   # ─── Status Check (for branch protection) ─────────────────────────────────────
   status-check:
     needs: [blast-radius, openapi-contract]
+    if: inputs.dry-run != true
     runs-on: ubuntu-latest
     permissions:
       statuses: write
