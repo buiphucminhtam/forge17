@@ -37,7 +37,7 @@ export async function startMCPServer(repoPath?: string) {
     }
   }
 
-  const db = new ForgeDB(dbPath)
+  const db = new ForgeDB(dbPath, { readOnly: true })
 
   const server = new Server(
     { name: 'forgenexus', version: '1.0.0' },

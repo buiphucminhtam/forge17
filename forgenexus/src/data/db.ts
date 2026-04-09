@@ -205,6 +205,7 @@ export class ForgeDB {
   private queue: QueuedOp[] = []
   private flushTimer: ReturnType<typeof setTimeout> | null = null
   private edgeUidCounter = 0
+  private readonly _readOnly: boolean
   /** Set when a lock error is encountered — status.ts checks this for a clear message */
   public hasLockError = false
 
@@ -218,7 +219,9 @@ export class ForgeDB {
     return this.conn
   }
 
-  constructor(dbPath: string) {
+  constructor(dbPath: string, opts: { readOnly?: boolean } = {}) {
+    const readOnly = opts.readOnly ?? false
+
     // Detect legacy SQLite file and reset it
     const format = detectDbFormat(dbPath)
     if (format === 'sqlite') {
@@ -234,31 +237,44 @@ export class ForgeDB {
       }
     }
 
-    this.db = new Database(dbPath)
+    // Open database. Read-only mode allows concurrent reads even while another
+    // process holds an exclusive write lock (e.g. MCP server vs analyze CLI).
+    this.db = new Database(dbPath, undefined, undefined, readOnly)
     this.conn = new Connection(this.db)
+    this._readOnly = readOnly
 
-    // Initialize schema
-    const stmts = KUZU_SCHEMA.split(';')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith('LOAD EXTENSION'))
-    for (const stmt of stmts) {
-      try {
-        this.conn.querySync(stmt)
-      } catch (e: any) {
-        if (isLockError(e)) {
-          console.error(
-            `[ForgeNexus] ⚠️  KuzuDB lock conflict: MCP server is likely running.\n` +
-            `         Stop the MCP server and retry, or use --force to rebuild.`,
-          )
-          this.hasLockError = true
-        } else if (!e.message?.includes('already exists') && !e.message?.includes('Duplicate')) {
-          console.warn(`[ForgeNexus] Schema init warning: ${e.message}`)
+    // Schema init only needed in write mode. Read-only connections reuse an
+    // existing schema that was already created by a prior analyze run.
+    if (!readOnly) {
+      const stmts = KUZU_SCHEMA.split(';')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !s.startsWith('LOAD EXTENSION'))
+      for (const stmt of stmts) {
+        try {
+          this.conn.querySync(stmt)
+        } catch (e: any) {
+          if (isLockError(e)) {
+            console.error(
+              `[ForgeNexus] ⚠️  KuzuDB lock conflict: MCP server is likely running.\n` +
+              `         Stop the MCP server and retry, or use --force to rebuild.`,
+            )
+            this.hasLockError = true
+          } else if (!e.message?.includes('already exists') && !e.message?.includes('Duplicate')) {
+            console.warn(`[ForgeNexus] Schema init warning: ${e.message}`)
+          }
         }
       }
     }
 
-    // Periodic flush every 2s
-    this.flushTimer = setTimeout(() => this.flushWrites(), 2000)
+    // Periodic flush every 2s — only needed in write mode
+    if (!readOnly) {
+      this.flushTimer = setTimeout(() => this.flushWrites(), 2000)
+    }
+  }
+
+  /** Returns true if this instance opened the DB in read-only mode. */
+  get isReadOnly(): boolean {
+    return this._readOnly
   }
 
   // ─── Write Queue ────────────────────────────────────────────────────────────

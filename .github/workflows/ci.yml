@@ -17,8 +17,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Wave 1: All checks run in parallel (each installs deps independently) ──
   lint-and-format:
-    name: Lint & Format Check
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +43,7 @@ jobs:
         working-directory: mcp
 
   typecheck:
-    name: TypeScript Type Check
+    name: TypeScript Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +90,7 @@ jobs:
           path: mcp/coverage/
           retention-days: 14
 
+  # ── Wave 2: Depends on test, runs after test completes ──
   test-coverage:
     name: Coverage Gate
     runs-on: ubuntu-latest
@@ -118,8 +120,9 @@ jobs:
           path: mcp/coverage/
           retention-days: 14
 
+  # ── Wave 1: Commit message (parallel with other checks) ──
   commitlint:
-    name: Commit Message Check
+    name: Commit Message
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
@@ -140,3 +143,14 @@ jobs:
       - name: Validate commit messages
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
         working-directory: mcp
+
+  # ── Wave 2: All Wave 1 jobs must pass ──
+  # This job exists to fail the overall workflow if any parallel job fails.
+  # It doesn't need to run any commands — it just waits for its dependencies.
+  require-all:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, typecheck, test, commitlint]
+    steps:
+      - name: All checks passed
+        run: echo "All CI checks passed"

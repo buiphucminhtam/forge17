@@ -133,7 +133,7 @@ generate_server() {
     sed -i '' "s|{{projectName}}|${PROJECT_NAME}|g" "${OUTPUT_DIR}/${output_name}"
     sed -i '' "s|{{projectSlug}}|${PROJECT_SLUG}|g" "${OUTPUT_DIR}/${output_name}"
     sed -i '' "s|{{generatedAt}}|${GENERATED_AT}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{forgwrightVersion}}|${FORGEWRIGHT_VERSION}|g" "${OUTPUT_DIR}/${output_name}"
+    sed -i '' "s|{{forgewrightVersion}}|${FORGEWRIGHT_VERSION}|g" "${OUTPUT_DIR}/${output_name}"
     sed -i '' "s|{{projectLanguage}}|${PROJECT_LANGUAGE}|g" "${OUTPUT_DIR}/${output_name}"
     sed -i '' "s|{{projectFramework}}|${PROJECT_FRAMEWORK}|g" "${OUTPUT_DIR}/${output_name}"
     sed -i '' "s|{{mcpServerPath}}|${MCP_SERVER_PATH}|g" "${OUTPUT_DIR}/${output_name}"

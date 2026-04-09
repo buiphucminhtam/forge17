@@ -1,48 +1,88 @@
 #!/bin/sh
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Pre-commit Hook — Parallel Execution v2.0
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 . "$(dirname "$0")/_/husky.sh"
 
 echo "Running pre-commit checks..."
 
-# Check TypeScript files
 cd mcp
 
-# Run lint
-echo "Running ESLint..."
-npx eslint src/ --ext .ts --max-warnings=0
-lint_result=$?
+# ── Wave 1: Linting & Formatting (independent — parallel) ─────────────────
+(
+  echo "[1/2] Running ESLint (cached)..."
+  npx eslint src/ --max-warnings=0 --cache --cache-location node_modules/.cache/eslint
+  ESLINT_RC=$?
+  if [ $ESLINT_RC -ne 0 ]; then
+    echo "[ESLint] FAILED"
+  fi
+  exit $ESLINT_RC
+) &
+ESLINT_PID=$!
 
-# Run prettier check
-echo "Running Prettier check..."
-npx prettier --check "src/**/*.ts"
-format_result=$?
+(
+  echo "[2/2] Running Prettier check..."
+  npx prettier --check "src/**/*.ts"
+  PRETTY_RC=$?
+  if [ $PRETTY_RC -ne 0 ]; then
+    echo "[Prettier] FAILED"
+  fi
+  exit $PRETTY_RC
+) &
+PRETTY_PID=$!
 
-# Run type check
-echo "Running TypeScript check..."
-npx tsc --noEmit
-type_result=$?
+# Wait for wave 1
+wait $ESLINT_PID
+ESLINT_RC=$?
+wait $PRETTY_PID
+PRETTY_RC=$?
 
-# Run tests
-echo "Running tests..."
-npx vitest run --reporter=basic
-test_result=$?
-
-# Exit with error if any check failed
-if [ $lint_result -ne 0 ]; then
+if [ $ESLINT_RC -ne 0 ]; then
   echo "ESLint failed!"
   exit 1
 fi
 
-if [ $format_result -ne 0 ]; then
+if [ $PRETTY_RC -ne 0 ]; then
   echo "Prettier check failed!"
   exit 1
 fi
 
-if [ $type_result -ne 0 ]; then
+# ── Wave 2: TypeScript & Tests (parallel — Vitest doesn't need tsc output) ──
+(
+  echo "[3/4] Running TypeScript check..."
+  npx tsc --noEmit
+  TYPE_RC=$?
+  if [ $TYPE_RC -ne 0 ]; then
+    echo "[TypeScript] FAILED"
+  fi
+  exit $TYPE_RC
+) &
+TYPE_PID=$!
+
+(
+  echo "[4/4] Running tests..."
+  npx vitest run --reporter=basic
+  TEST_RC=$?
+  if [ $TEST_RC -ne 0 ]; then
+    echo "[Tests] FAILED"
+  fi
+  exit $TEST_RC
+) &
+TEST_PID=$!
+
+# Wait for wave 2
+wait $TYPE_PID
+TYPE_RC=$?
+wait $TEST_PID
+TEST_RC=$?
+
+if [ $TYPE_RC -ne 0 ]; then
   echo "TypeScript check failed!"
   exit 1
 fi
 
-if [ $test_result -ne 0 ]; then
+if [ $TEST_RC -ne 0 ]; then
   echo "Tests failed!"
   exit 1
 fi

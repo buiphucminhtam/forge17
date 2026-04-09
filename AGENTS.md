@@ -1,10 +1,10 @@
 # Forgewright — Production Grade AI Pipeline
 
-> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 52 specialized skills.
+> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 54 specialized skills.
 
 ## What is Forgewright?
 
-Forgewright is an adaptive orchestrator with **52 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Roblox game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forgewright is an adaptive orchestrator with **54 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Phaser 3/Three.js game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
@@ -86,7 +86,7 @@ If a newer version exists, mention it briefly: *"Forgewright update available (v
 
 ## Skills Directory
 
-All 52 skills are in the `skills/` directory:
+All 54 skills are in the `skills/` directory:
 
 | Skill | Location |
 |-------|----------|
@@ -139,6 +139,8 @@ All 52 skills are in the `skills/` directory:
 | Godot Engineer | `skills/godot-engineer/SKILL.md` |
 | Godot Multiplayer | `skills/godot-multiplayer/SKILL.md` |
 | Roblox Engineer | `skills/roblox-engineer/SKILL.md` |
+| **Phaser 3 Engineer** | `skills/phaser3-engineer/SKILL.md` |
+| **Three.js Engineer** | `skills/threejs-engineer/SKILL.md` |
 | Level Designer | `skills/level-designer/SKILL.md` |
 | Narrative Designer | `skills/narrative-designer/SKILL.md` |
 | Technical Artist | `skills/technical-artist/SKILL.md` |

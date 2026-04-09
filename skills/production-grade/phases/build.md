@@ -160,6 +160,7 @@ When all BUILD tasks complete:
 ## Failure Handling
 
 - Build failure after 3 retries → escalate to user via notify_user
+- **Self-healing loop** (up to 5 attempts): read error → web search (site filter) → analyze root cause → formulate fix → retry. After 5 failures: git rollback + escrow report. See `skills/_shared/protocols/self-healing-execution.md`
 - Frontend fails but backend succeeds → continue backend-only pipeline
 - Mobile fails but web succeeds → continue web-only pipeline, flag mobile issues
 - Self-debug: read errors, fix, retry before escalating

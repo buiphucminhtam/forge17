@@ -61,6 +61,10 @@ Game deliveries are validated against Task Contracts:
 | Unreal | Automation System + Functional Testing Plugin | `RunUAT RunUnreal` or Editor |
 | Godot | GDScript tests + `godot --test` | `godot --headless --test` |
 | Roblox | Roblox Test Runner + LuaUnit | Studio or CLI |
+| **Phaser 3** | **Vitest/Jest + logic extraction** | `npm test` (unit) + `npx playwright test` (E2E) |
+| **Three.js** | **Vitest + ECS system tests** | `npm test` (unit) + `npx playwright test` (E2E) |
+
+> **Phaser 3 & Three.js Testing Strategy:** Unlike Unity/Unreal/Godot, web engines don't have built-in test frameworks. The standard approach is **logic extraction + unit testing** — extract game logic (damage formulas, state machines, economy) into pure TypeScript classes without Phaser/Three.js dependencies, then test with Vitest/Jest. E2E testing via Playwright for browser-based flows.
 
 **Test coverage targets:**
 
@@ -162,6 +166,111 @@ func test_jump_height_formula():
 
 ```csharp
 // Unity: Combat State Machine Tests
+```
+
+### Phaser 3 Mechanics Tests
+
+```typescript
+// tests/gameplay/DamageCalculator.test.ts
+// Extract business logic from Phaser Scene → testable TypeScript
+import { DamageCalculator } from '../../src/gameplay/combat/DamageCalculator';
+
+describe('DamageCalculator', () => {
+    it('should apply crit multiplier correctly', () => {
+        const damage = DamageCalculator.calculate({
+            attackerATK: 50,
+            defenderDEF: 20,
+            skillMultiplier: 1.5,
+            isCritical: true,
+        });
+        expect(damage).toBe(60); // (50 * 1.5 - 20 * 0.5) * 2 = 60
+    });
+
+    it('should never deal less than 1 damage', () => {
+        const damage = DamageCalculator.calculate({
+            attackerATK: 5,
+            defenderDEF: 100,
+            skillMultiplier: 1.0,
+            isCritical: false,
+        });
+        expect(damage).toBe(1);
+    });
+});
+
+// tests/gameplay/StateMachine.test.ts
+describe('StateMachine', () => {
+    it('should transition through valid states', () => {
+        const sm = new StateMachine()
+            .addState('idle', mockState('idle'))
+            .addState('walk', mockState('walk'))
+            .setTransitions({ idle: 'walk', walk: 'idle' })
+            .transitionTo('idle');
+        sm.update(16);
+        expect(sm.currentStateName).toBe('idle');
+    });
+});
+
+// tests/gameplay/EnemyFactory.test.ts
+describe('EnemyFactory', () => {
+    it('should spawn enemy with correct stats', () => {
+        const factory = new EnemyFactory(scene, pool);
+        const enemy = factory.spawn('goblin', 100, 200);
+        expect(enemy.health).toBe(50);
+        expect(enemy.speed).toBe(3.0);
+        expect(enemy.scoreValue).toBe(10);
+    });
+});
+```
+
+### Three.js ECS Systems Tests
+
+```typescript
+// tests/systems/CombatSystem.test.ts
+// ECS systems are pure logic — testable without Three.js
+import { CombatSystem } from '../../src/systems/gameplay/CombatSystem';
+
+describe('CombatSystem', () => {
+    private combat: CombatSystem;
+
+    beforeEach(() => { combat = new CombatSystem(); });
+
+    it('damage formula matches GDD specification', () => {
+        // (50 * 1.5 - 20 * 0.5) * 2 = 60
+        const damage = combat.calculateDamage(50, 20, 1.5, true);
+        expect(damage).toBe(60);
+    });
+
+    it('minimum damage is 1', () => {
+        const damage = combat.calculateDamage(5, 100, 1.0, false);
+        expect(damage).toBe(1);
+    });
+});
+
+// tests/ecs/World.test.ts
+describe('ECS World', () => {
+    it('should return entities with required components', () => {
+        const world = new World();
+        const e = world.createEntity();
+        world.addComponent(e, 'Health', { current: 100, max: 100 });
+        world.addComponent(e, 'Transform', {
+            position: { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
+        });
+
+        const found = world.getEntitiesWithComponents('Health', 'Transform');
+        expect(found).toContain(e);
+    });
+});
+
+// tests/systems/MovementSystem.test.ts
+describe('MovementSystem', () => {
+    it('should normalize diagonal movement', () => {
+        const speed = 5.0;
+        const diagonal = Math.sqrt(2); // ~1.414
+        expect(speed / diagonal).toBeCloseTo(3.54, 1);
+    });
+});
+```
 [Test] public void CombatStateMachine_IdleToAttack1_Valid()
 {
     fsm.SetState<IdleState>();
@@ -198,11 +307,103 @@ func test_jump_height_formula():
 | Mobile | 30 fps | 24 fps | 1 GB | < 10s |
 | Console | 60 fps | 50 fps | 8 GB | < 8s |
 | WebGL | 30 fps | 24 fps | 512 MB | < 15s |
+| **Phaser 3 (Web)** | **60 fps** | **50 fps** | **< 200 MB** | **< 5s** |
+| **Three.js (WebGPU)** | **60 fps** | **50 fps** | **< 512 MB** | **< 8s** |
+| **Three.js (WebGL)** | **30 fps** | **24 fps** | **< 512 MB** | **< 8s** |
 
 **Automated performance tests:**
 
 ```csharp
 // Unity: Performance Tests
+
+### Phaser 3 Performance Tests
+
+```typescript
+// tests/performance/ParticleBudget.test.ts
+describe('Particle Budget', () => {
+    it('should stay under 200 active particles on desktop', () => {
+        const maxDesktop = 200;
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        const budget = isMobile ? 80 : maxDesktop;
+
+        // Simulate particle spawning
+        const activeParticles = simulateGameLoop();
+        expect(activeParticles).toBeLessThanOrEqual(budget);
+    });
+
+    it('should dispose all tweens on scene shutdown', () => {
+        const tweensCreated = countActiveTweens();
+        scene.scene.stop();
+        // All tweens should self-destruct via onComplete callbacks
+        expect(countActiveTweens()).toBeLessThan(tweensCreated);
+    });
+});
+
+// tests/performance/MemoryLeak.test.ts
+describe('Object Pool', () => {
+    it('should not leak objects on repeated spawn/release', () => {
+        const pool = new PoolManager(createEnemy, resetEnemy, 10);
+        for (let i = 0; i < 1000; i++) {
+            const e = pool.acquire();
+            pool.release(e);
+        }
+        expect(pool.availableCount).toBeLessThanOrEqual(10 + 1000);
+    });
+});
+```
+
+### Three.js Performance Tests
+
+```typescript
+// tests/performance/DrawCallBudget.test.ts
+describe('Draw Call Budget', () => {
+    it('should stay under 100 draw calls per frame', () => {
+        const MAX_DRAW_CALLS = 100;
+        const renderer = new WebGPURenderer();
+        const scene = setupScene();
+
+        renderer.render(scene, camera);
+        const info = renderer.info;
+
+        expect(info.render.calls).toBeLessThanOrEqual(MAX_DRAW_CALLS);
+    });
+
+    it('should dispose geometry and material on mesh removal', () => {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshStandardMaterial();
+        const mesh = new THREE.Mesh(geometry, material);
+
+        scene.add(mesh);
+        scene.remove(mesh);
+
+        // Manually dispose (or via CleanupSystem)
+        geometry.dispose();
+        material.dispose();
+
+        expect(geometry disposed).toBe(true);
+        expect(material disposed).toBe(true);
+    });
+});
+
+// tests/performance/ObjectPool.test.ts
+describe('ObjectPool', () => {
+    it('should reuse mesh instances without allocating new GPU buffers', () => {
+        const pool = new ObjectPool(
+            () => new THREE.Mesh(boxGeo, mat),
+            m => m.setVisible(false),
+            50
+        );
+
+        const before = GPU.memory.allocate;
+        for (let i = 0; i < 1000; i++) {
+            const m = pool.acquire();
+            pool.release(m);
+        }
+        // Should reuse instances, not allocate new GPU memory
+        expect(GPU.memory.allocate - before).toBeLessThan(1000 * boxGeo.size);
+    });
+});
+```
 [Test] public void Performance_60FPS_OnMainMenu()
 {
     StartProfiling();
@@ -240,6 +441,74 @@ func test_jump_height_formula():
 
 ```csharp
 // Unity: Build Validation Tests
+
+### Phaser 3 Build Tests
+
+```typescript
+// tests/build/ViteBuild.test.ts
+describe('Build Verification', () => {
+    it('should compile TypeScript without errors', async () => {
+        const result = await exec('npx tsc --noEmit');
+        expect(result.exitCode).toBe(0);
+    });
+
+    it('should produce valid bundle with no missing imports', async () => {
+        const result = await exec('npx vite build');
+        expect(result.exitCode).toBe(0);
+        expect(fs.existsSync('dist/index.html')).toBe(true);
+        expect(fs.existsSync('dist/assets/')).toBe(true);
+    });
+
+    it('should have no missing shared lib references', () => {
+        const bundle = fs.readFileSync('dist/assets/*.js', 'utf8');
+        // Verify shared libs are bundled
+        expect(bundle).not.toContain('undefined');
+    });
+});
+```
+
+### Three.js Build Tests
+
+```typescript
+// tests/build/BundleValidation.test.ts
+describe('Build Verification', () => {
+    it('should bundle under 2MB (main bundle)', async () => {
+        const result = await exec('npx vite build');
+        expect(result.exitCode).toBe(0);
+
+        const stats = JSON.parse(fs.readFileSync('dist/stats.json'));
+        const mainBundle = stats.assets.find(a => a.name === 'index.js');
+        expect(mainBundle.size).toBeLessThan(2 * 1024 * 1024);
+    });
+
+    it('should load WebGPU renderer without errors', async () => {
+        const page = await browser.newPage();
+        await page.goto('http://localhost:4173/');
+        await page.waitForTimeout(2000);
+
+        // Check for WebGPU initialization
+        const hasRenderer = await page.evaluate(() => {
+            return window.__HAS_WEBGPU__ || window.__HAS_WEBGL2__;
+        });
+        expect(hasRenderer).toBe(true);
+    });
+
+    it('should load compressed textures (Draco + KTX2)', async () => {
+        const page = await browser.newPage();
+        const requests = [];
+        page.on('request', req => requests.push(req.url()));
+
+        await page.goto('http://localhost:4173/');
+        await page.waitForTimeout(3000);
+
+        const compressed = requests.filter(r =>
+            r.endsWith('.glb') || r.endsWith('.ktx2') || r.endsWith('.drc')
+        );
+        // Should load compressed assets, not raw GLTF
+        expect(compressed.length).toBeGreaterThan(0);
+    });
+});
+```
 [Test] public void Build_NoMissingReferences()
 {
     var guids = AssetDatabase.FindAssets("t:Object");
@@ -536,6 +805,16 @@ Common game build errors and auto-fix strategies:
 | Shader not found | Fallback to built-in shader |
 | Build failure (PC) | Clear cache, rebuild |
 | Performance regression | Auto-reduce shadow quality, particle count |
+| **Phaser 3 — Additional** | |
+| `this.add.existing` on destroyed object | Wrap in `if (!obj.destroyed)` before add |
+| Texture not found | Generate procedural fallback via `generateTexture()` |
+| Audio file 404 | Silent skip, log warning — game continues |
+| Canvas resize mismatch | Re-scale game canvas via `this.scale.resize()` |
+| **Three.js — Additional** | |
+| `webglcontextlost` event | Save state, wait for `webglcontextrestored`, re-upload textures |
+| GPU memory leak | Force `renderer.info` check, warn if triangles increasing |
+| WebGPU not available | Auto-fallback to `WebGLRenderer` — no game logic change |
+| Geometry not disposed | Add to CleanupSystem, dispose on entity removal |
 
 ---
 
@@ -549,6 +828,20 @@ When modifying existing games:
 3. SCOPE BOUNDARY — New mechanics in new folders, don't modify existing
 4. PERFORMANCE BASELINE — FPS and memory must not regress > 10%
 5. SAVE COMPATIBILITY — If save format changes, migration must be tested
+
+For Phaser 3 web games:
+  1. BASELINE — Capture FPS, memory, particle count, pool sizes
+  2. REGRESSION CHECK — Run Playwright smoke test on every commit
+  3. SCOPE BOUNDARY — New scenes/classes in new files, existing scenes untouched
+  4. PERFORMANCE BASELINE — 60fps on desktop, 30fps on mobile
+  5. SAVE COMPATIBILITY — LocalStorage format versioning, migration on load
+
+For Three.js web games:
+  1. BASELINE — Capture draw calls, triangles, memory from renderer.info
+  2. REGRESSION CHECK — Run Playwright smoke test on every commit
+  3. SCOPE BOUNDARY — New ECS systems in new files, existing systems untouched
+  4. PERFORMANCE BASELINE — < 100 draw calls, < 60fps target
+  5. SAVE COMPATIBILITY — LocalStorage format versioning, migration on load
 ```
 
 ---
@@ -564,17 +857,28 @@ When modifying existing games:
 | Build | 100% | All target platforms | Yes |
 | Integration | 70% | Cross-system scenarios | No |
 | Platform | 80% | All declared platforms | Yes |
+| **Phaser 3** | **Minimum Coverage** | **Critical Tests** | **Blocking** |
+| Shared Lib Integration | 100% | vfx-helpers, ui-helpers, audio-manager all called correctly | Yes |
+| Object Pool | 100% | Pre-warm, no new in update(), release cleanup | Yes |
+| Scene Structure | 100% | Boot → Menu → Gameplay → GameOver flow | Yes |
+| **Three.js** | **Minimum Coverage** | **Critical Tests** | **Blocking** |
+| ECS Architecture | 100% | All systems implement, components registered | Yes |
+| Draw Calls | 100% | < 100/frame on target hardware | Yes |
+| Memory Disposal | 100% | geometry/material/texture disposed on entity removal | Yes |
+| WebGPU Fallback | 100% | Falls back to WebGL2 gracefully | Yes |
 
 ---
 
 ## Tools Reference
 
 | Engine | Test Framework | CI Integration |
-|--------|----------------|-----------------|
+|--------|----------------|----------------|
 | Unity | Unity Test Framework (UTF) | Unity Cloud Build / Custom CI |
 | Unreal | Unreal Automation System | Unreal Build Graph / UAT |
 | Godot | GDScript tests | GitHub Actions custom runner |
 | Roblox | Roblox Test Runner | Roblox Studio CLI |
+| **Phaser 3** | **Vitest/Jest (unit) + Playwright (E2E)** | **GitHub Actions: `npm test && npx playwright test`** |
+| **Three.js** | **Vitest (unit/ECS systems) + Playwright (E2E)** | **GitHub Actions: `npm test && npx playwright test`** |
 
 ---
 

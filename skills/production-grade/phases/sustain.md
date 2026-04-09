@@ -71,7 +71,7 @@ Write to `.forgewright/compound-learnings.md`:
 - [missing steps that should have been included]
 ```
 
-Optionally append key patterns to project `ANTIGRAVITY.md` for cross-session persistence.
+Optionally append key patterns to project `CLAUDE.md` for cross-session persistence.
 
 ### Final Assembly
 

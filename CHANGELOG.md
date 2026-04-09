@@ -2,6 +2,47 @@
 
 All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
 
+## [7.8.2] — 2026-04-09
+
+> **Quality Overhaul — Stability, CI/CD, Architecture, Maintainability**
+
+### Added
+
+- **Middleware Chain Extraction** (`skills/production-grade/middleware/`) — 10 middleware files extracted from SKILL.md into separate files for maintainability: `01-session-data.md` through `10-graceful-failure.md`. SKILL.md reduced from 1700+ lines to ~400 lines.
+- **Modes Reference** (`skills/production-grade/modes/README.md`) — Quick-reference index for all 19 modes, gate counts, skill counts, and shared behaviors.
+- **Architecture Decision Records** (`docs/adr/`) — 4 ADRs documenting key decisions: orchestrator separation, KuzuDB read-only MCP, parallel pre-commit, skills count oscillation prevention.
+- **Health Monitoring Script** (`scripts/forgeNexus-health.sh`) — Automated index health check, staleness detection, and auto-reindex trigger.
+- **CLI Integration Tests** (`scripts/test-cli.sh`) — 16-test suite covering CLI commands, skills system, CI/CD, and version consistency.
+
+### Changed
+
+- **KuzuDB readOnly mode** (`forgenexus/src/data/db.ts`) — MCP server now opens database in read-only mode, eliminating lock conflicts with concurrent `analyze` CLI runs. Multiple MCP servers across projects can run safely alongside indexing.
+- **Pre-commit parallelization** (`.husky/pre-commit`) — Restructured into 2-wave architecture: ESLint + Prettier run in parallel (wave 1), TypeScript + Vitest run in parallel (wave 2). ESLint uses `--cache` for incremental checks. ~2x speedup.
+- **GitHub Actions CI parallelization** (`.github/workflows/ci.yml`) — All jobs (`lint-and-format`, `typecheck`, `test`, `commitlint`) now run in parallel. `test-coverage` waits only for `test`. Total CI time reduced significantly.
+- **SKILL.md Middleware Table** — Middleware chain now documented with explicit file references, eliminating duplicate inline protocol reading.
+- **build.md** — Self-healing loop (up to 5 attempts, search-augmented, escrow report) integrated per `self-healing-execution.md`.
+- **DryRun Interceptor** — Added as middleware 03b in the middleware chain table.
+- **`ANTIGRAVITY.md` references removed** — Replaced with `CLAUDE.md` in SKILL.md and `phases/sustain.md`.
+
+### Fixed
+
+- **husky version** (`package.json`) — Corrected `husky: "^10.0.0"` (non-existent) to `husky: "^9.1.7"`.
+- **typo: `forgwrightVersion`** (`scripts/mcp-generate.sh`, `mcp-generator/templates/`) — Fixed to `forgewrightVersion` in both script and Handlebars template.
+- **Version consistency** — `package.json` `version` field bumped to `7.8.1`, matching `VERSION` file.
+- **`mcp-config.json` version** — `forgewright_version` updated from `7.0.0` to `7.8.1`.
+- **MCP server config** — Added `forgewright-forgenexus` entry to `.cursor/mcp.json` pointing to local forgewright repo.
+
+### Dependencies
+
+- **No changes** — All dependency versions unchanged.
+
+### Impact Assessment
+
+- **Breaking changes:** 0
+- **Backward compatibility:** 100%
+- **Migration required:** None
+- **User affected:** Developers using pre-commit hooks (faster), MCP server users (no lock conflicts)
+
 ## [7.8.1] — 2026-04-08
 
 > **ForgeNexus Enterprise — Phase 1-3**

@@ -11,7 +11,7 @@ description: >
 # Production Grade
 
 !`git status 2>/dev/null || echo "No git repo detected"`
-!`cat ANTIGRAVITY.md 2>/dev/null || echo "No ANTIGRAVITY.md found"`
+!`cat CLAUDE.md 2>/dev/null || echo "No CLAUDE.md found"`
 !`ls .forgewright/ 2>/dev/null || echo "No existing workspace"`
 !`cat .production-grade.yaml 2>/dev/null || echo "No config file — defaults apply"`
 
@@ -25,13 +25,29 @@ Adaptive meta-skill orchestrator for all software engineering work. Analyzes the
 
 ### Middleware Chain (v8.0 — DeerFlow Pattern)
 
-Every skill invocation is wrapped by an ordered middleware chain. Read `skills/_shared/protocols/middleware-chain.md` for the full specification.
+Every skill invocation is wrapped by an ordered middleware chain. Implementation details are in `skills/production-grade/middleware/`:
 
 ```
 Pre-Skill:  ① SessionData → ② ContextLoader → ③ SkillRegistry → ④ Guardrail → ⑤ Summarization
             ═══ SKILL EXECUTION ═══
 Post-Skill: ⑥ QualityGate → ⑦ BrownfieldSafety → ⑧ TaskTracking → ⑨ Memory → ⑩ GracefulFailure
 ```
+
+| # | Middleware | File | Hook | Purpose |
+|---|-----------|------|------|---------|
+| ① | SessionData | `middleware/01-session-data.md` | before_skill | Load profile, session state |
+| ② | ContextLoader | `middleware/02-context-loader.md` | before_skill | Load memory, conventions |
+| ③b| DryRunContext | `skills/_shared/protocols/dryrun-interceptor.md` | before_skill | Dry-run mode system prompt injection |
+| ③ | SkillRegistry | `middleware/03-skill-registry.md` | before_skill | Progressive skill loading |
+| ④ | Guardrail | `middleware/04-guardrail.md` | before_tool | Pre-tool authorization |
+| ⑤ | Summarization | `middleware/05-summarization.md` | before_skill | Context compression |
+| ⑥ | QualityGate | `middleware/06-quality-gate.md` | after_skill | Post-skill validation |
+| ⑦ | BrownfieldSafety | `middleware/07-brownfield-safety.md` | after_skill | Regression + protected paths |
+| ⑧ | TaskTracking | `middleware/08-task-tracking.md` | after_skill | Update todos, emit events |
+| ⑨ | Memory | `middleware/09-memory.md` | after_skill + turn_close | Persistent fact extraction |
+| ⑩ | GracefulFailure | `middleware/10-graceful-failure.md` | on_error | Retry logic, stuck detection |
+
+**Middleware protocol:** `skills/_shared/protocols/middleware-chain.md`
 
 ### Progressive Skill Loading (v8.0 — DeerFlow Pattern)
 
@@ -109,7 +125,7 @@ Override the detected mode only if the user's intent clearly differs from what w
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | Performance Engineer + SRE + Code Reviewer |
 | **Design** | "design UI", "wireframes", "design system", "color palette", "UX flow" | UX Researcher → UI Designer |
 | **Mobile** | "mobile app", "React Native", "Flutter", "iOS", "Android" | BA (if gaps detected) → Mobile Engineer (+ PM scoped, Architect scoped if needed) |
-| **Game Build** | "game", "Unity", "Unreal", "Godot", "Roblox", "gameplay", "game design", "build a game" | Game Designer → Engine Engineer (Unity/Unreal/Godot/Roblox) → Level/Narrative/TechArt/Audio |
+| **Game Build** | "game", "Unity", "Unreal", "Godot", "Roblox", "Phaser", "Three.js", "gameplay", "game design", "build a game" | Game Designer → Engine Engineer (Unity/Unreal/Godot/Phaser 3/Three.js) → Level/Narrative/TechArt/Audio |
 | **XR Build** | "VR", "AR", "MR", "XR", "spatial", "Quest", "Vision Pro", "WebXR" | XR Engineer (+ Game Build pipeline if game-like XR) |
 | **Marketing** | "marketing", "SEO", "launch strategy", "copywriting", "content strategy", "go-to-market" | Growth Marketer (+ Conversion Optimizer if CRO mentioned) |
 | **Grow** | "growth", "CRO", "conversion", "funnel", "A/B test", "churn", "retention", "referral" | Conversion Optimizer (+ Growth Marketer if strategy needed) |
@@ -379,32 +395,34 @@ Which skills do you need? (list the numbers separated by commas)
 
 --- Game Development ---
 24. **Game Designer** — GDD, gameplay loops, economy, mechanic specs
-25. **Unity Engineer** — C# game architecture, ScriptableObjects, Editor tools
+25. **Unity Engineer** — C# ScriptableObjects, Editor tools, URP
 26. **Unreal Engineer** — C++/Blueprint, GAS, Nanite/Lumen
 27. **Godot Engineer** — GDScript, scene tree, signals, cross-platform
 28. **Godot Multiplayer** — MultiplayerSpawner, ENet, prediction, dedicated server
 29. **Roblox Engineer** — Luau, DataStore, Roblox Studio, experience design
+30. **Phaser 3 Engineer** — TypeScript, modular scenes, ECS-optional, WebGL/Canvas, shared vfx/ui helpers
+31. **Three.js Engineer** — ECS, WebGPU/WebGL, Rapier physics, performance budgets, post-processing
 30. **Level Designer** — Spatial design, encounters, pacing, environmental storytelling
 31. **Narrative Designer** — Branching dialogue, character voice, lore
-32. **Technical Artist** — Shaders, VFX, LOD, performance budgets
-33. **Game Audio Engineer** — Spatial audio, adaptive music, SFX, mix
-34. **Unity Shader Artist** — Shader Graph, HLSL, VFX Graph, post-processing
-35. **Unity Multiplayer** — Netcode for GameObjects, relay, prediction
-36. **Unreal Technical Artist** — Niagara, Material Editor, Lumen/Nanite
-37. **Unreal Multiplayer** — Replication, dedicated server, GAS networking
-38. **XR Engineer** — AR/VR/MR, spatial UI, hand tracking, comfort
+34. **Technical Artist** — Shaders, VFX, LOD, performance budgets
+35. **Game Audio Engineer** — Spatial audio, adaptive music, SFX, mix
+36. **Unity Shader Artist** — Shader Graph, HLSL, VFX Graph, post-processing
+37. **Unity Multiplayer** — Netcode for GameObjects, relay, prediction
+38. **Unreal Technical Artist** — Niagara, Material Editor, Lumen/Nanite
+39. **Unreal Multiplayer** — Replication, dedicated server, GAS networking
+40. **XR Engineer** — AR/VR/MR, spatial UI, hand tracking, comfort
 
 --- Growth ---
-39. **Growth Marketer** — Launch strategy, content, channels, SEO
-40. **Conversion Optimizer** — CRO, funnel analysis, A/B testing, retention
+41. **Growth Marketer** — Launch strategy, content, channels, SEO
+42. **Conversion Optimizer** — CRO, funnel analysis, A/B testing, retention
 
 --- Data Acquisition ---
-41. **Web Scraper** — Secure web crawling (crawl4ai), URL validation, output sanitization, CSS/LLM extraction
+43. **Web Scraper** — Secure web crawling (crawl4ai), URL validation, output sanitization, CSS/LLM extraction
 
 --- Integration ---
-42. **Paperclip** (optional) — Multi-agent orchestration, ticket management, budget control, heartbeat scheduling
+44. **Paperclip** (optional) — Multi-agent orchestration, ticket management, budget control, heartbeat scheduling
 
-43. **Chat about this** — Free-form input
+45. **Chat about this** — Free-form input
 ```
 
 Execute selected skills in dependency order. If user picks conflicting skills, resolve via the authority hierarchy.
@@ -459,27 +477,31 @@ Build a game from concept to playable build. Full game development pipeline.
    1. **Unity** (Recommended for indie-AA, mobile, 2D/3D)
    2. **Unreal Engine** (AAA quality, heavy 3D, C++/Blueprint)
    3. **Godot** (Open-source, lightweight, rapid iteration)
+   4. **Phaser 3** (Web-native 2D, HTML5, Canvas/WebGL — no install, instant play)
+   5. **Three.js** (Web-native 3D, WebGPU/WebGL — browser-native 3D experiences)
    ```
 3. **Game Designer** — `skills/game-designer/SKILL.md` — design pillars, core loop, economy, mechanic specs, player flows
 4. **Engine Engineer** — based on chosen engine:
-   - Unity: `skills/unity-engineer/SKILL.md` — SO architecture, gameplay systems, UI, Editor tools
-   - Unreal: `skills/unreal-engineer/SKILL.md` — C++ architecture, GAS, AI, Blueprint layer
-   - Godot: `skills/godot-engineer/SKILL.md` — scene tree, signals, Resources, export
+   - Unity: `skills/unity-engineer/SKILL.md` — C# architecture, ScriptableObjects, Editor tools
+   - Unreal: `skills/unreal-engineer/SKILL.md` — C++/Blueprint, GAS, AI, Blueprint layer
+   - Godot: `skills/godot-engineer/SKILL.md` — GDScript, scene tree, signals
+   - Phaser 3: `skills/phaser3-engineer/SKILL.md` — TypeScript, modular scenes, ECS-optional, WebGL/Canvas
+   - Three.js: `skills/threejs-engineer/SKILL.md` — ECS architecture, WebGPU/WebGL, Rapier physics
 5. **Level Designer** — `skills/level-designer/SKILL.md` — level structure, encounters, pacing, blockouts
 6. **Narrative Designer** (if story-driven) — `skills/narrative-designer/SKILL.md` — dialogue, characters, lore
 7. **Technical Artist** — `skills/technical-artist/SKILL.md` — shaders, VFX, LOD, performance budgets
-8. **Game Audio Engineer** — `skills/game-audio-engineer/SKILL.md` — SFX, adaptive music, mix
+8. **Game Audio Engineer** — `skills/game-audio-engineer/SKILL.md` — SFX, adaptive music, spatial audio
 9. **Engine-specific depth** (optional, based on game needs):
-   - Multiplayer: `skills/unity-multiplayer/SKILL.md` or `skills/unreal-multiplayer/SKILL.md`
-   - Shader/VFX: `skills/unity-shader-artist/SKILL.md` or `skills/unreal-technical-artist/SKILL.md`
-10. **QA** — per `skills/_shared/protocols/game-test-protocol.md`:
-    - Mechanics Validation (engine-specific tests: Unity UTF, Unreal Automation, Godot tests)
+   - Multiplayer: `skills/unity-multiplayer/SKILL.md`, `skills/unreal-multiplayer/SKILL.md`, `skills/godot-multiplayer/SKILL.md`
+   - Shader/VFX: `skills/unity-shader-artist/SKILL.md`, `skills/unreal-technical-artist/SKILL.md`
+10. **QA** — per `skills/_shared/protocols/game-test-protocol.md` (extended for Phaser 3 and Three.js):
+    - Mechanics Validation (engine-specific tests: Unity UTF, Unreal Automation, Godot GUT, Phaser 3 Vitest/Jest, Three.js ECS system tests)
     - Balance Validation (economy, XP curves, difficulty scaling against GDD)
     - State Machine Validation (all mechanic transitions match GDD state diagrams)
-    - Performance Validation (FPS, memory, load time per platform targets)
-    - Build Verification (compile, references, platform builds, boot test)
+    - Performance Validation (FPS, memory, load time per platform targets; Three.js: draw calls < 100/frame)
+    - Build Verification (compile, references, platform builds, boot test; Phaser 3: Vite build; Three.js: Vite bundle)
     - Integration Validation (cross-system regressions)
-    - Platform Validation (all declared platforms: PC, Mobile, Console, WebGL)
+    - Platform Validation (web browsers, mobile WebGL, desktop WebGL/WebGPU)
 11. **Quality Gate** — run `skills/_shared/protocols/quality-gate.md` with game-specific thresholds (see `tests/coverage/thresholds.json`)
 12. **Task Validator** — run `skills/_shared/protocols/task-validator.md` to validate delivery against Task Contract
 
