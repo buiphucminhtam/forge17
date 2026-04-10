@@ -97,6 +97,68 @@ If detected:
 
 If not detected → proceed normally (no changes).
 
+## Step 0 — Request Interpretation (MANDATORY)
+
+**⚠️ DO NOT SKIP THIS STEP. EVER.**
+
+Before ANY skill execution, interpret the user's request:
+
+1. **Extract 9 dimensions** (from chat-interpreter):
+   - Task: What they actually want
+   - Target tool: Forgewright mode
+   - Output format: What they expect
+   - Constraints: Explicit limits
+   - Input: What they're providing
+   - Context: Prior decisions, project state
+   - Audience: Who uses output
+   - Success criteria: How they know it's done
+   - Examples: Reference systems
+
+2. **Scan for vague patterns** (from credit-killing patterns):
+   - Vague verb ("help me", "make it", "do something") → ask specifics
+   - Two tasks in one → ask priority
+   - No success criteria → derive and confirm
+   - Emotional description → extract technical fault
+   - Assumed knowledge → inject context
+   - No project context → pull from project-profile.json
+   - No scope boundary → ask what's in/out
+   - No file path → ask for location
+
+3. **Clarification Rules:**
+   - **MAX 3 clarifying questions** — pick the 3 most critical
+   - **If HIGH confidence**: Skip clarification, generate structured request
+   - **If MEDIUM/LOW confidence**: Ask before proceeding
+   - **NEVER start executing** if request is unclear
+   - **Use defaults** for everything else (don't over-ask)
+
+4. **Generate Structured Request:**
+   ```
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🔍 INTERPRETED REQUEST
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Mode: [detected]
+   Confidence: [HIGH/MEDIUM/LOW]
+
+   Intent: "[original message quoted]"
+
+   What you want:
+     [1-sentence clear description]
+
+   Key decisions made:
+     [Defaults applied with reasoning]
+
+   Scope:
+     ✓ [In scope]
+     ✗ [Out of scope]
+
+   Success criteria:
+     [How we know it's done]
+
+   Missing (will be handled by PM):
+     [Max 3 items]
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+
 **Step 1 — Analyze the request:**
 
 Read `.forgewright/subagent-context/INTERPRETED_REQUEST.md` (from chat-interpreter Step -1) for the authoritative request analysis. The chat-interpreter has already performed 9-dimension extraction and mode detection.
@@ -104,6 +166,15 @@ Read `.forgewright/subagent-context/INTERPRETED_REQUEST.md` (from chat-interpret
 If `confidence: HIGH` → use the detected mode directly, skip the classification table.
 If `confidence: MEDIUM` → present 2 most likely modes to the user.
 If `confidence: LOW` → present 3 most likely modes to the user.
+
+**⚠️ ENFORCEMENT: If request is unclear, STOP and ask. DO NOT start executing.**
+
+The following requests MUST trigger clarification:
+- Contains vague verbs: "help me", "make it", "do something", "fix it"
+- No specific scope: "build an app", "add a feature", "update the system"
+- Two or more tasks in one: "explain AND build", "fix AND test"
+- No success criteria: "make it better", "improve it"
+- No file/location specified: "update login", "add auth"
 
 Override the detected mode only if the user's intent clearly differs from what was interpreted. Otherwise, trust the chat-interpreter's analysis.
 
@@ -149,6 +220,18 @@ Scope: [light / moderate / heavy]
 2. **I want the full production-grade pipeline** — Run all 55 skills, 6 phases, 3 gates
 3. **Adjust the plan** — Add or remove skills from the plan
 4. **Chat about this** — Free-form input
+```
+
+**Large Feature Mode** (Feature with 3+ components, or any request with complexity): Create planning document on antigravity BEFORE starting:
+
+```
+antigravity/
+└── planning/
+    └── [feature-name]/
+        ├── PLAN.md          # Main planning document
+        ├── SCOPE.md         # Scope definition
+        ├── ARCHITECTURE.md  # Technical architecture (if needed)
+        └── TASKS.md         # Task breakdown
 ```
 
 **Full Build mode**: Always proceed to the Full Build Pipeline section below.

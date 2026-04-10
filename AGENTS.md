@@ -4,18 +4,30 @@
 
 ## What is Forgewright?
 
-Forgewright is an adaptive orchestrator with **54 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Phaser 3/Three.js game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forgewright is an adaptive orchestrator with **55 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Phaser 3/Three.js game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
-**Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
+**Pipeline:** `INTERPRET → DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
 ## How to Use (For Every New Chat)
 
 **IMPORTANT:** When the user gives any software development request, you MUST:
 
-1. **Read `skills/production-grade/SKILL.md`** — this is the orchestrator that routes to all skills
-2. **Classify the request** into one of 19 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**)
-3. **Follow the pipeline** as defined in the orchestrator
-4. **PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 8.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
+1. **STEP 0 — Chat Interpreter (MANDATORY)**: Read `skills/production-grade/SKILL.md` for the full request interpretation flow. This step:
+   - Extracts 9 dimensions from the user's message
+   - Detects vague/confusing requests and asks clarifying questions (MAX 3)
+   - Generates a structured request with clear scope and success criteria
+   - **DO NOT SKIP THIS STEP** — if the request is unclear, ask before proceeding
+2. **STEP 1 — Classify the request** into one of 23 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**, **Prompt**)
+3. **STEP 2 — PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 8.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
+4. **STEP 3 — Execute the pipeline** as defined in the orchestrator
+
+**⚠️ CRITICAL RULE: NEVER START EXECUTING WITHOUT INTERPRETATION**
+
+If the user's request is vague or missing critical information:
+- STOP immediately
+- Ask clarifying questions (max 3)
+- Wait for user response
+- ONLY then proceed to skill execution
 
 Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the production-grade skill classify and route.
 
