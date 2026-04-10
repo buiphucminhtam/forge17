@@ -19,7 +19,7 @@ description: >
 
 Adaptive meta-skill orchestrator for all software engineering work. Analyzes the user's request, identifies which skills are needed, builds a minimal task graph, and executes — from a single code review to a full 17-skill greenfield build.
 
-**52 skills, one orchestrator.** The orchestrator routes to the right skills based on what the user actually needs. No forced full-pipeline execution for everyday tasks.
+**55 skills, one orchestrator.** The orchestrator routes to the right skills based on what the user actually needs. No forced full-pipeline execution for everyday tasks.
 
 **All skills are bundled in this plugin. Single install, everything included.**
 
@@ -121,7 +121,7 @@ Override the detected mode only if the user's intent clearly differs from what w
 | **Architect** | "design", "architecture", "API design", "data model", "tech stack", "how should I structure" | Solution Architect |
 | **Document** | "document", "write docs", "API docs", "README" | Technical Writer |
 | **Explore** | "explain", "understand", "help me think", "what should I", "I'm not sure" | Polymath |
-| **Research** | "research", "deep research", "find sources", "analyze topic", "investigate [domain]" | Polymath (research mode) + NotebookLM MCP (optional) + crawl4ai (optional, for JS-rendered sites) |
+| **Research** | "research", "deep research", "find sources", "analyze topic", "investigate [domain]", "NotebookLM", "study materials", "generate quiz" | NotebookLM Researcher → Polymath (research mode) + NotebookLM MCP (primary) |
 | **Optimize** | "performance", "slow", "optimize", "scale", "reliability" | Performance Engineer + SRE + Code Reviewer |
 | **Design** | "design UI", "wireframes", "design system", "color palette", "UX flow" | UX Researcher → UI Designer |
 | **Mobile** | "mobile app", "React Native", "Flutter", "iOS", "Android" | BA (if gaps detected) → Mobile Engineer (+ PM scoped, Architect scoped if needed) |
@@ -146,7 +146,7 @@ Here's my plan:
 Scope: [light / moderate / heavy]
 
 1. **Looks good — start (Recommended)** — Execute this plan
-2. **I want the full production-grade pipeline** — Run all 52 skills, 6 phases, 3 gates
+2. **I want the full production-grade pipeline** — Run all 55 skills, 6 phases, 3 gates
 3. **Adjust the plan** — Add or remove skills from the plan
 4. **Chat about this** — Free-form input
 ```
@@ -292,20 +292,27 @@ Thinking partner. Single skill.
 
 ### Research Mode
 
-Deep, grounded research on any topic. Polymath + NotebookLM MCP (optional) + crawl4ai (optional).
+Deep, grounded research on any topic. **NotebookLM Researcher is the primary skill** (v0.5.19, 35+ tools: research, studio, audio, quiz, flashcards, slides, cross-notebook, batch, pipelines, tags). Polymath + crawl4ai are enhancement layers.
 
-1. Read `skills/polymath/SKILL.md` and invoke in **research mode**
-2. **Phase 1 — Web Discovery:** Polymath runs broad `search_web` sweeps (3-5 parallel) to gather relevant URLs and initial understanding
-3. **Phase 1.5 — Deep Crawling (optional):** If crawl4ai is installed and `read_url_content` fails on key URLs (JS-rendered, anti-bot), use Polymath's Crawl4AI Deep Research pattern. Security: library-only, URL validation, output sanitization. See `skills/web-scraper/SKILL.md`.
-4. **Phase 2 — NotebookLM Enhancement (optional):**
-   - Check if NotebookLM MCP tools are available (`server_info()`)
-   - If available: create notebook → add source URLs → run deep research → iterative querying → generate report
-   - If unavailable: skip — Polymath synthesizes from web search alone (still effective)
-   - Follow `workflows/deep-research.md` for detailed steps
-5. **Phase 3 — Synthesize:** Combine all findings into grounded research report with citations, trade-offs, and recommendations
-6. When ready, offer handoff to relevant mode (Feature, Architect, Full Build, etc.)
+1. Read `skills/notebooklm-researcher/SKILL.md` and follow its instructions
+2. Check authentication: `nlm auth status`
+3. Check for existing notebooks before creating new: `nlm notebook list`
+4. **Phase 1 — Discovery:** Identify if this is a new topic (→ create notebook) or existing notebook (→ add sources)
+5. **Phase 2 — Source Ingestion:** Add source URLs, text notes, or YouTube videos. Use `nlm research start --mode deep` for automatic web discovery
+6. **Phase 3 — NotebookLM Synthesis:** Use `notebook describe`, `notebook query`, `cross query` to synthesize findings
+7. **Phase 4 — Content Generation:** Generate study materials: audio (podcast), report (briefing doc/study guide), quiz, flashcards, slides, infographic
+8. **Phase 5 — Cross-Notebook (if needed):** Query across multiple notebooks for comparative research
+9. **Phase 6 — Handoff:** Format findings as research report with citations, hand off to relevant mode
 
-**0 gates.** Polymath manages dialogue. NotebookLM and crawl4ai are enhancement layers, not requirements.
+**NotebookLM Capabilities (v0.5.19):**
+- 35+ MCP tools: notebook, source, research, studio, audio, video, report, quiz, flashcards, mindmap, slides, infographic, data-table, download, export, chat, share, batch, cross, pipeline, tag, alias, config, doctor, skill, setup
+- Batch operations: same action across multiple notebooks
+- Pipelines: `ingest-and-podcast`, `research-and-report`, `multi-format`
+- Drive sync: stale source detection and sync
+- Multi-profile: multiple Google accounts
+- Enterprise/Workspace support via `NOTEBOOKLM_BASE_URL`
+
+**0 gates.** NotebookLM Researcher manages dialogue.
 
 ### Optimize Mode
 
@@ -689,7 +696,7 @@ ELSE:
 notify_user:
   "Forgewright has 5 power levels. Choose based on how much capability you need:
 
-  ⚡ Basic       — 52 skills, full pipeline (Node.js only)
+  ⚡ Basic       — 55 skills, full pipeline (Node.js only)
   ⚡⚡ Smart     — + ForgeNexus blast-radius analysis (Node.js only)
   ⚡⚡⚡ Persistent — + mem0 cross-session memory (Node.js + Python 3)
   ⚡⚡⚡⚡ Research  — + NotebookLM grounded research (optional)

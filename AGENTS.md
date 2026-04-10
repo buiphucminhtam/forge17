@@ -36,7 +36,7 @@ Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the pr
 | "Design UI for..." | Design | UX Researcher → UI Designer |
 | "Build mobile app" | Mobile | Mobile Engineer (+ PM, Architect) |
 | "Help me think about..." | Explore | Polymath co-pilot |
-| "Deep research on..." | Research | Polymath + NotebookLM MCP (grounded) |
+| "Deep research on..." | Research | NotebookLM Researcher + Polymath (grounded) |
 | "Marketing strategy for..." | Marketing | Growth Marketer → Conversion Optimizer |
 | "Optimize conversions" | Grow | Conversion Optimizer → Growth Marketer |
 | "Optimize performance" | Optimize | Performance Engineer + SRE |
@@ -86,7 +86,7 @@ If a newer version exists, mention it briefly: *"Forgewright update available (v
 
 ## Skills Directory
 
-All 54 skills are in the `skills/` directory:
+All 55 skills are in the `skills/` directory:
 
 | Skill | Location |
 |-------|----------|
@@ -130,6 +130,7 @@ All 54 skills are in the `skills/` directory:
 | Conversion Optimizer | `skills/conversion-optimizer/SKILL.md` |
 | **Data Acquisition** | |
 | Web Scraper | `skills/web-scraper/SKILL.md` |
+| NotebookLM Researcher | `skills/notebooklm-researcher/SKILL.md` |
 | **Integration** | |
 | Paperclip Protocol | `skills/_shared/protocols/paperclip-integration.md` |
 | **Game Development** | |
