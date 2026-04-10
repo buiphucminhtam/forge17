@@ -2,6 +2,26 @@
 
 > **Strategic planning layer cho những features phức tạp.** Antigravity tạo planning documents có cấu trúc trước khi bắt đầu implementation.
 
+## ⚡ Quick Start
+
+```bash
+# 1. Create new feature plan
+./scripts/antigravity/antigravity.sh new my-feature
+
+# 2. Edit the files
+cd antigravity/planning/my-feature
+vim PLAN.md SCOPE.md TASKS.md
+
+# 3. Plan with score ≥ 8.0 before implementing
+
+# 4. Track progress
+./scripts/antigravity/antigravity.sh status
+./scripts/antigravity/antigravity.sh progress my-feature
+
+# 5. Archive when done
+./scripts/antigravity/antigravity.sh archive my-feature
+```
+
 ## Overview
 
 Antigravity là nơi lưu trữ tất cả các kế hoạch, tài liệu thiết kế, và documentation cho các features lớn của Forgewright.

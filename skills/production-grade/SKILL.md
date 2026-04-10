@@ -286,6 +286,7 @@ All modes share these behaviors:
 - **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 8.0 before any work begins
 - **Asynchronous Heartbeat:** Periodically emit human-readable status updates (e.g., "Running tests...", "Applying self-healing fix 2/5...") so the user knows the AI is working and hasn't frozen.
 - **⚠️ QA AUTO-RUN (MANDATORY):** After any code change (build, fix, feature), ALWAYS run QA/Testing WITHOUT waiting for user prompt. The sequence is: BUILD → TEST → VERIFY → DONE. Never finish without testing.
+- **Antigravity Planning (for large features):** Features with 3+ components MUST use antigravity planning structure BEFORE starting implementation. Create `antigravity/planning/[feature-name]/` with PLAN.md, SCOPE.md, ARCHITECTURE.md, TASKS.md files.
 - Engagement mode: ask ONLY if mode involves 3+ skills. For 1-2 skill modes, use Standard engagement + Sequential execution.
 
 ## ⚠️ Self-Check Before Finishing (MANDATORY)
@@ -322,6 +323,81 @@ Done ✓
 ```
 
 **Do NOT wait for user to ask for tests. Run them automatically.**
+
+## Antigravity Planning System
+
+For large features (3+ components), use the Antigravity Planning System to structure your work.
+
+### When to Use Antigravity
+
+| Feature Type | Antigravity? |
+|--------------|--------------|
+| Single file change | ❌ No |
+| Small (1-2 components) | ❌ No |
+| Medium (3+ components) | ✅ Yes |
+| Full Build / Game Build | ✅ Required |
+| Multi-team coordination | ✅ Required |
+| New integration (auth, payment) | ✅ Yes |
+
+### Antigravity Folder Structure
+
+```
+antigravity/
+└── planning/
+    └── [feature-name]/
+        ├── PLAN.md          # Main planning document
+        ├── SCOPE.md         # Scope definition
+        ├── ARCHITECTURE.md   # Technical architecture
+        ├── TASKS.md         # Task breakdown
+        ├── DECISIONS.md     # Architecture decisions log
+        └── RETROSPECTIVE.md # Post-completion retrospective
+```
+
+### Quick Commands
+
+```bash
+# Create new feature plan
+./scripts/antigravity/antigravity.sh new <feature-name>
+
+# Check status
+./scripts/antigravity/antigravity.sh status
+
+# Show progress
+./scripts/antigravity/antigravity.sh progress <feature>
+
+# Archive completed
+./scripts/antigravity/antigravity.sh archive <feature>
+```
+
+### Feature Plan Template
+
+Each feature plan must include:
+
+| File | Required? | Content |
+|------|-----------|---------|
+| `PLAN.md` | ✅ Yes | Overview, goals, key decisions, timeline |
+| `SCOPE.md` | ✅ Yes | In/out scope, constraints, risks, acceptance criteria |
+| `ARCHITECTURE.md` | ⚠️ If complex | Component diagram, data models, API design |
+| `TASKS.md` | ✅ Yes | Task breakdown by priority, estimates |
+| `DECISIONS.md` | ⚠️ Recommended | Architecture Decision Records |
+| `RETROSPECTIVE.md` | ⚠️ After completion | Lessons learned, metrics |
+
+### Plan Quality Criteria
+
+Each feature plan must score ≥ 8.0/10 on:
+
+| Criteria | Description |
+|----------|-------------|
+| Clarity | Scope clearly defined |
+| Completeness | Enough info to implement |
+| Feasibility | Achievable in timeframe |
+| Risk Awareness | Risks identified |
+| Testability | Clear acceptance criteria |
+| Maintainability | Long-term viable |
+| Priority | Impact vs effort clear |
+| Dependencies | External deps identified |
+
+See `antigravity/README.md` for full documentation.
 
 ### Feature Mode
 

@@ -41,7 +41,7 @@ Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the pr
 | User Says | Mode | What Happens |
 |-----------|------|-------------|
 | "Build a SaaS for..." | Full Build | All skills, 6 phases, 3 gates |
-| "Add [feature]..." | Feature | PM → Architect → BE/FE → QA |
+| "Add [feature]..." | Feature | PM → Architect → BE/FE → QA → auto-test |
 | "Review my code" | Review | Code Reviewer only |
 | "Write tests" | Test | QA Engineer only |
 | "Deploy / CI/CD" | Ship | DevOps → SRE |
@@ -109,6 +109,8 @@ All 55 skills are in the `skills/` directory:
 | Memory Manager | `skills/memory-manager/SKILL.md` |
 | Skill Maker | `skills/skill-maker/SKILL.md` |
 | MCP Generator | `skills/mcp-generator/SKILL.md` |
+| **Planning** | |
+| Antigravity | `antigravity/README.md` |
 | **Engineering** | |
 | Business Analyst | `skills/business-analyst/SKILL.md` |
 | Product Manager | `skills/product-manager/SKILL.md` |
