@@ -61,7 +61,7 @@ flowchart LR
     subgraph L2["⚡⚡ Level 2 — Smart"]
         direction TB
         L2A["🔍 Thêm gì"]
-        L2B["• Hỏi \"thay đổi này ảnh hưởng gì?\" → trả lời ngay"]
+        L2B["• Hỏi 'thay đổi này ảnh hưởng gì?' → trả lời ngay"]
         L2C["• Phân tích blast radius tự động"]
         L2D["• Cần: Node.js 18+"]
     end
@@ -161,7 +161,7 @@ node --version
 
 ```mermaid
 flowchart TD
-    START(["Bạn nói: \"Build app bán hàng\""])
+    START(["Bạn nói: 'Build app bán hàng'"])
     ORCH(["Forgewright<br/>(người quản lý)"])
 
     ORCH --> MODE{{"Chọn chế độ<br/>phù hợp"}}
