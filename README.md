@@ -6,8 +6,8 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.8.2-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/skills-52-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/skills-55-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/modes-22-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
@@ -32,7 +32,7 @@ Output: production-ready code, reviewed, tested, scored 0–100
 ```
 
 **Pipeline:** `DEFINE → BUILD → HARDEN → SHIP → SUSTAIN → GROW`
-**Skills:** 52 specialized AI agents covering SaaS, game dev, XR, AI/ML, data engineering, and growth.
+**Skills:** 55 specialized AI agents covering SaaS, game dev, XR, AI/ML, data engineering, and growth.
 **Modes:** 22 execution modes for precise task routing.
 
 ---
@@ -70,7 +70,7 @@ echo "FW_PLUGINS: $FW_PLUGINS"
 # Verify core files
 ls skills/production-grade/SKILL.md  # orchestrator entry
 ls CLAUDE.md                          # code intelligence rules
-ls AGENTS.md                          # 52-skill catalog
+ls AGENTS.md                          # 55-skill catalog
 echo "Forgewright self-setup OK."
 ```
 
@@ -81,7 +81,7 @@ echo "Forgewright self-setup OK."
 git submodule update --init --recursive .antigravity/plugins/production-grade
 
 # Verify
-ls .antigravity/plugins/production-grade/skills/ | wc -l   # should be 52
+ls .antigravity/plugins/production-grade/skills/ | wc -l   # should be 55
 ls .antigravity/plugins/production-grade/CLAUDE.md          # must exist
 ls .antigravity/plugins/production-grade/AGENTS.md          # must exist
 echo "Submodule initialized."
@@ -103,7 +103,7 @@ cp "$PROJECT_ROOT/.antigravity/plugins/production-grade/CLAUDE.md" \
 
 # Commit
 git add .gitmodules .antigravity AGENTS.md CLAUDE.md
-git commit -m "feat: add forgewright v7.7 — 52 skills, ForgeNexus, MCP"
+git commit -m "feat: add forgewright v7.9 — 55 skills, NotebookLM Researcher, ForgeNexus, MCP"
 
 # Initialize
 git submodule update --init --recursive .antigravity/plugins/production-grade
@@ -229,7 +229,7 @@ PROJECT_ROOT="$(pwd)"
 FW_ROOT="$(realpath .antigravity/plugins/production-grade 2>/dev/null || pwd)"
 
 echo "=== Forgewright Power Level Check ==="
-echo "Skills: $(ls "$FW_ROOT/skills" -1 2>/dev/null | wc -l | tr -d ' ') / 52"
+echo "Skills: $(ls "$FW_ROOT/skills" -1 2>/dev/null | wc -l | tr -d ' ') / 55"
 echo "ForgeNexus: $([ -f "$FW_ROOT/forgenexus/dist/cli/index.js" ] && echo '✓ built' || echo '✗ missing')"
 echo "MCP server: $([ -d "$PROJECT_ROOT/.forgewright/mcp-server" ] && echo '✓ generated' || echo '✗ missing')"
 echo "Memory: $([ -f "$PROJECT_ROOT/.forgewright/memory.jsonl" ] && echo '✓ initialized' || echo '✗ missing')"
@@ -377,6 +377,153 @@ sequenceDiagram
     end
 
     User->>Orch: Session End
+```
+
+### Game Build Pipeline (18 game skills + Phaser 3 + Three.js)
+
+```mermaid
+flowchart TD
+    START(["Game Build Request"])
+
+    START --> DESIGNER["Game Designer<br/>Concept → GDD → MVP Spec"]
+    DESIGNER --> ART_STYLE["Art Style + Visual Foundations<br/>Color · Shape · Composition · Lighting · Motion"]
+
+    ART_STYLE --> ENGINE{{"Choose Engine"}}
+    ENGINE --> |"Unity"| UNITY["Unity Engineer<br/>C# · ScriptableObjects · DOTS · ShaderGraph"]
+    ENGINE --> |"Unreal"| UNREAL["Unreal Engineer<br/>C++ · Blueprint · GAS · Nanite · Lumen"]
+    ENGINE --> |"Godot"| GODOT["Godot Engineer<br/>GDScript · Scene Tree · Signals · Godot 4"]
+    ENGINE --> |"Phaser 3"| PHASER["Phaser 3 Engineer<br/>TypeScript · ECS · WebGL · Object Pool"]
+    ENGINE --> |"Three.js"| THREEJS["Three.js Engineer<br/>ECS · WebGPU · Rapier Physics · PostFX"]
+    ENGINE --> |"Roblox"| ROBLOX["Roblox Engineer<br/>Luau · Studio · DataStores"]
+
+    UNITY --> LEVEL["Level Designer<br/>Layout · Pacing · Spatial Design"]
+    UNREAL --> LEVEL
+    GODOT --> LEVEL
+    PHASER --> LEVEL
+    THREEJS --> LEVEL
+    ROBLOX --> LEVEL
+
+    LEVEL --> TECH_ART["Technical Artist<br/>Shaders · VFX · Pipeline · DCC"]
+    LEVEL --> NARRATIVE["Narrative Designer<br/>Story · Dialogue · Quest Design"]
+    LEVEL --> AUDIO["Game Audio Engineer<br/>SFX · Music · Spatial Audio · Wwise/FMOD"]
+
+    TECH_ART --> BUILD["BUILD Phase<br/>Implement → Integrate → Polish"]
+    NARRATIVE --> BUILD
+    AUDIO --> BUILD
+
+    BUILD --> GAME_TEST{{"Game Test Protocol"}}
+    GAME_TEST --> |"Mechanics"| MT["Mechanics Validation<br/>Physics · Controls · Collision · FSM"]
+    GAME_TEST --> |"Balance"| BT["Balance Validation<br/>Economy · Difficulty · Progression"]
+    GAME_TEST --> |"Performance"| PT["Performance Validation<br/>FPS · Memory · Load · Platform"]
+    GAME_TEST --> |"Build"| BT2["Build Validation<br/>Platform · Crash · CI/CD"]
+    GAME_TEST --> |"Platform"| PLT["Platform Validation<br/>iOS · Android · Console · WebGL"]
+
+    MT --> SHIP["SHIP Phase<br/>Build · Store · Release"]
+    BT --> SHIP
+    PT --> SHIP
+    BT2 --> SHIP
+    PLT --> SHIP
+
+    SHIP --> SUSTAIN["SUSTAIN Phase<br/>Analytics · LiveOps · Content Drops"]
+    SUSTAIN --> END(["Shipped Game"])
+
+    style START fill:#1a1a2e,stroke:#e94560,color:#fff
+    style END fill:#16213e,stroke:#0f3460,color:#e94560
+    style ENGINE fill:#533483,stroke:#9b59b6,color:#fff
+    style GAME_TEST fill:#d35400,stroke:#e67e22,color:#fff
+    style ART_STYLE fill:#1e8449,stroke:#2ecc71,color:#fff
+```
+
+### Full Build Pipeline (6 Phases + 3 Gates)
+
+```mermaid
+flowchart LR
+    START(["User Request"])
+
+    START --> DEFINE["DEFINE Phase<br/>Business Analyst<br/>Product Manager<br/>Solution Architect"]
+
+    DEFINE --> GATE1{{"Gate 1<br/>Plan Approved?"}}
+    GATE1 --> |"No"| REV1["Revise DEFINE"]
+    GATE1 --> |"Yes"| BUILD["BUILD Phase<br/>Backend Engineer<br/>Frontend Engineer<br/>QA Engineer<br/>Security Engineer"]
+
+    BUILD --> GATE2{{"Gate 2<br/>Code Approved?"}}
+    GATE2 --> |"No"| REV2["Revise BUILD"]
+    GATE2 --> |"Yes"| HARDEN["HARDEN Phase<br/>Security Engineer<br/>QA Engineer<br/>Code Reviewer<br/>Accessibility Engineer"]
+
+    HARDEN --> SHIP["SHIP Phase<br/>DevOps<br/>SRE<br/>Database Engineer<br/>Performance Engineer"]
+
+    SHIP --> GATE3{{"Gate 3<br/>Deploy Approved?"}}
+    GATE3 --> |"No"| REV3["Revise SHIP"]
+    GATE3 --> |"Yes"| SUSTAIN["SUSTAIN Phase<br/>Monitor<br/>Test · Review<br/>Document"]
+
+    SUSTAIN --> GROW["GROW Phase<br/>Growth Marketer<br/>Conversion Optimizer<br/>AI Engineer"]
+
+    GROW --> END(["Production Ready"])
+
+    style START fill:#1a1a2e,stroke:#e94560,color:#fff
+    style END fill:#16213e,stroke:#0f3460,color:#e94560
+    style GATE1 fill:#533483,stroke:#f39c12,color:#fff
+    style GATE2 fill:#533483,stroke:#f39c12,color:#fff
+    style GATE3 fill:#533483,stroke:#f39c12,color:#fff
+    style REV1 fill:#c0392b,stroke:#e74c3c,color:#fff
+    style REV2 fill:#c0392b,stroke:#e74c3c,color:#fff
+    style REV3 fill:#c0392b,stroke:#e74c3c,color:#fff
+    style DEFINE fill:#0f3460,stroke:#3498db,color:#fff
+    style BUILD fill:#0f3460,stroke:#3498db,color:#fff
+    style HARDEN fill:#0f3460,stroke:#3498db,color:#fff
+    style SHIP fill:#0f3460,stroke:#3498db,color:#fff
+    style SUSTAIN fill:#0f3460,stroke:#3498db,color:#fff
+    style GROW fill:#0f3460,stroke:#3498db,color:#fff
+```
+
+### NotebookLM Research Workflow (Research Mode — v0.5.19)
+
+```mermaid
+flowchart TD
+    START(["Deep Research Request"])
+
+    START --> CHECK_AUTH["1. Check Auth<br/>nlm auth status"]
+    CHECK_AUTH --> CHECK_NOTEBOOK["2. Check Notebooks<br/>nlm notebook list"]
+
+    CHECK_NOTEBOOK --> |"New topic"| CREATE["3. Create Notebook<br/>nlm notebook create"]
+    CHECK_NOTEBOOK --> |"Existing notebook"| EXISTING["Use existing notebook<br/>nlm notebook get"]
+    CREATE --> ADD_SOURCES
+
+    EXISTING --> ADD_SOURCES["3. Add Sources<br/>URL · YouTube · Text · Drive"]
+
+    ADD_SOURCES --> RESEARCH{{"Research Mode"}}
+    RESEARCH --> |"Fast"| FAST["4a. Fast Research<br/>~30s · ~10 sources"]
+    RESEARCH --> |"Deep"| DEEP["4b. Deep Research<br/>~5min · ~40+ sources"]
+
+    FAST --> IMPORT["5. Import Sources<br/>nlm research import"]
+    DEEP --> IMPORT
+
+    IMPORT --> SYNTH["6. Synthesize<br/>nlm notebook describe<br/>nlm notebook query"]
+    SYNTH --> CROSS{{"Cross-Notebook?"}}
+    CROSS --> |"Yes"| CROSS_Q["7. Cross Query<br/>nlm cross query"]
+    CROSS --> |"No"| GENERATE
+
+    CROSS_Q --> GENERATE["8. Generate Content<br/>nlm audio create<br/>nlm report create<br/>nlm quiz create<br/>nlm slides create<br/>nlm infographic create"]
+
+    GENERATE --> POLL["9. Poll Status<br/>nlm studio status"]
+    POLL --> |"In progress"| POLL
+    POLL --> |"Completed"| DOWNLOAD["10. Download Artifact<br/>nlm download audio<br/>nlm download report<br/>nlm download slides"]
+
+    DOWNLOAD --> TAG["11. Tag + Alias<br/>nlm tag add<br/>nlm alias set"]
+
+    TAG --> END(["Grounded Research Report"])
+
+    style START fill:#1a1a2e,stroke:#e94560,color:#fff
+    style END fill:#16213e,stroke:#0f3460,color:#e94560
+    style RESEARCH fill:#533483,stroke:#9b59b6,color:#fff
+    style CROSS fill:#d35400,stroke:#e67e22,color:#fff
+    style CHECK_AUTH fill:#1a5276,stroke:#3498db,color:#fff
+    style CHECK_NOTEBOOK fill:#1a5276,stroke:#3498db,color:#fff
+    style ADD_SOURCES fill:#1a5276,stroke:#3498db,color:#fff
+    style SYNTH fill:#1e8449,stroke:#2ecc71,color:#fff
+    style GENERATE fill:#1e8449,stroke:#2ecc71,color:#fff
+    style DOWNLOAD fill:#1e8449,stroke:#2ecc71,color:#fff
+    style TAG fill:#1e8449,stroke:#2ecc71,color:#fff
 ```
 
 ### ForgeNexus Analyze Pipeline (Code Intelligence)
@@ -648,7 +795,7 @@ flowchart LR
     M9 --> SK9["DevOps → SRE"]
     M10 --> SK10["UX Researcher →<br/>UI Designer"]
     M11 --> SK11["Performance Engineer →<br/>SRE"]
-    M12 --> SK12["Polymath +<br/>NotebookLM MCP"]
+    M12 --> SK12["NotebookLM Researcher\n(+ Polymath web search)"]
     M13 --> SK13["Growth Marketer →<br/>Conversion Optimizer"]
     M14 --> SK14["Debugger →<br/>Engineer"]
     M15 --> SK15["Business Analyst"]
@@ -700,20 +847,40 @@ flowchart LR
 
 ---
 
-## 52 Skills — Quick Reference
+## 55 Skills — Quick Reference
 
 | Division | Skills |
 |----------|--------|
 | **Orchestrator & Meta** | production-grade, polymath, parallel-dispatch, memory-manager, skill-maker, mcp-generator |
-| **Core Engineering** | business-analyst, product-manager, solution-architect, software-engineer, frontend-engineer, qa-engineer, security-engineer, code-reviewer, devops, sre, data-scientist, technical-writer, ui-designer, mobile-engineer, mobile-tester, api-designer, database-engineer, debugger, prompt-engineer, project-manager |
-| **AI/ML & Data** | ai-engineer, performance-engineer, data-engineer, web-scraper, xlsx-engineer |
-| **Accessibility & UX** | accessibility-engineer, ux-researcher |
-| **Game Development** | game-designer, unity-engineer, unreal-engineer, godot-engineer, godot-multiplayer, roblox-engineer, level-designer, narrative-designer, technical-artist, game-audio-engineer, unity-shader-artist, unity-multiplayer, unreal-technical-artist, unreal-multiplayer, xr-engineer |
-| **Growth** | growth-marketer, conversion-optimizer |
+| **Core Engineering** | business-analyst, product-manager, solution-architect, software-engineer, frontend-engineer, qa-engineer, security-engineer, code-reviewer, devops, sre, data-scientist, technical-writer, ui-designer, mobile-engineer, mobile-tester, api-designer, database-engineer, debugger, prompt-engineer, project-manager, performance-engineer, accessibility-engineer |
+| **Data Acquisition** | notebooklm-researcher, web-scraper, xlsx-engineer |
+| **AI/ML** | ai-engineer, data-engineer |
+| **UX & Research** | ux-researcher |
+| **Game Development** | game-designer, unity-engineer, unreal-engineer, godot-engineer, godot-multiplayer, roblox-engineer, phaser3-engineer, threejs-engineer, level-designer, narrative-designer, technical-artist, game-audio-engineer, unity-shader-artist, unity-multiplayer, unreal-technical-artist, unreal-multiplayer, xr-engineer |
+| **Growth** | growth-marketer, conversion-optimizer, prompt-optimizer |
 
 ---
 
 ## Optional Enhancements
+
+### Research (NotebookLM CLI — v0.5.19)
+
+> **Grounded AI with zero hallucinations.** Uses Google NotebookLM as a knowledge synthesis engine — reads sources, generates summaries, quizzes, flashcards, podcasts, reports, slides, and more.
+
+```bash
+# Install (uv recommended)
+pipx install notebooklm-mcp-cli
+
+# Authenticate (launches browser, extracts cookies automatically)
+nlm login
+
+# Check status
+nlm auth status        # Shows "Authenticated" with notebook count
+nlm notebook list      # List all notebooks
+nlm --ai              # Full AI-optimized documentation
+```
+
+**35+ tools:** notebook, source, research, studio, audio, video, report, quiz, flashcards, mindmap, slides, infographic, data-table, batch, cross-notebook, pipelines, tags, drive-sync, sharing, aliases.
 
 ### Web Scraping (crawl4ai)
 
@@ -735,13 +902,6 @@ npm install -g @anthropic-ai/midscene
 npx paperclipai onboard --yes
 cd paperclip && pnpm dev
 # Dashboard: http://localhost:3100
-```
-
-### Research (NotebookLM MCP)
-
-```bash
-pip install notebooklm-mcp
-# Add to MCP config for grounded AI with zero hallucinations
 ```
 
 ---
@@ -821,12 +981,14 @@ MIT
 
 If Forgewright helps you ship faster, you can support the project here:
 
-<img src="assets/donate/give-me-a-coffee-international.png" width="240" />
+<p align="center">
+  <img src="assets/donate/give-me-a-coffee-international.png" width="280" alt="Buy Me a Coffee" />
+</p>
 
 ---
 
 <p align="center">
-  <strong>Forgewright — 52 AI skills. 22 modes. 15 protocols. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
+  <strong>Forgewright — 55 AI skills. 22 modes. 15 protocols. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
 </p>
 <p align="center">
   <em>Plan with precision. Build with confidence. Scale with intelligence.</em>
