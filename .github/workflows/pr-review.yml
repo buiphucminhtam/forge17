@@ -15,7 +15,6 @@ on:
         default: 'false'
         type: boolean
 
-
 jobs:
   forge-review:
     runs-on: ubuntu-latest
