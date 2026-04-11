@@ -39,7 +39,7 @@ All modes share these behaviors (see `SKILL.md` → Mode Execution):
 - Read `.production-grade.yaml` for path overrides
 - Read existing workspace state if present
 - Apply coding-level adaptation
-- **Run plan quality loop** on every skill — plan first, score ≥ 8.0
+- **Run plan quality loop** on every skill — plan first, score ≥ 9.0
 - **Asynchronous heartbeat** — periodic status updates to user
 - Engagement mode: ask only if mode involves 3+ skills
 

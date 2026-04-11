@@ -337,7 +337,7 @@ The orchestrator (`skills/production-grade/SKILL.md`) auto-classifies every requ
 Before any skill writes code, it MUST:
 
 1. **PLAN** — Define scope, approach, deliverables
-2. **SCORE** — Rate the plan against 8 criteria (threshold ≥ 8.0/10)
+2. **SCORE** — Rate the plan against 8 criteria (threshold ≥ 9.0/10)
 3. **META-EVALUATE** — Check: did we meet the quality bar?
 4. **CHECK ≥ 8** — If yes, execute. If no → learn, research, improve, re-plan. Max 3 iterations.
 5. **EXECUTE** — Write code, build, test, fix

@@ -270,9 +270,9 @@ All skills MUST follow the sensitive file protection protocol:
 
 ## Plan Quality Loop
 
-**ALL skills** MUST run the plan quality loop before doing any work. No exceptions — every skill plans first, scores, improves until ≥ 8.0:
+**ALL skills** MUST run the plan quality loop before doing any work. No exceptions — every skill plans first, scores, improves until ≥ 9.0:
 
-!`cat skills/_shared/protocols/plan-quality-loop.md 2>/dev/null || echo "Protocol not found — apply defaults: every skill must plan first, score against 8 criteria, threshold 8.0/10, improve loop with research + skill self-improvement"`
+!`cat skills/_shared/protocols/plan-quality-loop.md 2>/dev/null || echo "Protocol not found — apply defaults: every skill must plan first, score against 8 criteria, threshold 9.0/10, improve loop with research + skill self-improvement"`
 
 ## Execution Blocker Loop
 
@@ -291,7 +291,7 @@ All modes share these behaviors:
 - Read existing workspace state if present
 - Apply coding-level adaptation from `.production-grade.yaml` (see above)
 - Apply sensitive file protection protocol for all file operations
-- **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 8.0 before any work begins
+- **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 9.0 before any work begins
 - **Asynchronous Heartbeat:** Periodically emit human-readable status updates (e.g., "Running tests...", "Applying self-healing fix 2/5...") so the user knows the AI is working and hasn't frozen.
 - **⚠️ QA AUTO-RUN (MANDATORY):** After any code change (build, fix, feature), ALWAYS run QA/Testing WITHOUT waiting for user prompt. The sequence is: BUILD → TEST → VERIFY → DONE. Never finish without testing.
 - **Antigravity Planning (for large features):** Features with 3+ components MUST use antigravity planning structure BEFORE starting implementation. Create `antigravity/planning/[feature-name]/` with PLAN.md, SCOPE.md, ARCHITECTURE.md, TASKS.md files.
@@ -304,7 +304,7 @@ All modes share these behaviors:
 | # | Check | Action if Failed |
 |---|-------|-----------------|
 | 1 | **Request interpreted?** | If Step 0 wasn't completed, go back and do it |
-| 2 | **Plan scored ≥ 8.0?** | If < 8.0, improve plan before proceeding |
+| 2 | **Plan scored ≥ 9.0?** | If < 9.0, improve plan before proceeding |
 | 3 | **Code changes made?** | If yes → run QA tests |
 | 4 | **Tests written?** | If code changed → write tests |
 | 5 | **Tests passed?** | If tests exist → run them |
@@ -392,7 +392,7 @@ Each feature plan must include:
 
 ### Plan Quality Criteria
 
-Each feature plan must score ≥ 8.0/10 on:
+Each feature plan must score ≥ 9.0/10 on:
 
 | Criteria | Description |
 |----------|-------------|

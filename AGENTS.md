@@ -18,7 +18,7 @@ Forgewright is an adaptive orchestrator with **55 AI skills** that covers the en
    - Generates a structured request with clear scope and success criteria
    - **DO NOT SKIP THIS STEP** — if the request is unclear, ask before proceeding
 2. **STEP 1 — Classify the request** into one of 23 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**, **Prompt**)
-3. **STEP 2 — PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 8.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
+3. **STEP 2 — PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 9.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
 4. **STEP 3 — Execute the pipeline** as defined in the orchestrator
 
 **⚠️ CRITICAL RULE: NEVER START EXECUTING WITHOUT INTERPRETATION**
@@ -32,8 +32,8 @@ If the user's request is vague or missing critical information:
 Do NOT skip the orchestrator. Do NOT try to handle requests directly. Let the production-grade skill classify and route.
 
 > **⚠️ MANDATORY: Plan Quality Loop**
-> Every skill invocation MUST follow: **PLAN → SCORE → META-EVALUATE → CHECK ≥8 → EXECUTE**.
-> If score < 8.0: **LEARN (identify weak criteria) → RESEARCH (search for solutions) → IMPROVE SKILL (append lessons to SKILL.md) → RE-PLAN**.
+> Every skill invocation MUST follow: **PLAN → SCORE → META-EVALUATE → CHECK ≥9 → EXECUTE**.
+> If score < 9.0: **LEARN (identify weak criteria) → RESEARCH (search for solutions) → IMPROVE SKILL (append lessons to SKILL.md) → RE-PLAN**.
 > Max 3 iterations. No skill may skip this. Read `skills/_shared/protocols/plan-quality-loop.md` for full rubric.
 
 ## Quick Reference

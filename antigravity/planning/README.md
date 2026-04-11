@@ -73,7 +73,7 @@ Trước khi gửi cho user review:
 2. ✅ Architecture diagram present
 3. ✅ Risks được identified
 4. ✅ Tasks có estimates
-5. ✅ Overall quality score ≥ 8.0
+5. ✅ Overall quality score ≥ 9.0
 
 ## Anti-patterns
 

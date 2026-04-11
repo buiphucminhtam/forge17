@@ -165,9 +165,9 @@ All skills MUST follow the sensitive file protection protocol:
 
 ## Plan Quality Loop
 
-**ALL skills** MUST run the plan quality loop before doing any work. No exceptions — every skill plans first, scores, improves until ≥ 8.0:
+**ALL skills** MUST run the plan quality loop before doing any work. No exceptions — every skill plans first, scores, improves until ≥ 9.0:
 
-!`cat skills/_shared/protocols/plan-quality-loop.md 2>/dev/null || echo "Protocol not found — apply defaults: every skill must plan first, score against 8 criteria, threshold 8.0/10, improve loop with research + skill self-improvement"`
+!`cat skills/_shared/protocols/plan-quality-loop.md 2>/dev/null || echo "Protocol not found — apply defaults: every skill must plan first, score against 8 criteria, threshold 9.0/10, improve loop with research + skill self-improvement"`
 
 ## Mode Execution (Non-Full-Build)
 
@@ -178,7 +178,7 @@ All modes share these behaviors:
 - Read existing workspace state if present
 - Apply coding-level adaptation from `.production-grade.yaml` (see above)
 - Apply sensitive file protection protocol for all file operations
-- **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 8.0 before any work begins
+- **Run plan quality loop** on EVERY skill invocation — plan first, score ≥ 9.0 before any work begins
 - **Asynchronous Heartbeat:** Periodically emit human-readable status updates (e.g., "Running tests...", "Applying self-healing fix 2/5...") so the user knows the AI is working and hasn't frozen.
 - Engagement mode: ask ONLY if mode involves 3+ skills. For 1-2 skill modes, use Standard engagement + Sequential execution.
 

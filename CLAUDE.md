@@ -193,8 +193,8 @@ After interpretation, classify into one of 23 modes:
 Before ANY skill does ANY work:
 1. **PLAN** — Create a plan with 8 criteria
 2. **SCORE** — Score against rubric (0-10 each)
-3. **META-EVALUATE** — Check threshold ≥ 8.0
-4. **IMPROVE** (if < 8.0) — Research + improve plan
+3. **META-EVALUATE** — Check threshold ≥ 9.0
+4. **IMPROVE** (if < 9.0) — Research + improve plan
 5. **EXECUTE** — Only after passing threshold
 
 Max 3 iterations. No skill may skip this.
@@ -283,7 +283,7 @@ Before finishing ANY task, verify ALL of the following:
 | # | Check | Action if Failed |
 |---|-------|-----------------|
 | 1 | ✅ Request interpreted? | Go back to Step 0 |
-| 2 | ✅ Plan scored ≥ 8.0? | Improve plan first |
+| 2 | ✅ Plan scored ≥ 9.0? | Improve plan first |
 | 3 | ✅ Code changed? | → Run QA tests |
 | 4 | ✅ Tests written? | Write tests (mandatory) |
 | 5 | ✅ Tests passed? | Fix issues first |

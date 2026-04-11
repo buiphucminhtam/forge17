@@ -12,7 +12,7 @@
 cd antigravity/planning/my-feature
 vim PLAN.md SCOPE.md TASKS.md
 
-# 3. Plan with score ≥ 8.0 before implementing
+# 3. Plan with score ≥ 9.0 before implementing
 
 # 4. Track progress
 ./scripts/antigravity/antigravity.sh status
@@ -128,7 +128,7 @@ Mỗi feature plan phải đạt:
 | **Priority** | Impact vs effort rõ ràng | ≥ 8/10 |
 | **Dependencies** | External deps được xác định | ≥ 7/10 |
 
-**Overall Threshold: ≥ 8.0/10**
+**Overall Threshold: ≥ 9.0/10**
 
 ## Best Practices
 
