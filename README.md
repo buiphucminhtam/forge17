@@ -1,14 +1,10 @@
 # Forgewright — Adaptive AI Orchestrator
 
 <p align="center">
-  <img src="assets/forgewright-banner.png" alt="Forgewright Banner" width="100%" />
-</p>
-
-<p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-55-brightgreen.svg" alt="Skills" />
-  <img src="https://img.shields.io/badge/modes-23-blueviolet.svg" alt="Modes" />
+  <img src="https://img.shields.io/badge/modes-22-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/Code_Intelligence-ForgeNexus·GitNexus-4B0082.svg" alt="Code Intelligence" />
@@ -53,7 +49,7 @@ flowchart LR
     subgraph L1["⚡ Level 1 — Basic"]
         direction TB
         L1A["✅ What's included"]
-        L1B["• 52 AI skills"]
+        L1B["• 55 AI skills"]
         L1C["• Automated pipeline"]
         L1D["• Default on install"]
     end

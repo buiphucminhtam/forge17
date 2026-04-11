@@ -3,14 +3,10 @@
 > **This is the Vietnamese version.** For English documentation, see [README.md](./README.md)
 
 <p align="center">
-  <img src="assets/forgewright-banner.png" alt="Forgewright Banner" width="100%" />
-</p>
-
-<p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-55-brightgreen.svg" alt="Skills" />
-  <img src="https://img.shields.io/badge/modes-23-blueviolet.svg" alt="Modes" />
+  <img src="https://img.shields.io/badge/modes-22-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/Code_Intelligence-ForgeNexus·GitNexus-4B0082.svg" alt="Code Intelligence" />
@@ -55,7 +51,7 @@ flowchart LR
     subgraph L1["⚡ Level 1 — Basic"]
         direction TB
         L1A["✅ Đã có gì"]
-        L1B["• 52 kỹ năng AI"]
+        L1B["• 55 kỹ năng AI"]
         L1C["• Pipeline tự động"]
         L1D["• Mặc định khi cài đặt"]
     end
@@ -105,7 +101,7 @@ flowchart TD
     START(["Bạn ơi, bắt đầu từ đâu?"])
 
     START --> Q1{"Bạn là dev?"}
-    Q1 --> |"Không / mới bắt đầu"| EASY["✅ Level 1 — Basic<br/>Chỉ cần cài là xong<br/>52 kỹ năng có sẵn"]
+    Q1 --> |"Không / mới bắt đầu"| EASY["✅ Level 1 — Basic<br/>Chỉ cần cài là xong<br/>55 kỹ năng có sẵn"]
     Q1 --> |"Có, muốn thông minh hơn"| SMART["✅ Level 2 — Smart<br/>Thêm phân tích code<br/>Hỏi gì đáp nấy"]
 
     SMART --> Q2{"Cần nhớ qua các lần chat?"}
