@@ -1,76 +1,3 @@
-<!-- forgenexus:start -->
-# ForgeNexus — Code Intelligence
-
-> **Self-hosted code intelligence engine.** This project is indexed by ForgeNexus. Use the ForgeNexus MCP tools to understand code, assess impact, and navigate safely.
-
-## Always Do
-
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `forgenexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius to the user.
-- **MUST run `forgenexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `forgenexus_query({query: "concept"})` to find execution flows.
-- When you need full context on a symbol, use `forgenexus_context({name: "symbolName"})`.
-
-## When Refactoring
-
-- **Renaming**: MUST use `forgenexus_rename({symbol_name: "old", new_name: "new", dry_run: true})`.
-- **Extracting/Splitting**: MUST run `forgenexus_context({name: "target"})` first, then `forgenexus_impact({target: "target", direction: "upstream"})`.
-- After any refactor: run `forgenexus_detect_changes({scope: "all"})`.
-
-## Never Do
-
-- NEVER edit a function, class, or method without first running `forgenexus_impact`.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `forgenexus_rename`.
-- NEVER commit changes without running `forgenexus_detect_changes()` to check affected scope.
-
-## Tools Quick Reference
-
-| Tool | When to use | Command |
-|------|-------------|---------|
-| `query` | Find code by concept | `forgenexus_query({query: "auth validation"})` |
-| `context` | 360-degree view of one symbol | `forgenexus_context({name: "validateUser"})` |
-| `impact` | Blast radius before editing | `forgenexus_impact({target: "X", direction: "upstream"})` |
-| `detect_changes` | Pre-commit scope check | `forgenexus_detect_changes({scope: "staged"})` |
-| `rename` | Safe multi-file rename | `forgenexus_rename({symbol_name: "old", new_name: "new", dry_run: true})` |
-| `cypher` | Custom graph queries | `forgenexus_cypher({query: "MATCH ..."})` |
-
-## Impact Risk Levels
-
-| Depth | Meaning | Action |
-|-------|---------|--------|
-| d=1 | WILL BREAK — direct callers/importers | MUST update these |
-| d=2 | LIKELY AFFECTED — indirect deps | Should test |
-| d=3 | MAY NEED TESTING — transitive | Test if critical path |
-
-## Resources
-
-| Resource | Use for |
-|----------|---------|
-| `forgenexus://repos` | All indexed repositories |
-| `forgenexus://repo/forgewright/context` | Codebase overview |
-| `forgenexus://repo/forgewright/clusters` | All functional areas |
-| `forgenexus://repo/forgewright/processes` | All execution flows |
-
-## Self-Check Before Finishing
-
-1. `forgenexus_impact` was run for all modified symbols
-2. No HIGH/CRITICAL risk warnings were ignored
-3. `forgenexus_detect_changes()` confirms changes match expected scope
-4. All d=1 (WILL BREAK) dependents were updated
-
-## Keeping the Index Fresh
-
-After committing code changes, the ForgeNexus index becomes stale:
-
-```bash
-npx forgenexus analyze
-```
-
-<!-- forgenexus:end -->
-
----
-
 # Forgewright — Claude Code Integration
 
 > **This file is read by Claude Code on every new chat.** It tells Claude Code how to use Forgewright's production pipeline.
@@ -232,11 +159,11 @@ For features with 3+ components, create planning structure BEFORE starting:
 ```
 antigravity/
 └── planning/
-    └── [feature-name]/
-        ├── PLAN.md          # Main planning document
-        ├── SCOPE.md         # Scope definition
-        ├── ARCHITECTURE.md  # Technical architecture
-        └── TASKS.md         # Task breakdown
+ └── [feature-name]/
+     ├── PLAN.md          # Main planning document
+     ├── SCOPE.md         # Scope definition
+     ├── ARCHITECTURE.md  # Technical architecture
+     └── TASKS.md         # Task breakdown
 ```
 
 ## Quick Reference
@@ -251,7 +178,7 @@ antigravity/
 | "Bug / fix" | Debug | Debugger → Engineer |
 | "Design architecture" | Architect | Solution Architect |
 | "Research..." | Research | NotebookLM + Polymath |
-| "Game with Unity..." | Game Build | Game Designer → Engine → Level → Audio |
+| "Game with Unity..." | Game Build | Game Designer → Engine → Level → Audio + `docs/unity-project-quickstart.md` |
 | "Build VR app..." | XR Build | XR Engineer |
 | "Mobile app" | Mobile | Mobile Engineer |
 | "improve prompts" | Prompt | Prompt Engineer + chat-interpreter |
@@ -287,9 +214,8 @@ Before finishing ANY task, verify ALL of the following:
 | 3 | ✅ Code changed? | → Run QA tests |
 | 4 | ✅ Tests written? | Write tests (mandatory) |
 | 5 | ✅ Tests passed? | Fix issues first |
-| 6 | ✅ forgenexus_impact run? | Run impact analysis |
-| 7 | ✅ Scope respected? | Flag scope creep |
-| 8 | ✅ User approval? | Wait for approval (if gate) |
+| 6 | ✅ Scope respected? | Flag scope creep |
+| 7 | ✅ User approval? | Wait for approval (if gate) |
 
 **⚠️ MANDATORY RULE:**
 ```

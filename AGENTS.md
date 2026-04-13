@@ -150,6 +150,7 @@ All 55 skills are in the `skills/` directory:
 | **Game Development** | |
 | Game Designer | `skills/game-designer/SKILL.md` |
 | Unity Engineer | `skills/unity-engineer/SKILL.md` + Unity-MCP integration |
+| **Unity Quickstart** | `docs/unity-project-quickstart.md` |
 | Unreal Engineer | `skills/unreal-engineer/SKILL.md` |
 | Godot Engineer | `skills/godot-engineer/SKILL.md` |
 | Godot Multiplayer | `skills/godot-multiplayer/SKILL.md` |
