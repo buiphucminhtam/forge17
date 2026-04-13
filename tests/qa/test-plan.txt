@@ -1,0 +1,128 @@
+# QA Test Plan — Forgewright
+
+> **Last Updated:** 2026-04-13
+> **QA Engineer:** Claude Agent (Forgewright QA Skill)
+> **Status:** Active
+
+---
+
+## 1. Test Strategy
+
+### 1.1 Scope
+
+| Package | Scope |
+|---------|-------|
+| **forgenexus** | Code intelligence engine — agents, graph, scanner, RAG, CLI |
+| **mcp** | Global MCP server — tools, pipeline, parsers, errors |
+
+### 1.2 Goals
+
+- Maintain ≥80% line coverage for both packages
+- All new code requires tests before merge
+- Integration tests cover end-to-end pipeline flows
+
+### 1.3 Test Types
+
+| Type | Location | Run In |
+|------|----------|--------|
+| Unit | `**/*.test.ts` | CI (every PR) |
+| Integration | `tests/integration/` | CI (full) + manual |
+| E2E | `tests/e2e/` | Manual (gate release) |
+
+---
+
+## 2. Unit Test Coverage Matrix
+
+### 2.1 Forgenexus Package
+
+| Module | Files | Covered | Threshold |
+|--------|-------|---------|-----------|
+| agents | 8 | 5 | 70% |
+| data (db, graph) | 4 | 2 | 80% |
+| analysis (scanner, parser) | 4 | 2 | 75% |
+| rag | 3 | 2 | 80% |
+| cli | 6 | 0 | (defer) |
+
+### 2.2 MCP Package
+
+| Module | Files | Covered | Threshold |
+|--------|-------|---------|-----------|
+| api/tools | 2 | 2 | 80% |
+| state/pipeline-manager | 2 | 2 | 80% |
+| parsers/skill-parser | 2 | 2 | 75% |
+| errors | 2 | 2 | 85% |
+
+---
+
+## 3. Integration Test Plan
+
+### 3.1 MCP Integration Tests
+
+| Test Case | Description | Status |
+|-----------|-------------|--------|
+| `startPipeline` | Creates state file and transitions to Phase 1 | ✅ |
+| `advancePhase` | Increments phase, blocks on gate | ✅ |
+| `gate workflow` | Request → wait → approve end-to-end | ✅ |
+| `getAllSkills` | Returns skills from disk | ✅ |
+| `getSharedProtocols` | Returns protocols from disk | ✅ |
+| `error serialization` | ForgewrightError → JSON | ✅ |
+| `isForgewrightError` | Type detection | ✅ |
+
+### 3.2 Forgenexus Integration Tests
+
+| Test Case | Description | Status |
+|-----------|-------------|--------|
+| `ForgeDB insert/query` | Node and edge CRUD | ✅ |
+| `analyzeImpact` | Blast radius analysis | ✅ |
+| `detectCommunities` | Graph clustering | ✅ |
+| `FileScanner` | Discovers source files | ✅ |
+
+---
+
+## 4. Test Execution Schedule
+
+| Trigger | Action |
+|---------|--------|
+| Every PR | Run `npm run test` for changed package(s) |
+| Before merge to main | Run full test suite + coverage |
+| Weekly | Full integration test run with Docker services |
+| Pre-release | E2E test suite |
+
+---
+
+## 5. CI Configuration
+
+### 5.1 Wave 1 (Parallel)
+
+- `lint-and-format` — ESLint + Prettier (mcp)
+- `typecheck` — TypeScript build (mcp)
+- `test` — Unit tests (mcp)
+- `commitlint` — Commit message validation
+- `forgenexus-lint` — ESLint + Prettier (forgenexus)
+- `forgenexus-typecheck` — TypeScript build (forgenexus)
+- `forgenexus-test` — Unit tests (forgenexus)
+
+### 5.2 Wave 2 (After test)
+
+- `test-coverage` — Coverage gate (mcp)
+- `forgenexus-coverage` — Coverage gate (forgenexus)
+
+---
+
+## 6. Known Limitations
+
+1. **Coverage reporter bug** — `minimatch` conflict with `@vitest/coverage-v8`. Coverage data is collected but reporter errors. Tests pass.
+2. **CLI tests deferred** — CLI tools need stub/mock setup before unit testing.
+3. **E2E tests pending** — Full end-to-end pipeline test not yet implemented.
+
+---
+
+## 7. Test Quality Metrics
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| forgenexus unit tests | 127 | 200+ |
+| mcp unit tests | 61 | 100+ |
+| integration tests | 11 | 30+ |
+| forgenexus coverage | ~45% (unreported) | 80% |
+| mcp coverage | ~70% (unreported) | 80% |

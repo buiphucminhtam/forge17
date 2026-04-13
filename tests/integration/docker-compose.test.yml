@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  # ── Forgenexus Integration Tests ──────────────────────────────────
+  postgres-forgenexus:
+    image: postgres:16-alpine
+    container_name: forgewright-forgenexus-postgres
+    environment:
+      POSTGRES_DB: forgenexus_test
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_forgenexus_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d forgenexus_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── MCP Integration Tests ─────────────────────────────────────────
+  postgres-mcp:
+    image: postgres:16-alpine
+    container_name: forgewright-mcp-postgres
+    environment:
+      POSTGRES_DB: mcp_test
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_mcp_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d mcp_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_forgenexus_data:
+  postgres_mcp_data:

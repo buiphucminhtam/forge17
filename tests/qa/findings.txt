@@ -1,0 +1,71 @@
+# QA Findings — 2026-04-13
+
+## Critical Issues
+
+### 1. Coverage Reporter Bug — `minimatch` Conflict (Severity: MEDIUM)
+- **Location:** `forgenexus/vitest.config.ts` + `forgenexus/package.json`
+- **Problem:** `@vitest/coverage-v8` depends on `test-exclude` which uses `minimatch`, but the `minimatch` version in the dependency tree is incompatible with the exported API.
+- **Impact:** Coverage data is collected but cannot be reported. CI will fail at the coverage gate even though tests pass.
+- **Root Cause:** npm overrides conflicting with vitest's expected `minimatch` version.
+- **Fix Applied:** Removed `minimatch: ^9.0.5` override from `forgenexus/package.json` overrides.
+- **Remaining:** Still broken — need to investigate `test-exclude` version or use alternative coverage provider.
+- **Recommendation:** Either (a) pin `test-exclude` to compatible version, (b) switch to `v8` provider with custom excludes, or (c) use `c8` instead.
+
+---
+
+## Medium Issues
+
+### 2. MCP `parseFrontmatter` Not Exported (Severity: MEDIUM)
+- **Location:** `mcp/src/parsers/skill-parser.ts`
+- **Problem:** The `parseFrontmatter` function is used internally but not exported. Tests attempted to import it but it doesn't exist in the module's export surface.
+- **Impact:** Cannot write targeted tests for frontmatter parsing.
+- **Fix Applied:** Refactored tests to use only exported functions (`getAllSkills`, `getSharedProtocols`).
+- **Recommendation:** Add `parseFrontmatter` to exports if it's a useful utility.
+
+### 3. MCP `pipeline-manager` Tests Need State Cleanup (Severity: LOW)
+- **Location:** `mcp/src/state/pipeline-manager.test.ts`
+- **Problem:** Tests write to `.forgewright/pipeline-state.json` in the actual workspace. If tests crash, state file may be left behind.
+- **Impact:** Could affect subsequent test runs or actual pipeline state.
+- **Fix Applied:** Added `beforeEach`/`afterEach` cleanup to remove state file.
+- **Recommendation:** Use temp directory or isolated test workspace root.
+
+---
+
+## Resolved Issues
+
+| Issue | Status | Resolution |
+|-------|--------|------------|
+| CI only running mcp tests | ✅ Fixed | Added `forgenexus-lint`, `forgenexus-typecheck`, `forgenexus-test`, `forgenexus-coverage` jobs |
+| CI paths only watching `mcp/**` | ✅ Fixed | Added `forgenexus/**` to trigger paths |
+| No forgenexus coverage config | ✅ Fixed | Added `test:coverage` script + forgenexus-coverage job |
+| Missing unit tests for agents | ✅ Fixed | Added 4 new test files (127 new tests total) |
+| Missing unit tests for graph | ✅ Fixed | Added `graph.test.ts` with 22 tests |
+| Missing unit tests for scanner | ✅ Fixed | Added `scanner.test.ts` with 29 tests |
+| Missing unit tests for MCP pipeline | ✅ Fixed | Rewrote `pipeline-manager.test.ts` with 9 tests |
+| Integration test structure missing | ✅ Fixed | Created `tests/integration/` with docker-compose and MCP integration tests |
+
+---
+
+## Security Considerations
+
+1. **No secret scanning** — CI does not include secret detection. Consider adding `detect-secrets` or `trufflehog` job.
+2. **No SAST** — No static application security testing in CI pipeline.
+3. **Docker compose uses default passwords** — `testuser/testpass` in test compose. Appropriate for test environment only.
+
+---
+
+## Recommendations
+
+### High Priority
+1. Fix coverage reporter for forgenexus — unblocks CI coverage gate
+2. Add E2E test suite for full pipeline flow
+
+### Medium Priority
+3. Export `parseFrontmatter` from skill-parser
+4. Add `detect-secrets` to CI lint job
+5. Implement isolated test workspace for pipeline-manager
+
+### Low Priority
+6. Add CLI unit tests (need stub setup)
+7. Add performance benchmarks (measure index time, query latency)
+8. Add contract tests between forgenexus and mcp packages

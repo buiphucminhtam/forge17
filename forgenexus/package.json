@@ -15,6 +15,7 @@
     "dev": "tsc --watch",
     "test": "vitest run --reporter=basic",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage --reporter=basic",
     "test:integration": "npx tsx scripts/test-integration.ts",
     "test:all": "npm run test && npm run test:integration",
     "lint": "eslint src/ --ext .ts --max-warnings=0",
@@ -57,7 +58,6 @@
     "node": ">=18"
   },
   "overrides": {
-    "esbuild": "^0.25.0",
-    "minimatch": "^9.0.5"
+    "esbuild": "^0.25.0"
   }
 }

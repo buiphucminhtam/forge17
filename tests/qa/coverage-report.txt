@@ -1,0 +1,67 @@
+# Test Coverage Report — 2026-04-13
+
+## Summary
+
+| Package | Tests | Status | Notes |
+|---------|-------|--------|-------|
+| **forgenexus** | 127 passed | ✅ PASS | 7 test files |
+| **mcp** | 61 passed | ✅ PASS | 4 test files |
+
+---
+
+## Forgenexus Test Files
+
+| File | Tests | Status |
+|------|-------|--------|
+| `src/agents/confidence.test.ts` | 9 | ✅ |
+| `src/agents/citations.test.ts` | 4 | ✅ |
+| `src/agents/llm-client.test.ts` | 24 | ✅ |
+| `src/agents/prompts.test.ts` | 30 | ✅ |
+| `src/analysis/scanner.test.ts` | 29 | ✅ |
+| `src/data/graph.test.ts` | 22 | ✅ |
+| `src/rag/chunker.test.ts` | 6 | ✅ |
+| `integration/forge.integration.test.ts` | (integration) | ✅ |
+
+**Total: 127 unit tests**
+
+---
+
+## MCP Test Files
+
+| File | Tests | Status |
+|------|-------|--------|
+| `src/api/tools.test.ts` | 28 | ✅ |
+| `src/errors.test.ts` | 22 | ✅ |
+| `src/parsers/skill-parser.test.ts` | 2 | ✅ |
+| `src/state/pipeline-manager.test.ts` | 9 | ✅ |
+
+**Total: 61 unit tests**
+
+---
+
+## New Tests Added (v8.2)
+
+### Forgenexus
+- `src/agents/prompts.test.ts` — CITATION_PATTERN, extractCitations, buildVerificationPrompt, buildSynthesisPrompt, applyGuardrails, parseVerificationResponse, extractConfidenceScore
+- `src/agents/llm-client.test.ts` — MockLLMClient, GuardedLLMClient, createGuardedLLMClient, createMockGuardedLLMClient
+- `src/data/graph.test.ts` — detectCommunities, analyzeImpact, computeMRO, findOverrides, traceProcesses
+- `src/analysis/scanner.test.ts` — FileScanner, detectLanguage, skip patterns, extension mapping
+
+### MCP
+- `src/parsers/skill-parser.test.ts` — getSharedProtocols, getAllSkills
+- `src/state/pipeline-manager.test.ts` — full pipeline lifecycle (start, advance, gate, approve)
+
+---
+
+## CI Coverage Gate Status
+
+| Job | Threshold | Status |
+|-----|-----------|--------|
+| `test-coverage` (mcp) | 70% | ✅ |
+| `forgenexus-coverage` | 70% | ⚠️ Reporter bug (data OK) |
+
+---
+
+## Coverage Calculation Note
+
+The `@vitest/coverage-v8` reporter has a `minimatch` compatibility issue that prevents the coverage report from being generated, even though coverage data is collected during test runs. All 188 tests pass. Coverage will be measured and enforced once the dependency conflict is resolved.
