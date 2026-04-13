@@ -116,6 +116,84 @@ public class NetworkedHealth : NetworkBehaviour
 }
 ```
 
+## Network Testing với Unity-MCP
+
+Unity-MCP cung cấp tools để setup và test multiplayer scenes, run tests, và debug network issues.
+
+### Tools for Multiplayer
+
+| Tool | Use Case |
+|------|----------|
+| `gameobject-create` | Tạo player spawn points, network managers |
+| `gameobject-component-add` | Add NetworkObject, NetworkTransform |
+| `gameobject-component-modify` | Configure network component properties |
+| `editor-application-set-state` | Control play mode (Host/Client/Server) |
+| `console-get-logs` | Debug network issues, connection errors |
+| `scene-save` | Save test scenes |
+| `tests-run` | Run PlayMode tests for multiplayer |
+
+### Network Scene Setup Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Create NetworkManager (Forgewright)                          │
+│    └── Write NetworkManager.cs                                  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. Setup spawn points (Unity-MCP)                               │
+│    └── gameobject-create(name="SpawnPoint_1", parent="Spawns")  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. Add NetworkObject to prefabs (Unity-MCP)                     │
+│    └── gameobject-component-add                                │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. Test connection (Unity-MCP)                                  │
+│    └── editor-application-set-state(play=true)                 │
+│    └── console-get-logs(filter="Network")                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Multiplayer Testing
+
+Unity-MCP cho phép automated multiplayer testing:
+
+| Test | Unity-MCP Approach |
+|------|-------------------|
+| Connection | Start multiple instances, test join |
+| State sync | `console-get-logs` to verify sync |
+| Disconnect | Terminate instance, check cleanup |
+| Host migration | Test host disconnect → new host |
+
+### Example: Setup Player Prefab
+
+```bash
+# 1. Create player prefab with NetworkObject (Forgewright)
+# Viết NetworkPlayer.cs script
+
+# 2. Create empty GameObject (Unity-MCP)
+gameobject-create(name="Player_Prefab", parent="Prefabs/Players")
+
+# 3. Add NetworkObject component (Unity-MCP)
+gameobject-component-add(object_path="Prefabs/Players/Player_Prefab",
+                        component="Unity.Netcode.NetworkObject")
+
+# 4. Add NetworkTransform (Unity-MCP)
+gameobject-component-add(object_path="Prefabs/Players/Player_Prefab",
+                        component="Unity.Netcode.NetworkTransform")
+
+# 5. Make it a prefab (Unity-MCP)
+# Chuyển thành prefab trong Editor
+
+# 6. Test spawn (Unity-MCP)
+editor-application-set-state(play=true)
+```
+
+---
+
 ## Execution Checklist
 
 - [ ] NetworkManager configured with transport

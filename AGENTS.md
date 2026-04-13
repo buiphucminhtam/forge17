@@ -149,7 +149,7 @@ All 55 skills are in the `skills/` directory:
 | Paperclip Protocol | `skills/_shared/protocols/paperclip-integration.md` |
 | **Game Development** | |
 | Game Designer | `skills/game-designer/SKILL.md` |
-| Unity Engineer | `skills/unity-engineer/SKILL.md` |
+| Unity Engineer | `skills/unity-engineer/SKILL.md` + Unity-MCP integration |
 | Unreal Engineer | `skills/unreal-engineer/SKILL.md` |
 | Godot Engineer | `skills/godot-engineer/SKILL.md` |
 | Godot Multiplayer | `skills/godot-multiplayer/SKILL.md` |
@@ -161,8 +161,8 @@ All 55 skills are in the `skills/` directory:
 | Technical Artist | `skills/technical-artist/SKILL.md` |
 | Game Asset & VFX | `skills/game-asset-vfx/SKILL.md` |
 | Game Audio Engineer | `skills/game-audio-engineer/SKILL.md` |
-| Unity Shader Artist | `skills/unity-shader-artist/SKILL.md` |
-| Unity Multiplayer | `skills/unity-multiplayer/SKILL.md` |
+| Unity Shader Artist | `skills/unity-shader-artist/SKILL.md` + Unity-MCP visual feedback |
+| Unity Multiplayer | `skills/unity-multiplayer/SKILL.md` + Unity-MCP testing |
 | Unreal Technical Artist | `skills/unreal-technical-artist/SKILL.md` |
 | Unreal Multiplayer | `skills/unreal-multiplayer/SKILL.md` |
 | XR Engineer | `skills/xr-engineer/SKILL.md` |

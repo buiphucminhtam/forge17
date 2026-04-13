@@ -355,15 +355,143 @@ public class GameEventListener : MonoBehaviour
 
 ---
 
-## Integration with Unity Skills MCP
+## Integration with Unity-MCP
 
-If the `unity-skills` MCP server is available, leverage it for:
-- **Automated scene setup** — create GameObjects, set components, assign materials via REST API
-- **Prefab creation** — assemble prefabs programmatically
-- **Material assignment** — set up materials without opening Unity Editor
-- **Light setup** — configure lighting via API
+Forgewright Unity Engineer dùng Unity-MCP (IvanMurzak/Unity-MCP) cho Editor automation khi cần thao tác với Unity Editor trực tiếp. Unity-MCP cung cấp 100+ MCP tools để create/modify GameObjects, assets, scenes, và run tests.
 
-Check availability: `list_resources(ServerName="unity-skills")`
+### Prerequisites
+
+1. **Unity-MCP Plugin** đã được cài trong Unity project
+2. **MCP Server** đang chạy (stdio hoặc http transport)
+3. **Unity Editor** đang mở (cho Editor tools)
+
+**Installation:**
+```bash
+# 1. Install CLI
+npm install -g unity-mcp-cli
+
+# 2. Install plugin vào Unity project
+unity-mcp-cli install-plugin ./MyUnityProject
+
+# 3. Mở Unity project (plugin sẽ auto-generate skills)
+```
+
+### Tool Mapping
+
+| Forgewright Task | Unity-MCP Tool | When to Use |
+|------------------|----------------|-------------|
+| Tạo scene objects | `gameobject-create` | Placeholder GameObjects |
+| Setup prefabs | `assets-prefab-create` | Convert scene → prefab |
+| Assign materials | `assets-material-create` | Create materials |
+| Thêm components | `gameobject-component-add` | Attach scripts |
+| Modify components | `gameobject-component-modify` | Change component values |
+| Chạy tests | `tests-run` | PlayMode/EditMode tests |
+| Debug errors | `console-get-logs` | Error investigation |
+| Script iteration | `script-execute` | Test code với Roslyn (không cần save) |
+
+### Combined Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Step 1: Architecture (Forgewright - NO Unity Editor)           │
+│ ├── SO framework design                                        │
+│ ├── Event channel architecture                                  │
+│ ├── Component responsibilities                                   │
+│ └── Generate .cs files                                          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Step 2: Scene Setup (Unity-MCP - Editor Automation)             │
+│ ├── Tạo empty GameObjects cho hierarchy                        │
+│ ├── Assign prefabs từ SO references                            │
+│ └── Setup materials và textures                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Step 3: Code Implementation (Forgewright - NO Unity Editor)     │
+│ ├── MonoBehaviour implementations                               │
+│ ├── SO event wiring                                             │
+│ └── Gameplay logic                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Step 4: Testing (Unity-MCP - Editor Automation)                 │
+│ ├── Run PlayMode tests                                          │
+│ ├── Capture screenshots                                         │
+│ └── Console log analysis                                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Step 5: Quality Gate (Forgewright)                             │
+│ ├── Architecture compliance check                               │
+│ ├── SO-first pattern verification                               │
+│ └── Brownfield safety validation                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### When to Use Unity-MCP Tools
+
+| Use Case | Approach | Why |
+|----------|----------|-----|
+| Architecture design | Forgewright only | Không cần Editor, cần type safety |
+| SO framework creation | Forgewright only | Cần project-specific patterns |
+| Scene object placement | Unity-MCP | Cần visual feedback |
+| Prefab assembly | Unity-MCP | Cần drag-drop workflow |
+| Component wiring | Both | Forgewright code + Unity-MCP verify |
+| Material setup | Unity-MCP | Cần visual preview |
+| Testing & debugging | Unity-MCP | Console logs, screenshots |
+| Gameplay logic | Forgewright only | Cần complex logic |
+
+### When NOT to Use Unity-MCP Tools
+
+| Use Case | Approach | Why |
+|----------|----------|-----|
+| Greenfield architecture | Forgewright | Unity-MCP không có architecture guidance |
+| Complex gameplay logic | Forgewright | Cần type safety, refactoring support |
+| Refactoring lớn | Forgewright | Tool-based refactor dễ break |
+| Brownfield migration | Forgewright + Unity-MCP | Forgewright analyze, Unity-MCP apply |
+
+### Runtime AI (In-Game)
+
+Unity-MCP hỗ trợ AI bên trong compiled game cho dynamic features.
+
+**Use Cases:**
+
+| Use Case | Description |
+|----------|-------------|
+| NPC Bot | LLM điều khiển NPC decision-making (VD: chess bot) |
+| Dynamic Dialogue | Generate dialogue at runtime |
+| Procedural Content | AI tạo content theo context |
+| In-Game Debug | AI phân tích game state |
+
+**Implementation:**
+```csharp
+// Build MCP plugin
+var mcpPlugin = UnityMcpPluginRuntime.Initialize(builder =>
+{
+    builder.WithConfig(config =>
+    {
+        config.Host = "http://localhost:8080";
+        config.Token = "your-token";
+    });
+    builder.WithToolsFromAssembly(Assembly.GetExecutingAssembly());
+})
+.Build();
+
+await mcpPlugin.Connect();
+```
+
+**When to Use Runtime AI:**
+- Game có NPC thông minh (strategy, puzzle)
+- Dialogue system cần dynamic responses
+- Procedural generation cần AI guidance
+- Debugging trong editor với AI assistance
+
+**When NOT to Use Runtime AI:**
+- Deterministic gameplay (fighting game, rhythm games)
+- Performance-critical paths
+- Simple AI patterns (patrol, chase)
+- Mobile games với network dependency
 
 ---
 

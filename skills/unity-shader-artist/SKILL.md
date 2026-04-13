@@ -117,6 +117,100 @@ Assets/_Project/
     └── M_Water.mat
 ```
 
+## Visual Feedback với Unity-MCP
+
+Sau khi tạo shaders, dùng Unity-MCP để verify visual output mà không cần manually open Unity Editor.
+
+### Screenshot Tools
+
+| Tool | Use Case |
+|------|----------|
+| `screenshot-scene-view` | Shader trông thế nào trong scene view |
+| `screenshot-game-view` | Shader trong gameplay context |
+| `screenshot-camera` | Shader từ specific camera angle |
+
+### Shader Iteration Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Create shader (Forgewright)                                  │
+│    └── Write Shader Graph hoặc HLSL code                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. Create material (Unity-MCP)                                   │
+│    └── assets-material-create                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. Apply to GameObject (Unity-MCP)                               │
+│    └── object-modify (material property)                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. Capture screenshot (Unity-MCP)                                │
+│    └── screenshot-scene-view                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 5. Review → Adjust shader parameters → Iterate                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Material Assignment Tools
+
+| Tool | Use Case |
+|------|----------|
+| `assets-material-create` | Tạo material với shader |
+| `object-modify` | Assign material vào renderer |
+| `assets-get-data` | Get material properties |
+| `assets-shader-list-all` | List available shaders |
+
+### Example: Create và Test Dissolve Shader
+
+```bash
+# 1. Create dissolve shader (Forgewright - code generation)
+# Tạo SG_Dissolve.shadergraph trong Assets/_Project/Shaders/
+
+# 2. Create material via Unity-MCP
+assets-material-create(name="M_Dissolve", shader="Shader Graphs/SG_Dissolve")
+
+# 3. Assign texture via Unity-MCP
+object-modify(object_path="Assets/_Project/Prefabs/Player.prefab",
+              component="MeshRenderer",
+              property="materials/0",
+              value="Assets/_Project/Materials/M_Dissolve.mat")
+
+# 4. Capture screenshot
+screenshot-scene-view(output_path="Assets/_Project/Screenshots/dissolve_test.png")
+
+# 5. Review visual result
+# Nếu cần chỉnh → Update shader → Re-test
+```
+
+### Visual Quality Verification
+
+Unity-MCP screenshot tools cho phép verify:
+
+| Check | Tool | Purpose |
+|-------|------|---------|
+| Material rendering | `screenshot-scene-view` | Shader output correctness |
+| Gameplay context | `screenshot-game-view` | Shader trong context |
+| Lighting interaction | `screenshot-camera` | Shader với specific lighting |
+| Animation | `screenshot-game-view` (multiple) | Shader animation timing |
+
+### Extension Packages
+
+Unity-MCP có extensions cho visual-specific tasks:
+
+| Extension | Use Case |
+|-----------|----------|
+| [Unity-AI-Animation](https://github.com/IvanMurzak/Unity-AI-Animation/) | Animation tools |
+| [Unity-AI-ParticleSystem](https://github.com/IvanMurzak/Unity-AI-ParticleSystem/) | VFX tools |
+| [Unity-AI-ProBuilder](https://github.com/IvanMurzak/Unity-AI-ProBuilder/) | Geometry setup |
+
+---
+
 ## Execution Checklist
 
 - [ ] Standard PBR material template with all maps

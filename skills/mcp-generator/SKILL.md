@@ -205,3 +205,83 @@ When the project changes significantly (new onboarding, architecture changes):
 - **project-onboarding.md** — Phase 1.6 triggers this skill
 - **session-lifecycle.md** — MCP server can re-index at session start/end
 - **code-intelligence.md** — Shares ForgeNexus data source
+
+---
+
+## Unity Project Detection
+
+The MCP Generator can detect Unity projects and offer Unity-MCP integration.
+
+### Detection Criteria
+
+A project is identified as Unity if:
+1. `Assets/` folder exists
+2. `ProjectSettings/ProjectVersion.txt` exists
+3. `Packages/manifest.json` exists with Unity registry
+
+```bash
+# Check for Unity project
+if [ -d "Assets" ] && [ -f "ProjectSettings/ProjectVersion.txt" ]; then
+  echo "Unity project detected"
+fi
+```
+
+### Unity Project Options
+
+When Unity project is detected, offer to generate:
+
+1. **Unity-MCP Config Snippet** — Quick config for Unity-MCP connection
+2. **Unity-Specific Tools** — Game-related ForgeNexus tools
+3. **Documentation** — Link to `docs/unity-mcp-setup.md`
+
+### Unity-MCP Config Generation
+
+For Unity projects, generate a config snippet:
+
+```json
+{
+  "mcpServers": {
+    "unity-game-developer": {
+      "command": "<unity-project>/Library/mcp-server/osx-arm64/unity-mcp-server",
+      "args": ["--port=8080", "--client-transport=stdio"]
+    }
+  }
+}
+```
+
+### Unity-Specific ForgeNexus Queries
+
+Unity projects benefit from game-specific queries:
+
+| Query | Use Case |
+|-------|----------|
+| "MonoBehaviour scripts" | Find gameplay scripts |
+| "ScriptableObject" | Find data assets |
+| "NetworkVariable" | Find networked state |
+| "Shader Graph" | Find visual assets |
+
+### Workflow for Unity Projects
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Detect Unity project via file structure                     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. Offer Unity-MCP integration                                 │
+│    "Detected Unity project. Configure Unity-MCP?"              │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. If yes: Generate Unity-MCP config + docs link               │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. User installs Unity-MCP in Unity Editor                     │
+│    → unity-mcp-cli install-plugin ./MyUnityProject             │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ 5. Forgewright Unity skills can now leverage Unity-MCP tools    │
+└─────────────────────────────────────────────────────────────────┘
+```
