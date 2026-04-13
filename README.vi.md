@@ -6,8 +6,8 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-55-brightgreen.svg" alt="Skills" />
-  <img src="https://img.shields.io/badge/modes-22-blueviolet.svg" alt="Modes" />
-  <img src="https://img.shields.io/badge/protocols-15-00CED1.svg" alt="Protocols" />
+  <img src="https://img.shields.io/badge/modes-23-blueviolet.svg" alt="Modes" />
+  <img src="https://img.shields.io/badge/protocols-27-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/Code_Intelligence-ForgeNexus·GitNexus-4B0082.svg" alt="Code Intelligence" />
   <img src="https://img.shields.io/badge/Memory-Persistent%20(mem0)-00CED1.svg" alt="Memory" />
@@ -206,7 +206,7 @@ flowchart TD
     START --> CHAT_INT
     CHAT_INT --> ORCH
 
-    ORCH --> MODE{{"Classify Request<br/>22 Modes"}}
+    ORCH --> MODE{{"Classify Request<br/>23 Modes"}}
 
     MODE --> |"Full Build"| PHASE_DEFINE["DEFINE Phase<br/>BA → PM → Architect"]
     MODE --> |"Feature"| PHASE_FEATURE["FEATURE Phase<br/>PM → BE/FE → QA"]
@@ -674,7 +674,7 @@ flowchart TD
     style G3 fill:#d35400,stroke:#e67e22,color:#fff
 ```
 
-### 22 Modes — Bạn nói gì, Forgewright chọn cái đó
+### 23 Modes — Bạn nói gì, Forgewright chọn cái đó
 
 ```mermaid
 flowchart LR
@@ -1044,7 +1044,7 @@ Nếu Forgewright giúp bạn ship nhanh hơn, bạn có thể ủng hộ tại 
 ---
 
 <p align="center">
-  <strong>Forgewright — 55 AI skills. 22 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
+  <strong>Forgewright — 55 AI skills. 23 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
 </p>
 <p align="center">
   <em>Lên kế hoạch chính xác. Build với tự tin. Mở rộng thông minh.</em>

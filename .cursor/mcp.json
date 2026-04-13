@@ -1,9 +1,23 @@
 {
   "mcpServers": {
-    "forgenexus": {
+    "forgewright-forgenexus": {
       "command": "node",
-      "args": ["forgenexus/dist/cli/index.js", "mcp", "."],
+      "args": [
+        ".cursor/forgenexus-mcp.js"
+      ],
       "cwd": "${workspaceFolder}"
+    },
+    "cursor-ide-browser": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${workspaceFolder}"
+      ]
+    },
+    "notebooklm-mcp": {
+      "command": "/Users/buiphucminhtam/.local/bin/notebooklm-mcp",
+      "args": []
     }
   }
 }

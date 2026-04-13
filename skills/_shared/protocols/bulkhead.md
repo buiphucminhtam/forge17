@@ -1,6 +1,6 @@
 # Bulkhead Isolation Protocol
 
-> **Purpose:** Isolate worker failures to prevent cascading crashes. Inspired by the Bulkhead pattern from Release It! (Michael Nygard) — named after watertight compartments in ships that prevent flooding from spreading.
+> **Purpose:** Isolate worker failures to prevent cascading crashes. Inspired by the Bulkhead pattern from *Release It!* (Michael Nygard) — named after watertight compartments in ships that prevent flooding from spreading.
 
 ## Concept
 
@@ -20,98 +20,40 @@ A bulkhead divides a system into isolated compartments. If one compartment flood
 
 ## Configuration
 
-Add to `.production-grade.yaml`:
+Add to `parallel-dispatch` section:
 
 ```yaml
 bulkhead:
-  max_memory_mb: 512       # Max memory per worker
-  max_cpu_percent: 80     # Max CPU usage per worker
-  max_duration_minutes: 30 # Max execution time
-  isolation_level: process # process | container | vm
-  auto_cleanup: true       # Cleanup on timeout
-```
-
-Per-worker overrides:
-
-```yaml
-bulkhead:
-  workers:
-    T3a:  # Backend
-      max_memory_mb: 512
-      max_duration_minutes: 30
-    T4:   # DevOps
-      max_memory_mb: 768
-      max_duration_minutes: 45
-    T6:   # Review
-      max_memory_mb: 256
-      max_duration_minutes: 20
+  max_memory_mb: 512        # Max memory per worker
+  max_cpu_percent: 80       # Max CPU usage per worker
+  max_duration_minutes: 30  # Max execution time
+  isolation_level: process    # process | container | vm
+  auto_cleanup: true         # Cleanup on timeout
 ```
 
 ## Resource Limits Implementation
 
 ### Process Level (Default)
 
-> **⚠️ Platform Note:** `ulimit -v` and `ulimit -m` do NOT work on macOS. Memory limits
-> are enforced via the **Watchdog** approach only. CPU time (`ulimit -t`) works on both.
-
 ```bash
-# CPU time limit (works on macOS and Linux)
+# Worker process with resource limits
+ulimit -v $((512 * 1024))  # 512MB virtual memory
+ulimit -m $((512 * 1024))  # 512MB physical memory
 ulimit -t 1800             # 30 minutes CPU time
 
-# Memory limits: via watchdog only on macOS
-# See Bash Watchdog Implementation below
-```
-
-### Watchdog (Cross-Platform, Recommended)
-
-The watchdog monitors worker processes and kills them if they exceed memory or time limits.
-This approach works on macOS, Linux, and Windows (via WSL).
-
-```bash
-#!/usr/bin/env bash
-# Worker watchdog with bulkhead limits
-
-start_watched_worker() {
-  local task_id="$1"
-  local worktree_path="$2"
-  local max_memory_mb="${3:-512}"
-  local max_duration_min="${4:-30}"
-
-  local max_mem_kb=$((max_memory_mb * 1024))
-  local max_seconds=$((max_duration_min * 60))
-  local log_file="${worktree_path}/worker-${task_id}.log"
-
-  # Start worker in background
-  (
-    cd "$worktree_path"
-    gemini -p "..." > "$log_file" 2>&1
-  ) &
-  local worker_pid=$!
-
-  # Start watchdog
-  local start_time=$(date +%s)
-  while kill -0 "$worker_pid" 2>/dev/null; do
-    local mem=$(ps -o rss= -p "$worker_pid" 2>/dev/null || echo 0)
-    local elapsed=$(($(date +%s) - start_time))
-
-    if [ "$mem" -gt "$max_mem_kb" ]; then
-      kill -9 "$worker_pid" 2>/dev/null
-      echo "[BULKHEAD] OOM_KILLED: ${task_id} (${mem}KB > ${max_mem_kb}KB)" >> ".forgewright/bulkhead-log.md"
-      return 1
+# Monitor worker
+(
+  worker_pid=$!
+  while kill -0 $worker_pid 2>/dev/null; do
+    # Check memory
+    mem=$(ps -o rss= -p $worker_pid 2>/dev/null || echo 0)
+    if [ $mem -gt $((512 * 1024)) ]; then
+      kill -9 $worker_pid
+      echo "Worker exceeded memory limit"
     fi
-
-    if [ "$elapsed" -gt "$max_seconds" ]; then
-      kill -9 "$worker_pid" 2>/dev/null
-      echo "[BULKHEAD] TIMEOUT: ${task_id} (${elapsed}s > ${max_seconds}s)" >> ".forgewright/bulkhead-log.md"
-      return 2
-    fi
-
     sleep 5
   done
-
-  wait "$worker_pid"
-  return $?
-}
+) &
 ```
 
 ### Container Level (Optional)
@@ -122,18 +64,7 @@ docker run \
   --memory=512m \
   --cpus=0.8 \
   --memory-swap=512m \
-  --pids-limit=100 \
-  --ulimit nofile=1024:2048 \
   worktree-worker
-
-# Kubernetes (for production deployments)
-resources:
-  limits:
-    memory: "512Mi"
-    cpu: "800m"
-  requests:
-    memory: "256Mi"
-    cpu: "400m"
 ```
 
 ## Failure Containment
@@ -145,89 +76,37 @@ resources:
 | Worker segfault | Catch signal, cleanup, mark as FAILED |
 | Worker infinite loop | Timeout watchdog kills worker |
 
-## Bash Watchdog Implementation
-
-```bash
-#!/usr/bin/env bash
-# Worker watchdog with bulkhead limits
-
-start_watched_worker() {
-  local task_id="$1"
-  local worktree_path="$2"
-  local max_memory_mb="${3:-512}"
-  local max_duration_min="${4:-30}"
-
-  local max_mem_kb=$((max_memory_mb * 1024))
-  local max_seconds=$((max_duration_min * 60))
-  local log_file="${worktree_path}/worker-${task_id}.log"
-
-  # Start worker in background
-  (
-    cd "$worktree_path"
-    gemini -p "..." > "$log_file" 2>&1
-  ) &
-  local worker_pid=$!
-
-  # Start watchdog
-  local start_time=$(date +%s)
-  while kill -0 "$worker_pid" 2>/dev/null; do
-    local mem=$(ps -o rss= -p "$worker_pid" 2>/dev/null || echo 0)
-    local elapsed=$(($(date +%s) - start_time))
-
-    if [ "$mem" -gt "$max_mem_kb" ]; then
-      kill -9 "$worker_pid" 2>/dev/null
-      echo "[BULKHEAD] OOM_KILLED: ${task_id} (${mem}KB > ${max_mem_kb}KB)" >> ".forgewright/bulkhead-log.md"
-      return 1
-    fi
-
-    if [ "$elapsed" -gt "$max_seconds" ]; then
-      kill -9 "$worker_pid" 2>/dev/null
-      echo "[BULKHEAD] TIMEOUT: ${task_id} (${elapsed}s > ${max_seconds}s)" >> ".forgewright/bulkhead-log.md"
-      return 2
-    fi
-
-    sleep 5
-  done
-
-  # Worker completed
-  wait "$worker_pid"
-  return $?
-}
-```
-
 ## Integration Points
 
 1. **scripts/worktree-manager.sh** — Add resource limit flags to worker processes
 2. **parallel-dispatch/SKILL.md** — Add bulkhead checks in worker dispatch
 
-## Test Scenarios
+## Worker Resource Limits
 
-| # | Scenario | Expected Result |
-|---|----------|----------------|
-| 1 | Worker OOM | Worker killed, main process alive, other workers continue |
-| 2 | Worker timeout | Worker killed after limit, marked FAILED |
-| 3 | Worker segfault | Signal caught, cleanup executed, FAILED logged |
-| 4 | Memory leak | Watchdog kills worker at limit |
-| 5 | CPU spin | Timeout watchdog kills worker |
-| 6 | One worker fails | Other workers continue unaffected |
+| Worker | Memory | CPU | Time | On Limit |
+|--------|--------|-----|------|----------|
+| T3a (Backend) | 512MB | 80% | 30min | Kill + Skip |
+| T3b (Frontend) | 512MB | 80% | 30min | Kill + Skip |
+| T3c (Mobile) | 512MB | 80% | 30min | Kill + Skip |
+| T4 (DevOps) | 768MB | 80% | 45min | Kill + Skip |
+| T5 (QA) | 512MB | 80% | 30min | Kill + Skip |
+| T6 (Review) | 256MB | 40% | 20min | Kill + Skip |
 
 ## Monitoring
 
-Log bulkhead events to `.forgewright/bulkhead-log.md`:
-
-```markdown
-## Bulkhead Events Log
+Log bulkhead events:
 
 | Timestamp | Worker | Event | Memory | CPU | Duration |
 |-----------|--------|-------|--------|-----|----------|
-| 2026-04-12T10:30:00Z | T3a | OOM_KILLED | 513MB | 95% | 5m |
-| 2026-04-12T10:35:00Z | T3b | TIMEOUT | 128MB | 10% | 30m |
-| 2026-04-12T10:40:00Z | T3c | COMPLETED | 256MB | 45% | 12m |
-```
+| 2026-04-13T10:30:00Z | T3a | OOM_KILLED | 513MB | 95% | 5m |
+| 2026-04-13T10:35:00Z | T3b | TIMEOUT | 128MB | 10% | 30m |
 
-## Safety Guarantees
+## Test Scenarios
 
-1. **Main process never crashes** due to worker failure
-2. **Other workers continue** when one fails
-3. **Clean cleanup** of killed worker resources
-4. **Audit trail** of all bulkhead events
+| # | Scenario | Expected Result |
+|---|----------|-----------------|
+| 1 | Worker OOM | Worker killed, main process alive, other workers continue |
+| 2 | Worker timeout | Worker killed after 30min, marked FAILED |
+| 3 | Worker segfault | Signal caught, cleanup executed, FAILED logged |
+| 4 | Memory leak | Watchdog kills worker at limit |
+| 5 | CPU spin | Timeout watchdog kills worker |

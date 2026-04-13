@@ -2,6 +2,43 @@
 
 All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
 
+## [8.0.0] — 2026-04-13
+
+> **v8.0 — Stability, Resilience, Audit, Quality, Timeout**
+
+### Added
+
+- **Circuit Breaker Protocol** (`skills/_shared/protocols/circuit-breaker.md`) — State machine pattern (CLOSED → OPEN → HALF_OPEN) to prevent cascading failures in parallel dispatch workers.
+- **Bulkhead Isolation Protocol** (`skills/_shared/protocols/bulkhead.md`) — Resource limits per worker type (memory, CPU, duration) with failure containment.
+- **Verification Protocol** (`skills/_shared/protocols/verification.md`) — 4-level verification framework (Contract Compliance → Acceptance Criteria → Integration → Quality Score).
+- **Quality History Schema** (`.forgewright/quality-history.schema.json`) — JSON Schema for tracking quality scores across sessions.
+- **Production Config Template** (`.production-grade.yaml.example`) — Example config with circuit breaker, bulkhead, quality gate, middleware chain, and timeout settings.
+
+### Changed
+
+- **Documentation Count Fix** — Mode count corrected to 23 (from 22) in README.md, README.vi.md, CLAUDE.md, AGENTS.md. Protocol count corrected to 27 (from 15) in README.md and README.vi.md badges.
+- **Skills Count Fix** — AGENTS.md corrected to "55 AI skills" (from 54).
+- **AI Build Mode Simplification** — Removed `"scrape"`, `"crawl website"` triggers and `Web Scraper` skill from AI Build mode. Web Scraper has its own trigger and skill.
+- **DEFINE Phase** — Added investigation timeout management (T0 no limit, T0.5 10min, T1 15min, T1.5 15min, T2 20min).
+- **TASK Contract JSON Schema** (`skills/_shared/protocols/task-contract.md`) — Added JSON Schema block for contract validation.
+- **READ-ONLY Enforcement** (`skills/code-reviewer/SKILL.md`) — Phase 0 enforcement ensuring code-reviewer never modifies source code.
+- **Authority Boundary Checks** (`skills/_shared/protocols/guardrail.md`) — SOLE OWASP and SOLE SLO authority enforcement via guardrail custom rules.
+- **Enhanced Secret Detection** (`skills/security-engineer/SKILL.md`) — JWT `algorithm: none`, AWS v4 signatures, base64-encoded secrets, env var patterns, hardcoded credentials, connection strings with embedded secrets.
+- **Self-Healing Loop** (`skills/production-grade/phases/build.md`) — Error classification → retry protocol (max 3) → rollback → escrow report.
+
+### Security
+
+- Authority boundary enforcement via guardrail custom rules (SOLE OWASP for security-engineer, SOLE SLO for SRE).
+- Secret detection patterns expanded with 20+ regex patterns for API keys, JWTs, credentials, and connection strings.
+
+### Internal
+
+- 15 phase and cross-cutting audits completed with 150+ findings. All P0 issues resolved. Breaking changes: 0.
+
+# Changelog
+
+All notable changes to [Forgewright](https://github.com/buiphucminhtam/forgewright).
+
 ## [7.8.2] — 2026-04-09
 
 > **Quality Overhaul — Stability, CI/CD, Architecture, Maintainability**

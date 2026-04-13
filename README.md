@@ -99,7 +99,7 @@ flowchart TD
     START(["Hey, where do I start?"])
 
     START --> Q1{"Are you a developer?"}
-    Q1 --> |"No / Just starting"| EASY["✅ Level 1 — Basic<br/>Just install and go<br/>52 skills ready"]
+    Q1 --> |"No / Just starting"| EASY["✅ Level 1 — Basic<br/>Just install and go<br/>55 skills ready"]
     Q1 --> |"Yes, want smarter"| SMART["✅ Level 2 — Smart<br/>Add code analysis<br/>Ask anything"]
 
     SMART --> Q2{"Need memory across chats?"}
@@ -204,7 +204,7 @@ flowchart TD
     START --> CHAT_INT
     CHAT_INT --> ORCH
 
-    ORCH --> MODE{{"Classify Request<br/>22 Modes"}}
+    ORCH --> MODE{{"Classify Request<br/>23 Modes"}}
 
     MODE --> |"Full Build"| PHASE_DEFINE["DEFINE Phase<br/>BA → PM → Architect"]
     MODE --> |"Feature"| PHASE_FEATURE["FEATURE Phase<br/>PM → BE/FE → QA"]
@@ -672,7 +672,7 @@ flowchart TD
     style G3 fill:#d35400,stroke:#e67e22,color:#fff
 ```
 
-### 22 Modes — What You Say, Forgewright Chooses
+### 23 Modes — What You Say, Forgewright Chooses
 
 ```mermaid
 flowchart LR
@@ -1042,7 +1042,7 @@ If Forgewright helps you ship faster, you can support here:
 ---
 
 <p align="center">
-  <strong>Forgewright — 55 AI skills. 22 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
+  <strong>Forgewright — 55 AI skills. 23 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
 </p>
 <p align="center">
   <em>Plan precisely. Build confidently. Scale intelligently.</em>
