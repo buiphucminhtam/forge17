@@ -370,3 +370,167 @@ openupm add com.ivanmurzak.unity.ai-probuilder
 - [Documentation](https://github.com/IvanMurzak/Unity-MCP/wiki)
 - [Discord Community](https://discord.gg/unity-mcp)
 - [Forgewright Unity Skills](./unity-mcp-integration)
+
+---
+
+## Unity Build & Test Commands
+
+### Build Commands by Platform
+
+| Platform | Command | Output |
+|----------|---------|--------|
+| macOS Standalone | `unity -batchmode -quit -projectPath . -buildTarget StandaloneOSX -executeMethod BuildScript.Build` | `.app` |
+| Windows Standalone | `unity -batchmode -quit -projectPath . -buildTarget StandaloneWindows64 -executeMethod BuildScript.Build` | `.exe` |
+| Linux Standalone | `unity -batchmode -quit -projectPath . -buildTarget StandaloneLinux64 -executeMethod BuildScript.Build` | `.x86_64` |
+| iOS | `unity -batchmode -quit -projectPath . -buildTarget iOS -executeMethod BuildScript.Build` | Xcode project |
+| Android | `unity -batchmode -quit -projectPath . -buildTarget Android -executeMethod BuildScript.Build` | `.apk` / `.aab` |
+| WebGL | `unity -batchmode -quit -projectPath . -buildTarget WebGL -executeMethod BuildScript.Build` | `Build/` |
+| visionOS | `unity -batchmode -quit -projectPath . -buildTarget visionOS -executeMethod BuildScript.Build` | Xcode project |
+
+### Build Script Template
+
+```csharp
+// Editor/BuildScript.cs
+using UnityEditor;
+using UnityEngine;
+
+public static class BuildScript
+{
+    [MenuItem("Build/Build All Platforms")]
+    public static void Build()
+    {
+        string[] args = System.Environment.GetCommandLineArgs();
+        
+        // Parse command line arguments
+        string buildTarget = "StandaloneOSX";
+        string outputPath = "Build";
+        
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "-buildTarget" && i + 1 < args.Length)
+                buildTarget = args[i + 1];
+            if (args[i] == "-outputPath" && i + 1 < args.Length)
+                outputPath = args[i + 1];
+        }
+        
+        BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+        {
+            scenes = new[] { "Assets/Scenes/Gameplay.unity" },
+            locationPathName = outputPath,
+            target = BuildTargetFromString(buildTarget),
+            options = BuildOptions.None
+        };
+        
+        BuildPipeline.BuildPlayer(buildPlayerOptions);
+    }
+    
+    private static BuildTarget BuildTargetFromString(string target)
+    {
+        return target switch
+        {
+            "StandaloneOSX" => BuildTarget.StandaloneOSX,
+            "StandaloneWindows64" => BuildTarget.StandaloneWindows64,
+            "iOS" => BuildTarget.iOS,
+            "Android" => BuildTarget.Android,
+            "WebGL" => BuildTarget.WebGL,
+            _ => BuildTarget.StandaloneOSX
+        };
+    }
+}
+```
+
+### Unity Test Framework Commands
+
+| Test Type | Command | Framework |
+|-----------|---------|-----------|
+| All tests | `dotnet test` | NUnit via Unity Test Framework |
+| Mechanics tests | `dotnet test --filter "Category=Mechanics"` | NUnit |
+| Combat tests | `dotnet test --filter "Category=Combat"` | NUnit |
+| UI tests | `dotnet test --filter "Category=UI"` | NUnit |
+| Editor tests | `unity -batchmode -executeMethod UnityEditor.TestTools.TestRunner.Runner.RunAllTests` | Unity Editor |
+
+### Headless Play Mode Test
+
+```csharp
+// Editor/PlayModeTest.cs
+using UnityEngine;
+using UnityEngine.TestTools;
+using NUnit.Framework;
+using System.Collections;
+
+public class PlayModeTest
+{
+    [UnityTest]
+    public IEnumerator GameStarts_WithStartButton_Click_LoadsGameplay()
+    {
+        // Setup scene
+        var button = Object.FindObjectOfType<StartButton>();
+        Assert.IsNotNull(button, "Start button not found");
+        
+        // Click start
+        button.onClick?.Invoke();
+        
+        // Wait one frame
+        yield return null;
+        
+        // Verify scene loaded
+        Assert.IsTrue(SceneManager.GetActiveScene().name == "Gameplay");
+    }
+}
+```
+
+### CI/CD Build Pipeline
+
+```yaml
+# .github/workflows/unity-build.yml
+name: Unity Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: gableroux/unity3d:2022.3.0f1-linux
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build WebGL
+        run: |
+          unity -batchmode -quit \
+            -projectPath . \
+            -buildTarget WebGL \
+            -executeMethod BuildScript.Build \
+            -logFile build.log
+            
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: webgl-build
+          path: Build/
+```
+
+### Editor Automation
+
+```bash
+# Open Unity project
+unity -batchmode -projectPath ./MyGame
+
+# Run editor script
+unity -batchmode -quit -projectPath ./MyGame -executeMethod MyEditorScript.DoSomething
+
+# Package export
+unity -batchmode -quit -projectPath ./MyGame \
+  -executeMethod AssetDatabase.ExportPackage \
+  -logFile export.log
+
+# Batch script execution
+unity -batchmode -quit \
+  -projectPath ./MyGame \
+  -executeMethod BatchProcessor.ProcessAll \
+  -BatchmodeArgs "-arg1 value1"
+```

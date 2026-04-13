@@ -165,6 +165,7 @@ All 55 skills are in the `skills/` directory:
 | Game Audio Engineer | `skills/game-audio-engineer/SKILL.md` |
 | Unity Shader Artist | `skills/unity-shader-artist/SKILL.md` + Unity-MCP visual feedback |
 | Unity Multiplayer | `skills/unity-multiplayer/SKILL.md` + Unity-MCP testing |
+| Unity MCP | `skills/unity-mcp/SKILL.md` — Editor automation, 100+ tools |
 | Unreal Technical Artist | `skills/unreal-technical-artist/SKILL.md` |
 | Unreal Multiplayer | `skills/unreal-multiplayer/SKILL.md` |
 | XR Engineer | `skills/xr-engineer/SKILL.md` |

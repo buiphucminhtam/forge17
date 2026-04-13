@@ -543,3 +543,267 @@ await mcpPlugin.Connect();
 - [ ] Assembly definitions for compilation speed
 - [ ] Platform-specific build settings configured
 - [ ] Build validation script checks for missing references
+
+---
+
+## Unity MCP Integration (v8.0)
+
+Unity-MCP provides 100+ tools for Editor automation. Use MCP for scene structure and component wiring; use C# for gameplay logic.
+
+### MCP vs C# Decision Matrix
+
+| Task | Use MCP | Use C# | Reason |
+|------|---------|--------|--------|
+| Scene creation & hierarchy | ✅ | ❌ | MCP scene tools |
+| GameObject manipulation | ✅ | ❌ | MCP gameobject tools |
+| Prefab creation | ✅ | ❌ | MCP prefab tools |
+| Component setup (no logic) | ✅ | ❌ | MCP component tools |
+| Material/shader creation | ✅ | ❌ | MCP asset tools |
+| Script file creation | ❌ | ✅ | MCP cannot modify .cs |
+| Gameplay logic | ❌ | ✅ | MCP Editor-only |
+| Complex algorithms | ❌ | ✅ | C# required |
+| State machine implementation | ❌ | ✅ | C# required |
+| Network sync logic | ❌ | ✅ | C# required |
+| SO asset creation | ❌ | ✅ | C# + CreateAssetMenu |
+
+### Hybrid Workflow Pattern
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 1: MCP CREATES STRUCTURE (Editor-time)                   │
+│ ├─ Scene hierarchy with empty GameObject containers             │
+│ ├─ Component configuration without logic                        │
+│ ├─ Material assignments                                        │
+│ └─ Prefab scaffold                                            │
+├─────────────────────────────────────────────────────────────────┤
+│ PHASE 2: C# ADDS LOGIC (Compile-time)                         │
+│ ├─ Monobehaviour scripts with [RequireComponent]               │
+│ ├─ ScriptableObject definitions                                │
+│ ├─ Event channel wiring (wire scripts to SOs)                 │
+│ └─ Gameplay systems implementation                              │
+├─────────────────────────────────────────────────────────────────┤
+│ PHASE 3: MCP WIRES COMPONENTS (Editor-time)                    │
+│ ├─ Attach C# scripts to GameObjects via gameobject-component-add │
+│ ├─ Configure script properties via gameobject-component-modify  │
+│ ├─ Create SO instances via assets-create-folder                 │
+│ └─ Wire event listeners via Inspector-assigned SOs             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### When Unity MCP Activates
+
+| Pipeline Phase | Unity MCP Role | Unity Engineer Role |
+|----------------|----------------|---------------------|
+| Core Framework | Create manager objects, folders | Write SO framework |
+| Gameplay Systems | Setup prefab hierarchy | Implement logic |
+| UI Systems | Create Canvas, Buttons, Images | Write UI scripts |
+| Multiplayer | Add NetworkObject to prefabs | Implement sync logic |
+| Level Design | Setup spawn points, containers | Create level logic |
+
+### MCP Tool Usage by Phase
+
+| Phase | Key MCP Tools | Purpose |
+|-------|---------------|---------|
+| Setup | `scene-create`, `assets-create-folder` | Project structure |
+| Prefab | `gameobject-create`, `gameobject-set-parent` | Hierarchy setup |
+| Components | `gameobject-component-add`, `gameobject-component-modify` | Configuration |
+| Materials | `assets-material-create`, `assets-modify` | Visual setup |
+| Wiring | `gameobject-component-add` (with script type) | Connect C# to GameObjects |
+
+### Example: Player Prefab Setup
+
+```bash
+# 1. MCP creates hierarchy
+gameobject-create(name="Player", parent="Characters")
+gameobject-create(name="Model", parent="Player")
+gameobject-create(name="Collider", parent="Player")
+gameobject-component-add(gameobject="Player/Collider", component="CapsuleCollider")
+gameobject-component-modify(gameobject="Player/Collider", component="CapsuleCollider", properties={height: 2, center: [0,1,0]})
+
+# 2. Unity Engineer writes PlayerController.cs
+
+# 3. MCP wires the script
+gameobject-component-add(gameobject="Player", component="PlayerController")
+
+# 4. MCP configures via Inspector (MCP limitation: cannot set script properties)
+# Note for user: "Configure PlayerController properties in Inspector"
+```
+
+### MCP Limitations (Unity Engineer Awareness)
+
+| Limitation | Impact | Workaround |
+|------------|--------|------------|
+| Cannot edit .cs files | Scripts must be pre-written | C# skill creates scripts first |
+| Cannot set script properties | Inspector config needed | Document required settings |
+| Cannot run gameplay | Testing limited | editor-application-set-state(play=true) |
+| Large scene slowdown | Performance on big levels | Use targeted searches |
+
+### Handoff: Unity MCP → Unity Engineer
+
+| Unity MCP Creates | Unity Engineer Does |
+|-------------------|---------------------|
+| Empty GameObject hierarchy | Implements MonoBehaviour scripts |
+| Component configuration | Wires scripts via [RequireComponent] |
+| Material assignments | Creates SO-based data assets |
+| Prefab scaffold | Implements gameplay logic |
+
+### Integration Checklist
+
+- [ ] Unity MCP skill loaded for scene setup
+- [ ] C# scripts written before MCP wiring
+- [ ] Prefab hierarchy created by MCP
+- [ ] Scripts attached via MCP
+- [ ] Materials assigned via MCP
+- [ ] Scene saved after MCP operations
+- [ ] Notes for Unity Engineer documented
+
+---
+
+## DOTS Decision Guide (v8.0)
+
+Unity DOTS (Data-Oriented Tech Stack) includes ECS, Jobs, Burst Compiler, and Unity Physics. Use this guide to decide when to adopt DOTS.
+
+### Decision Matrix
+
+| Factor | Pure DOTS | Hybrid DOTS | GameObject Only |
+|--------|-----------|-------------|-----------------|
+| **Performance priority** | Critical (60+ FPS) | Important | Standard |
+| **Entity count** | 10,000+ | 1,000-10,000 | <1,000 |
+| **Platform** | PC/Console | PC/Mobile | Mobile/PC |
+| **Team experience** | DOTS expert | Intermediate | Beginner |
+| **Debug complexity** | High | Medium | Low |
+| **Iteration speed** | Slow | Medium | Fast |
+
+### When to Use Pure DOTS
+
+**Use Pure DOTS when ALL apply:**
+- ✅ 10,000+ entities ( RTS units, bullets, NPCs)
+- ✅ Performance-critical (combat in 60-player shooter)
+- ✅ Team has DOTS experience
+- ✅ Mobile not primary target
+- ✅ Time for debugging/investment
+
+**Example Use Cases:**
+- RTS games with 1,000+ units
+- MMO-style games with many NPCs
+- Bullet hell shooters with 10,000+ projectiles
+- Physics simulations with many rigid bodies
+
+### When to Use Hybrid DOTS
+
+**Use Hybrid DOTS when MOST apply:**
+- ⚠️ 1,000-10,000 entities
+- ⚠️ Performance matters but not critical
+- ⚠️ Mixed platforms (PC + Mobile)
+- ⚠️ Team learning DOTS
+- ⚠️ Need to integrate with existing GameObject code
+
+**Example Use Cases:**
+- Top-down shooters with 100-500 enemies
+- Action RPGs with many projectiles
+- Tower defense with 500+ units
+- Mobile games that need extra performance
+
+### When to Use GameObject Only
+
+**Use GameObject Only when ANY apply:**
+- ❌ <1,000 entities typical
+- ❌ Fast iteration needed (prototype/mVP)
+- ❌ Team is new to Unity
+- ❌ Mobile-first with limited budget
+- ❌ Gameplay complexity > performance
+
+**Example Use Cases:**
+- Puzzle games
+- Narrative/adventure games
+- Platformers with <50 enemies
+- Mobile games with simple mechanics
+
+### Migration Path: GameObject → Hybrid → Pure DOTS
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 1: GameObject-Only (Start Here)                          │
+│ ├─ Standard MonoBehaviour + SO architecture                     │
+│ ├─ RuntimeSets for entity tracking                             │
+│ └─ Optimize with object pooling, event-driven updates           │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 2: Hybrid DOTS (When Needed)                             │
+│ ├─ Convert specific systems to IJobParallelFor                  │
+│ ├─ Use NavMeshAgent → Unity Physics for pathfinding             │
+│ ├─ Convert enemy spawning to IJobParallelFor                   │
+│ └─ Keep gameplay logic in MonoBehaviours                       │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ PHASE 3: Pure DOTS (When Required)                            │
+│ ├─ Convert all entities to IComponentData                      │
+│ ├─ Systems replace MonoBehaviours                              │
+│ ├─ Burst Compiler for all heavy computation                    │
+│ └─ Unity Physics for collision detection                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### DOTS Component Reference
+
+| GameObject Pattern | DOTS Equivalent | Migration Effort |
+|-------------------|-----------------|------------------|
+| MonoBehaviour | IComponentData | High |
+| Transform | LocalToWorld, Translation, Rotation, Scale | Medium |
+| Rigidbody | PhysicsVelocity, PhysicsMass | Medium |
+| Collider | Collider, PhysicsShape | Medium |
+| GameObject.Find() | EntityQuery | Medium |
+| GetComponent() | SystemAPI.Query<T>() | Medium |
+| Instantiate() | EntityManager.Instantiate() | Low |
+| Destroy() | EntityManager.Destroy() | Low |
+| Update() | OnUpdate() in ISystem | High |
+
+### DOTS Performance Tips
+
+```csharp
+// BAD: Accessing Managed Objects in Job
+public partial struct EnemySystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        // This is slow - avoid!
+        var enemies = Object.FindObjectsOfType<Enemy>();
+        foreach (var enemy in enemies)
+        {
+            enemy.Health--;
+        }
+    }
+}
+
+// GOOD: Pure DOTS with IComponentData
+public struct HealthComponent : IComponentData
+{
+    public float Value;
+}
+
+public partial struct EnemyDamageSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        float deltaTime = SystemAPI.Time.DeltaTime;
+        
+        // Use Entities.ForEach for automatic parallelization
+        foreach (var (health, damage) in 
+            SystemAPI.Query<RefRW<HealthComponent>, RefRO<DamageComponent>>())
+        {
+            health.ValueRW.Value -= damage.ValueRO.Value * deltaTime;
+        }
+    }
+}
+```
+
+### Resources
+
+| Resource | URL |
+|----------|-----|
+| Unity DOTS Documentation | https://docs.unity3d.com/Packages/com.unity.entities@latest |
+| ECS Best Practices | https://unity.com/dots/ecs-best-practices |
+| Jobs System | https://docs.unity3d.com/Packages/com.unity.jobs@latest |
+| Burst Compiler | https://docs.unity3d.com/Packages/com.unity.burst@latest |
