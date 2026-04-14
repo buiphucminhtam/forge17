@@ -1,0 +1,371 @@
+# Asana Portfolio Dashboard Template
+
+> 专为 Asana Portfolio 功能设计的仪表板模板，包含多项目管理视图和 AI 驱动的洞察。
+
+---
+
+## Portfolio Overview
+
+### Portfolio Information
+| Field | Value |
+|-------|-------|
+| **Portfolio Name** | [Portfolio Name] |
+| **Team** | [Team Name] |
+| **Projects Included** | [N] |
+| **Created** | [YYYY-MM-DD] |
+| **Last Updated** | [YYYY-MM-DD] |
+
+### Asana Portfolio URL
+```
+https://app.asana.com/0/portfolio/[portfolio-id]
+```
+
+---
+
+## Portfolio Structure
+
+### Portfolio Hierarchy
+```yaml
+portfolio:
+  name: "[Portfolio Name]"
+  owner: "[Name]"
+  
+  teams:
+    - name: "[Team 1]"
+      projects: ["Project A", "Project B"]
+      
+    - name: "[Team 2]"
+      projects: ["Project C", "Project D"]
+      
+  objectives:
+    - name: "Q2 Objectives"
+      linked_projects: ["All"]
+```
+
+### Project Groups
+```yaml
+groups:
+  - name: "Product Development"
+    projects:
+      - name: "Auth Service"
+        status: green
+      - name: "Payment API"
+        status: yellow
+      - name: "Mobile App"
+        status: green
+        
+  - name: "Infrastructure"
+    projects:
+      - name: "DevOps"
+        status: green
+      - name: "Security"
+        status: green
+        
+  - name: "Growth"
+    projects:
+      - name: "Marketing Website"
+        status: yellow
+      - name: "SEO Initiative"
+        status: green
+```
+
+---
+
+## Dashboard Widgets
+
+### Recommended Widget Configuration
+```yaml
+widgets:
+  - type: project_status_summary
+    title: "Project Status Overview"
+    display: "grid"
+    show:
+      - project_name
+      - status_color
+      - progress_percentage
+      - due_date
+      
+  - type: milestones
+    title: "Upcoming Milestones"
+    timeframe: "next_30_days"
+    display: "timeline"
+    
+  - type: tasks_by_status
+    title: "Tasks by Status"
+    breakdown: "project"
+    chart_type: "bar"
+    
+  - type: resource_workload
+    title: "Team Workload"
+    display: "heatmap"
+    threshold: 100
+    
+  - type: risk_alerts
+    title: "At-Risk Projects"
+    filter: "status = yellow OR status = red"
+    include_reason: true
+    
+  - type: ai_insights
+    title: "AI Insights"
+    sources:
+      - project_velocity
+      - blocker_trends
+      - deadline_risks
+```
+
+---
+
+## Project Status Cards
+
+### Status Card Template
+```markdown
+## [Project Name]
+
+**Status:** 🟢 On Track / 🟡 At Risk / 🔴 Off Track
+**Progress:** [X]%
+**Owner:** [@Name]
+**Due Date:** [YYYY-MM-DD]
+
+### Summary
+[2-3 sentence overview of project status]
+
+### Key Metrics
+| Metric | Value | Target | Status |
+|--------|-------|--------|--------|
+| Tasks Complete | [X]/[Y] | [Z]% | 🟢 |
+| On Time | — | 90% | 🟢 |
+| On Budget | — | 100% | 🟢 |
+
+### Milestones
+| Milestone | Due | Status |
+|-----------|-----|--------|
+| [M1] | [Date] | ✅ Done |
+| [M2] | [Date] | 🔄 In Progress |
+| [M3] | [Date] | ⏳ Upcoming |
+
+### Blockers
+| Blocker | Impact | Owner | Action |
+|---------|--------|-------|--------|
+| [Blocker] | [Impact] | [@user] | [Action] |
+
+### Next Steps
+- [ ] [Next action 1]
+- [ ] [Next action 2]
+```
+
+---
+
+## Portfolio-Level OKRs
+
+### OKR Integration
+```yaml
+okr_integration:
+  enabled: true
+  source: "Strategic Planning"
+  
+  display:
+    - objective_name
+    - key_results_progress
+    - linked_projects
+    
+  update_frequency: weekly
+```
+
+### OKR Summary Table
+| Objective | Owner | Progress | Linked Projects |
+|-----------|-------|----------|-----------------|
+| [Obj 1] | [@user] | 65% | [Proj A, Proj B] |
+| [Obj 2] | [@user] | 40% | [Proj C] |
+| [Obj 3] | [@user] | 80% | [Proj D, Proj E] |
+
+---
+
+## Cross-Project Views
+
+### View 1: Timeline View
+```yaml
+view:
+  type: timeline
+  title: "Portfolio Timeline"
+  
+  display:
+    - project_name
+    - start_date
+    - end_date
+    - milestones
+    
+  grouping: "team"
+  
+  filters:
+    - show_hidden: false
+    - hide_completed: false
+```
+
+### View 2: Workload View
+```yaml
+view:
+  type: workload
+  title: "Team Workload"
+  
+  metrics:
+    - task_count_per_member
+    - hours_allocated
+    - overtime_risk
+    
+  thresholds:
+    - green: "< 80%"
+    - yellow: "80-100%"
+    - red: "> 100%"
+    
+  actions:
+    - alert_if_overallocated: true
+    - suggest_rebalancing: true
+```
+
+### View 3: Dependencies View
+```yaml
+view:
+  type: dependencies
+  title: "Cross-Project Dependencies"
+  
+  display:
+    - source_project
+    - target_project
+    - dependency_type
+    - status
+    
+  filters:
+    - status: "blocked"
+    - type: "finish-to-start"
+```
+
+---
+
+## AI-Powered Insights
+
+### AI Insight Types
+```yaml
+insights:
+  - type: "velocity_analysis"
+    description: "Track project velocity trends"
+    frequency: "weekly"
+    
+  - type: "blocker_detection"
+    description: "Identify blocking patterns"
+    frequency: "daily"
+    
+  - type: "deadline_risk"
+    description: "Predict deadline risks"
+    frequency: "daily"
+    
+  - type: "resource_conflicts"
+    description: "Find resource allocation issues"
+    frequency: "weekly"
+```
+
+### AI Report Template
+```markdown
+## AI Portfolio Insights - [Date]
+
+**Generated by:** Asana AI
+**Scope:** [Portfolio Name]
+
+### 🚨 At-Risk Alerts
+| Project | Risk | Impact | Recommendation |
+|---------|------|--------|----------------|
+| [Name] | [Risk] | [Impact] | [Action] |
+
+### 📈 Velocity Trends
+| Project | This Week | Last Week | Trend |
+|---------|-----------|-----------|-------|
+| [Name] | [X]% | [Y]% | 📈/📉/➡️ |
+
+### 🔗 Dependency Issues
+| Dependency | Status | Action |
+|------------|--------|--------|
+| [Dep] | Blocked | [Action] |
+
+### ⏰ Upcoming Deadlines
+| Project | Deadline | Days Left | Status |
+|---------|----------|----------|--------|
+| [Name] | [Date] | [N] | 🟢/🟡/🔴 |
+
+### 💡 Recommendations
+1. [Recommendation 1]
+2. [Recommendation 2]
+3. [Recommendation 3]
+```
+
+---
+
+## Example: Engineering Portfolio Dashboard
+
+### Portfolio Configuration
+```yaml
+portfolio:
+  name: "Platform Engineering Q2"
+  owner: "@vp-engineering"
+  
+  projects:
+    - name: "Auth Service"
+      status: green
+      lead: "@alice"
+      
+    - name: "Payment API"
+      status: yellow
+      lead: "@bob"
+      
+    - name: "DevOps Platform"
+      status: green
+      lead: "@charlie"
+      
+    - name: "Mobile Backend"
+      status: green
+      lead: "@diana"
+```
+
+### Status Overview
+| Project | Status | Progress | Due | Lead |
+|---------|--------|----------|-----|-------|
+| Auth Service | 🟢 | 75% | May 15 | @alice |
+| Payment API | 🟡 | 45% | May 30 | @bob |
+| DevOps Platform | 🟢 | 90% | May 1 | @charlie |
+| Mobile Backend | 🟢 | 60% | Jun 15 | @diana |
+
+### AI Insights
+```markdown
+## AI Insights - Apr 14, 2026
+
+### 🚨 At-Risk: Payment API
+- **Risk:** Only 45% complete with 45% of time remaining
+- **Impact:** High - blocks revenue feature launch
+- **Recommendation:** Add 1 developer for 2 weeks
+
+### 📈 Velocity: Auth Service
+- **Trend:** 📈 Accelerating
+- **Notes:** 5 PRs merged this week, on track for early completion
+
+### 🔗 Dependency: Mobile → Auth
+- **Status:** Waiting on Auth v2 API
+- **Action:** Sync with @alice on API timeline
+
+### ⏰ Critical Deadline
+- **DevOps Platform:** Due in 17 days
+- **Current Status:** 🟢 On track to complete early
+```
+
+### Portfolio Health Score
+```yaml
+health_score:
+  calculation: "weighted_average"
+  weights:
+    - on_time_delivery: 30
+    - budget_adherence: 20
+    - quality_metrics: 20
+    - team_satisfaction: 15
+    - blocker_resolution: 15
+    
+  current: 8.2
+  target: 8.0
+  status: 🟢 Above Target
+```

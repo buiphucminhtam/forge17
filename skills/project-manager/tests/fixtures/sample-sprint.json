@@ -1,0 +1,89 @@
+{
+  "sprintId": "SPRINT-2024-Q1-001",
+  "name": "Q1 Sprint 1 - Foundation",
+  "startDate": "2024-01-15T00:00:00Z",
+  "endDate": "2024-01-26T00:00:00Z",
+  "duration": 10,
+  "team": {
+    "id": "team-alpha",
+    "name": "Alpha Team",
+    "members": ["alice", "bob", "charlie", "diana"]
+  },
+  "goals": [
+    {
+      "id": "goal-001",
+      "title": "Complete user authentication module",
+      "status": "completed"
+    },
+    {
+      "id": "goal-002",
+      "title": "Set up CI/CD pipeline",
+      "status": "in_progress"
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-001",
+      "title": "Implement login form validation",
+      "points": 3,
+      "status": "completed",
+      "assignee": "alice",
+      "completedAt": "2024-01-18T14:30:00Z"
+    },
+    {
+      "id": "story-002",
+      "title": "Add OAuth2 social login",
+      "points": 5,
+      "status": "completed",
+      "assignee": "bob",
+      "completedAt": "2024-01-20T16:45:00Z"
+    },
+    {
+      "id": "story-003",
+      "title": "Configure GitHub Actions workflow",
+      "points": 3,
+      "status": "in_progress",
+      "assignee": "charlie"
+    },
+    {
+      "id": "story-004",
+      "title": "Add automated testing to pipeline",
+      "points": 5,
+      "status": "in_progress",
+      "assignee": "diana"
+    },
+    {
+      "id": "story-005",
+      "title": "Implement password reset flow",
+      "points": 5,
+      "status": "blocked",
+      "assignee": "alice",
+      "blockedBy": ["story-001"]
+    }
+  ],
+  "metrics": {
+    "totalPoints": 21,
+    "completedPoints": 8,
+    "inProgressPoints": 8,
+    "blockedPoints": 5,
+    "velocity": 8,
+    "historicalVelocity": 10,
+    "velocityTrend": -0.2
+  },
+  "risks": [
+    {
+      "id": "risk-001",
+      "type": "blocked",
+      "level": "critical",
+      "title": "Story 005 blocked by incomplete dependency",
+      "mitigation": "Prioritize story-001 completion"
+    },
+    {
+      "id": "risk-002",
+      "type": "velocity",
+      "level": "high",
+      "title": "Velocity dropped by 20%",
+      "mitigation": "Review capacity and redistribute work"
+    }
+  ]
+}

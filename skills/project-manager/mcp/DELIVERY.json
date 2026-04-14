@@ -1,0 +1,15 @@
+{
+  "task": "pm-mcp-integration",
+  "status": "completed",
+  "files_created": [
+    ".forgewright/project-manager/mcp/README.md",
+    ".forgewright/project-manager/mcp/LINEAR.md",
+    ".forgewright/project-manager/mcp/GITHUB.md",
+    ".forgewright/project-manager/mcp/JIRA.md",
+    ".forgewright/project-manager/mcp/QUICKREF.md"
+  ],
+  "files_updated": [
+    "skills/project-manager/SKILL.md"
+  ],
+  "summary": "创建完整的 MCP 集成文档，包含 Linear、GitHub Projects、Jira Rovo CLI 的认证配置、核心操作、代码示例、错误处理和降级策略。"
+}

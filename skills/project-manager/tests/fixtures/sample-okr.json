@@ -1,0 +1,57 @@
+{
+  "cycleId": "OKR-2024-Q1",
+  "quarter": "Q1 2024",
+  "objectives": [
+    {
+      "id": "obj-001",
+      "title": "Improve team delivery velocity",
+      "owner": "engineering-lead",
+      "keyResults": [
+        {
+          "id": "kr-001",
+          "title": "Achieve 90% sprint goal completion rate",
+          "target": 90,
+          "current": 75,
+          "unit": "percent",
+          "tasks": ["story-001", "story-002", "story-003"]
+        },
+        {
+          "id": "kr-002",
+          "title": "Reduce average cycle time to < 3 days",
+          "target": 3,
+          "current": 4.2,
+          "unit": "days",
+          "tasks": ["story-001", "story-002"]
+        }
+      ],
+      "successProbability": 0.65
+    },
+    {
+      "id": "obj-002",
+      "title": "Enhance product quality",
+      "owner": "qa-lead",
+      "keyResults": [
+        {
+          "id": "kr-003",
+          "title": "Reduce bug escape rate to < 5%",
+          "target": 5,
+          "current": 8,
+          "unit": "percent",
+          "tasks": ["story-003", "story-004"]
+        },
+        {
+          "id": "kr-004",
+          "title": "Achieve 95% test coverage",
+          "target": 95,
+          "current": 72,
+          "unit": "percent",
+          "tasks": ["story-004"]
+        }
+      ],
+      "successProbability": 0.45
+    }
+  ],
+  "alignedProjects": ["proj-auth", "proj-cicd"],
+  "health": "at_risk",
+  "autoUpdateEnabled": true
+}
