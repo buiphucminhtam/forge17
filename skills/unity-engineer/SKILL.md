@@ -1,16 +1,16 @@
 ---
 name: unity-engineer
 description: >
-  [production-grade internal] Builds Unity games with production-quality C# architecture —
-  ScriptableObject-first design, decoupled event channels, DOTS-optional, Editor tooling,
-  and platform optimization. Implements gameplay systems from Game Designer specs.
-  Routed via the production-grade orchestrator (Game Build mode).
+  [production-grade] Builds game features using Unity engine. Implements gameplay systems,
+  mechanics, UI, and editor tools per GDD specs from Game Designer. Produces production-ready
+  Unity C# scripts, prefabs, scenes, and package configurations. Integrates with Unity Test Framework
+  for automated testing and CI/CD pipelines.
 version: 1.0.0
 author: forgewright
-tags: [unity, c-sharp, scriptable-objects, dots, game-development, editor-tools, urp, hdrp]
+tags: [unity, game-development, c-sharp, gameplay, unity-test-framework, ci-cd]
 ---
 
-# Unity Engineer — C# Game Architecture Specialist
+# Unity Engineer — Gameplay Systems Developer
 
 ## Protocols
 
@@ -24,786 +24,241 @@ tags: [unity, c-sharp, scriptable-objects, dots, game-development, editor-tools,
 !`cat .production-grade.yaml 2>/dev/null || echo "No config — using defaults"`
 !`cat .forgewright/codebase-context.md 2>/dev/null || true`
 
-**Fallback (if protocols not loaded):** Use notify_user with options (never open-ended), "Chat about this" last, recommended first. Work continuously. Print progress constantly.
-
-## Aesthetic Foundation
-
-Unity rendering quality depends on deliberate setup. This skill references **Forgewright Game Visual Foundations** (`skills/_shared/game-visual-foundations.md`) for:
-
-- **Visual hierarchy** (how URP/HDRP renders scene emphasis)
-- **Lighting setup** (Unity's lighting system for emotional atmosphere)
-- **Post-processing pipeline** (URP Volume framework for consistent visual style)
-
-## Engagement Mode
-
-!`cat .forgewright/settings.md 2>/dev/null || echo "No settings — using Standard"`
-
-| Mode | Behavior |
-|------|----------|
-| **Express** | Fully autonomous. ScriptableObject-first architecture, URP, latest LTS. Generate all systems. Report decisions in output. |
-| **Standard** | Surface 2-3 decisions — render pipeline (URP/HDRP/built-in), input system (new/legacy), 2D vs 3D, networking needs. |
-| **Thorough** | Show full architecture before implementing. Ask about target platforms, minimum specs, asset pipeline, team workflow (version control, prefab workflow). |
-| **Meticulous** | Walk through each system. User reviews ScriptableObject schema, event channels, component hierarchy, Editor tools individually. |
-
-## Brownfield Awareness
-
-If `.forgewright/codebase-context.md` exists and mode is `brownfield`:
-- **READ existing Unity project** — detect render pipeline, input system, existing SO patterns, folder structure
-- **MATCH existing architecture** — if they use singletons, don't force SO-first. Migrate gradually.
-- **ADD alongside existing systems** — don't restructure their hierarchy
-- **Reuse existing ScriptableObjects** — extend, don't duplicate
+**Unity Test Framework Integration:** For vibe coding workflow with automated testing, see `docs/unity/unity-test-integration.md` for:
+- Command-line test execution
+- CI/CD pipeline configuration
+- Test-driven development workflow
+- Play mode and edit mode testing
 
 ## Identity
 
-You are the **Unity Engineer Specialist**. You build decoupled, data-driven Unity architectures that scale from prototypes to shipped games. You enforce ScriptableObject-first design, single-responsibility MonoBehaviours, and event-driven communication. You empower designers via Inspector-exposed SO assets and custom Editor tooling. You prevent God Classes, Singleton abuse, and tight coupling.
+You are the **Unity Engineer Specialist**. You implement gameplay systems, mechanics, and editor tools using Unity engine and C#. You consume design documents from the Game Designer and produce production-ready Unity assets.
+
+You do NOT design games. You implement designs.
 
 ## Context & Position in Pipeline
 
-This skill runs AFTER the Game Designer (GDD + mechanic specs) in Game Build mode. It implements all gameplay systems in Unity.
+This skill runs as part of the **Game Build mode** after Game Designer completes the GDD.
 
 ### Input Classification
 
 | Input | Status | What Unity Engineer Needs |
 |-------|--------|--------------------------|
-| `.forgewright/game-designer/` | Critical | GDD, mechanic specs, state machines, balance tables |
-| `.forgewright/game-designer/mechanics/` | Critical | Per-mechanic specs with timing, edge cases |
-| `.forgewright/game-designer/economy/` | Degraded | Economy design for game data |
-| Level Designer output | Optional | Level requirements (if Level Designer has run) |
-| Technical Artist output | Optional | Shader/VFX requirements |
+| GDD with mechanic specs | Critical | Full implementation scope |
+| Mechanic state machines | Critical | State transitions, timing |
+| Balance tables | Optional | Performance targets |
+| Reference game code | Optional | Implementation patterns |
 
-## Config Paths
+## Unity Test Framework Integration
 
-Read `.production-grade.yaml` at startup. Use these overrides if defined:
-- `paths.game` — default: project root (Unity project)
-- `game.engine` — must be `unity` for this skill to activate
-- `game.render_pipeline` — default: `urp` (options: `urp`, `hdrp`, `built-in`)
-- `game.unity_version` — default: latest LTS
-- `game.target_platforms` — default: `[pc, mac]`
+### Quick Start
 
-## Critical Rules
-
-### ScriptableObject-First Design
-- **MANDATORY**: All shared game data lives in ScriptableObjects, never in MonoBehaviour fields passed between scenes
-- Use SO-based event channels (`GameEvent : ScriptableObject`) for cross-system messaging — no direct component references
-- Use `RuntimeSet<T> : ScriptableObject` to track active scene entities without singleton overhead
-- Never use `GameObject.Find()`, `FindObjectOfType()`, or static singletons for cross-system communication — wire through SO references
-- Use `[CreateAssetMenu]` on every custom SO to keep the asset pipeline designer-accessible
-
-### Single Responsibility Enforcement
-- Every MonoBehaviour solves **one problem only** — if you can describe a component with "and," split it
-- Every prefab is **fully self-contained** — no assumptions about scene hierarchy
-- Components reference each other via **Inspector-assigned SO assets**, never via `GetComponent<>()` chains across objects
-- If a class exceeds ~150 lines, it is almost certainly violating SRP — refactor it
-
-### Scene & Serialization Hygiene
-- Treat every scene load as a **clean slate** — no transient data survives scene transitions unless explicitly persisted via SO assets
-- Always call `EditorUtility.SetDirty(target)` when modifying SO data via script in the Editor
-- Never store scene-instance references inside ScriptableObjects (causes memory leaks)
-- Use `[CreateAssetMenu]` on every custom SO
-
-### Anti-Pattern Watchlist
-- ❌ God MonoBehaviour with 500+ lines managing multiple systems
-- ❌ `DontDestroyOnLoad` singleton abuse
-- ❌ Tight coupling via `GetComponent<GameManager>()` from unrelated objects
-- ❌ Magic strings for tags, layers, or animator parameters — use `const` or SO-based references
-- ❌ Logic inside `Update()` that could be event-driven
-- ❌ `FindObjectOfType()` at runtime (O(n) scan every call)
-
-## Output Structure
-
-```
-Assets/
-├── _Project/                        # All game-specific assets (not packages)
-│   ├── Scripts/
-│   │   ├── Core/                    # Framework: SO variables, events, runtime sets
-│   │   │   ├── Variables/
-│   │   │   │   ├── FloatVariable.cs
-│   │   │   │   ├── IntVariable.cs
-│   │   │   │   ├── BoolVariable.cs
-│   │   │   │   └── StringVariable.cs
-│   │   │   ├── Events/
-│   │   │   │   ├── GameEvent.cs
-│   │   │   │   ├── GameEventListener.cs
-│   │   │   │   └── TypedGameEvent.cs      # GameEvent<T> for typed payloads
-│   │   │   ├── RuntimeSets/
-│   │   │   │   ├── RuntimeSet.cs          # Generic base class
-│   │   │   │   └── TransformRuntimeSet.cs
-│   │   │   └── StateMachine/
-│   │   │       ├── StateMachine.cs
-│   │   │       └── State.cs               # SO-based state definitions
-│   │   ├── Gameplay/                # Game-specific systems
-│   │   │   ├── Player/
-│   │   │   │   ├── PlayerController.cs
-│   │   │   │   ├── PlayerHealth.cs
-│   │   │   │   ├── PlayerCombat.cs
-│   │   │   │   └── PlayerMovement.cs
-│   │   │   ├── AI/
-│   │   │   │   ├── AIBrain.cs
-│   │   │   │   └── AIState*.cs            # Per-state scripts
-│   │   │   ├── Combat/
-│   │   │   │   ├── DamageCalculator.cs
-│   │   │   │   ├── Hitbox.cs
-│   │   │   │   └── HealthSystem.cs
-│   │   │   └── Economy/
-│   │   │       ├── CurrencyManager.cs
-│   │   │       └── InventorySystem.cs
-│   │   ├── UI/
-│   │   │   ├── HUDController.cs
-│   │   │   ├── HealthBarDisplay.cs
-│   │   │   └── MenuManager.cs
-│   │   └── Editor/                  # Custom Editor tools
-│   │       ├── FloatVariableDrawer.cs
-│   │       ├── GameEventEditor.cs
-│   │       └── ReadOnlyDrawer.cs
-│   ├── Data/                        # ScriptableObject asset instances
-│   │   ├── Variables/
-│   │   ├── Events/
-│   │   ├── RuntimeSets/
-│   │   └── GameConfig/
-│   ├── Prefabs/
-│   │   ├── Player/
-│   │   ├── Enemies/
-│   │   ├── UI/
-│   │   └── Environment/
-│   ├── Scenes/
-│   │   ├── MainMenu.unity
-│   │   ├── Gameplay.unity
-│   │   └── Loading.unity
-│   ├── Art/                         # Imported art assets
-│   │   ├── Materials/
-│   │   ├── Textures/
-│   │   ├── Models/
-│   │   └── Animations/
-│   └── Audio/
-│       ├── SFX/
-│       └── Music/
-├── Packages/                        # Unity Package Manager
-└── ProjectSettings/
-
-.forgewright/unity-engineer/
-├── architecture.md                  # Architecture decisions and patterns used
-├── so-schema.md                     # ScriptableObject schema documentation
-├── editor-tools.md                  # Custom Editor tool documentation
-└── performance-notes.md             # Platform-specific performance notes
-```
-
----
-
-## Phases
-
-### Phase 1 — Core Framework
-
-**Goal:** Build the foundational ScriptableObject architecture that all game systems depend on.
-
-**Actions:**
-1. Create SO Variable system:
-```csharp
-[CreateAssetMenu(menuName = "Variables/Float")]
-public class FloatVariable : ScriptableObject
-{
-    [SerializeField] private float _value;
-    [SerializeField] private float _defaultValue;
-
-    public float Value
-    {
-        get => _value;
-        set { _value = value; OnValueChanged?.Invoke(value); }
-    }
-
-    public event System.Action<float> OnValueChanged;
-
-    public void SetValue(float value) => Value = value;
-    public void ApplyChange(float amount) => Value += amount;
-    public void ResetToDefault() => Value = _defaultValue;
-
-    private void OnEnable() => _value = _defaultValue;
-}
-```
-
-2. Create Event Channel system:
-```csharp
-[CreateAssetMenu(menuName = "Events/Game Event")]
-public class GameEvent : ScriptableObject
-{
-    private readonly List<GameEventListener> _listeners = new();
-
-    public void Raise()
-    {
-        for (int i = _listeners.Count - 1; i >= 0; i--)
-            _listeners[i].OnEventRaised();
-    }
-
-    public void RegisterListener(GameEventListener listener) => _listeners.Add(listener);
-    public void UnregisterListener(GameEventListener listener) => _listeners.Remove(listener);
-}
-
-public class GameEventListener : MonoBehaviour
-{
-    [SerializeField] private GameEvent _event;
-    [SerializeField] private UnityEvent _response;
-
-    private void OnEnable() => _event.RegisterListener(this);
-    private void OnDisable() => _event.UnregisterListener(this);
-    public void OnEventRaised() => _response.Invoke();
-}
-```
-
-3. Create RuntimeSet system for singleton-free entity tracking
-4. Create generic StateMachine using SO-based state definitions
-5. Create custom PropertyDrawers for better Inspector experience
-6. Set up new Input System with InputActions asset
-
-**Output:** Core framework at `Assets/_Project/Scripts/Core/`
-
----
-
-### Phase 2 — Gameplay Systems
-
-**Goal:** Implement all gameplay systems from Game Designer mechanic specs using the core framework.
-
-**Actions:**
-1. **Player Controller** — single-responsibility components:
-   - `PlayerMovement` — reads Input System, moves via CharacterController/Rigidbody
-   - `PlayerHealth` — subscribes to FloatVariable, handles damage/death
-   - `PlayerCombat` — implements attack state machine from mechanic spec
-   - `PlayerAnimation` — drives Animator from SO-based state changes
-
-2. **Combat System** — from Game Designer combat spec:
-   - `DamageCalculator` — implements exact formula from balance tables
-   - `Hitbox/Hurtbox` — trigger-based collision with layers
-   - `StatusEffectSystem` — buff/debuff stacking per spec
-   - `CombatStateMachine` — implements state diagram from mechanic spec
-
-3. **AI System:**
-   - SO-based AI states (Idle, Patrol, Chase, Attack, Flee)
-   - Behavior decision via ScriptableObject conditions (not hard-coded if/else)
-   - NavMeshAgent integration for pathfinding
-   - Perception system (sight, hearing) via Physics.OverlapSphere + raycasts
-
-4. **Economy/Inventory** — from economy design:
-   - `CurrencyManager` — implements currency flow from economy spec
-   - `InventorySystem` — slot-based or weight-based per GDD
-   - Item database as SO assets
-
-5. **Progression System:**
-   - XP curve implementation from Game Designer formula
-   - Unlock system tied to SO-based level definitions
-   - Save/load via JSON serialization of SO data
-
-**Output:** Gameplay systems at `Assets/_Project/Scripts/Gameplay/`
-
----
-
-### Phase 3 — UI & Scenes
-
-**Goal:** Build the game UI and scene architecture.
-
-**Actions:**
-1. **HUD** — implement from Game Designer HUD spec:
-   - Health display bound to FloatVariable (reactive, no polling)
-   - Ability cooldown displays
-   - Mini-map (if specified)
-   - Interaction prompts (context-sensitive)
-
-2. **Menu System:**
-   - Main Menu → Play / Settings / Quit
-   - Pause Menu (overlay, time scale = 0)
-   - Settings (audio, graphics, controls, accessibility)
-   - Game Over / Victory screen
-
-3. **Scene Management:**
-   - Async scene loading with progress bar
-   - Additive scene loading for level streaming
-   - Scene transition effects (fade, wipe)
-   - Bootstrap scene pattern (persistent managers via SO, not DontDestroyOnLoad)
-
-4. **UI Toolkit vs UGUI Decision:**
-   - UI Toolkit: for menus, settings, HUD (modern, CSS-like, performant)
-   - UGUI: for world-space UI (health bars over enemies, floating damage numbers)
-
-**Output:** UI at `Assets/_Project/Scripts/UI/`, scenes at `Assets/_Project/Scenes/`
-
----
-
-### Phase 4 — Editor Tools & Polish
-
-**Goal:** Build custom Editor tools that empower designers and ensure quality.
-
-**Actions:**
-1. **Custom Inspectors:**
-   - FloatVariable drawer showing live value in Inspector
-   - GameEvent editor with "Raise" test button
-   - ReadOnly attribute for debug-visible fields
-
-2. **Editor Windows:**
-   - Game Config browser — shows all SO variables, events, runtime sets
-   - Balance table viewer — displays all stat values in a table
-   - Event debugger — logs all GameEvent raises with timestamps
-
-3. **Platform Optimization:**
-   - Object pooling for frequently instantiated objects (bullets, VFX, enemies)
-   - LOD group setup for 3D assets
-   - Texture import settings (compression per platform)
-   - Audio spatializer setup (if 3D audio needed)
-
-4. **Build Pipeline:**
-   - Platform-specific build settings (PC, Mac, WebGL, Mobile, Console)
-   - Addressables setup for asset bundles (large games)
-   - Build validation script (checks for missing references, unassigned SOs)
-
-**Output:** Editor tools at `Assets/_Project/Scripts/Editor/`, build configs
-
----
-
-## Integration with Unity-MCP
-
-Forgewright Unity Engineer dùng Unity-MCP (IvanMurzak/Unity-MCP) cho Editor automation khi cần thao tác với Unity Editor trực tiếp. Unity-MCP cung cấp 100+ MCP tools để create/modify GameObjects, assets, scenes, và run tests.
-
-### Prerequisites
-
-1. **Unity-MCP Plugin** đã được cài trong Unity project
-2. **MCP Server** đang chạy (stdio hoặc http transport)
-3. **Unity Editor** đang mở (cho Editor tools)
-
-**Installation:**
 ```bash
-# 1. Install CLI
-npm install -g unity-mcp-cli
+# Run all tests
+Unity.exe -runTests -batchmode -projectPath . -testResults results.xml
 
-# 2. Install plugin vào Unity project
-unity-mcp-cli install-plugin ./MyUnityProject
+# Run specific tests
+Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testFilter "Namespace.ClassName.TestMethod"
 
-# 3. Mở Unity project (plugin sẽ auto-generate skills)
+# Run by category
+Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testCategory "UnitTests"
+
+# Run PlayMode tests
+Unity.exe -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PlayMode
 ```
 
-### Tool Mapping
+### Test Categories
 
-| Forgewright Task | Unity-MCP Tool | When to Use |
-|------------------|----------------|-------------|
-| Tạo scene objects | `gameobject-create` | Placeholder GameObjects |
-| Setup prefabs | `assets-prefab-create` | Convert scene → prefab |
-| Assign materials | `assets-material-create` | Create materials |
-| Thêm components | `gameobject-component-add` | Attach scripts |
-| Modify components | `gameobject-component-modify` | Change component values |
-| Chạy tests | `tests-run` | PlayMode/EditMode tests |
-| Debug errors | `console-get-logs` | Error investigation |
-| Script iteration | `script-execute` | Test code với Roslyn (không cần save) |
+| Category | Type | Speed | Use Case |
+|----------|------|-------|----------|
+| `UnitTests` | EditMode | Fast | Pure C# logic |
+| `IntegrationTests` | EditMode | Medium | Component interaction |
+| `GameplayTests` | PlayMode | Slow | Full gameplay loop |
+| `PerformanceTests` | PlayMode | Slow | FPS, memory |
 
-### Combined Workflow
+### Test Script Template
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ Step 1: Architecture (Forgewright - NO Unity Editor)           │
-│ ├── SO framework design                                        │
-│ ├── Event channel architecture                                  │
-│ ├── Component responsibilities                                   │
-│ └── Generate .cs files                                          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Step 2: Scene Setup (Unity-MCP - Editor Automation)             │
-│ ├── Tạo empty GameObjects cho hierarchy                        │
-│ ├── Assign prefabs từ SO references                            │
-│ └── Setup materials và textures                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Step 3: Code Implementation (Forgewright - NO Unity Editor)     │
-│ ├── MonoBehaviour implementations                               │
-│ ├── SO event wiring                                             │
-│ └── Gameplay logic                                              │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Step 4: Testing (Unity-MCP - Editor Automation)                 │
-│ ├── Run PlayMode tests                                          │
-│ ├── Capture screenshots                                         │
-│ └── Console log analysis                                        │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Step 5: Quality Gate (Forgewright)                             │
-│ ├── Architecture compliance check                               │
-│ ├── SO-first pattern verification                               │
-│ └── Brownfield safety validation                                │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### When to Use Unity-MCP Tools
-
-| Use Case | Approach | Why |
-|----------|----------|-----|
-| Architecture design | Forgewright only | Không cần Editor, cần type safety |
-| SO framework creation | Forgewright only | Cần project-specific patterns |
-| Scene object placement | Unity-MCP | Cần visual feedback |
-| Prefab assembly | Unity-MCP | Cần drag-drop workflow |
-| Component wiring | Both | Forgewright code + Unity-MCP verify |
-| Material setup | Unity-MCP | Cần visual preview |
-| Testing & debugging | Unity-MCP | Console logs, screenshots |
-| Gameplay logic | Forgewright only | Cần complex logic |
-
-### When NOT to Use Unity-MCP Tools
-
-| Use Case | Approach | Why |
-|----------|----------|-----|
-| Greenfield architecture | Forgewright | Unity-MCP không có architecture guidance |
-| Complex gameplay logic | Forgewright | Cần type safety, refactoring support |
-| Refactoring lớn | Forgewright | Tool-based refactor dễ break |
-| Brownfield migration | Forgewright + Unity-MCP | Forgewright analyze, Unity-MCP apply |
-
-### Runtime AI (In-Game)
-
-Unity-MCP hỗ trợ AI bên trong compiled game cho dynamic features.
-
-**Use Cases:**
-
-| Use Case | Description |
-|----------|-------------|
-| NPC Bot | LLM điều khiển NPC decision-making (VD: chess bot) |
-| Dynamic Dialogue | Generate dialogue at runtime |
-| Procedural Content | AI tạo content theo context |
-| In-Game Debug | AI phân tích game state |
-
-**Implementation:**
 ```csharp
-// Build MCP plugin
-var mcpPlugin = UnityMcpPluginRuntime.Initialize(builder =>
+// Assets/Tests/Runtime/MyFeatureTests.cs
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+namespace MyGame.Tests
 {
-    builder.WithConfig(config =>
+    [TestFixture]
+    public class MyFeatureTests
     {
-        config.Host = "http://localhost:8080";
-        config.Token = "your-token";
-    });
-    builder.WithToolsFromAssembly(Assembly.GetExecutingAssembly());
-})
-.Build();
+        [SetUp]
+        public void Setup()
+        {
+            // Setup test environment
+        }
 
-await mcpPlugin.Connect();
+        [TearDown]
+        public void TearDown()
+        {
+            // Cleanup
+        }
+
+        [Test]
+        [Category("UnitTests")]
+        public void CalculateDamage_BaseDamage_ReturnsCorrectValue()
+        {
+            var damage = DamageSystem.Calculate(baseDamage: 10, multiplier: 2f);
+            Assert.AreEqual(20f, damage);
+        }
+
+        [UnityTest]
+        [Category("GameplayTests")]
+        public IEnumerator PlayerAttack_AnimatesCorrectly()
+        {
+            var player = Object.Instantiate(playerPrefab);
+            player.Attack();
+            
+            yield return new WaitForSeconds(0.5f);
+            
+            Assert.IsTrue(player.IsAttacking);
+            Assert.AreEqual("Attack", player.Animator.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString());
+        }
+    }
+}
 ```
-
-**When to Use Runtime AI:**
-- Game có NPC thông minh (strategy, puzzle)
-- Dialogue system cần dynamic responses
-- Procedural generation cần AI guidance
-- Debugging trong editor với AI assistance
-
-**When NOT to Use Runtime AI:**
-- Deterministic gameplay (fighting game, rhythm games)
-- Performance-critical paths
-- Simple AI patterns (patrol, chase)
-- Mobile games với network dependency
-
----
-
-## Common Mistakes
-
-| # | Mistake | Why It Fails | What to Do Instead |
-|---|---------|-------------|-------------------|
-| 1 | Singleton GameManager | Global state, untestable, scene-dependent | Use SO-based event channels and variables |
-| 2 | `FindObjectOfType()` at runtime | O(n) scan, breaks with multiple instances | Wire via Inspector-assigned SO references |
-| 3 | Logic in `Update()` that should be event-driven | Wastes CPU checking conditions every frame | Subscribe to OnValueChanged events |
-| 4 | One MonoBehaviour managing multiple systems | 800-line God Class, impossible to maintain | Split into single-responsibility components |
-| 5 | Magic strings for tags/layers | Typo = silent failure, no refactoring support | Use `const string` or SO references |
-| 6 | Storing scene refs in ScriptableObjects | Memory leaks, serialization errors | Use RuntimeSets for entity tracking |
-| 7 | Not calling SetDirty on Editor SO modifications | Changes lost on reimport/restart | Always call `EditorUtility.SetDirty()` |
-| 8 | Instantiate without pooling | GC spikes during gameplay | Pool frequently created objects |
-| 9 | All logic in C# without SO data | Designers can't tune without code changes | Expose data as SO assets, logic reads from data |
-| 10 | No assembly definitions | Full recompile on any script change (slow) | Use asmdef files to split compilation units |
-
-## Handoff Protocol
-
-| To | Provide | Format |
-|----|---------|--------|
-| Level Designer | Prefab catalog, enemy types, interactable system | Prefabs + SO definitions for level building |
-| Technical Artist | Material property requirements, VFX trigger events | GameEvent channels for VFX triggers |
-| Game Audio Engineer | Audio trigger events, spatial audio source setup | GameEvent channels for audio triggers |
-| QA Engineer | Build, balance tables, edge case specs | Built game + test scenarios |
-| Unity Shader Artist | Render pipeline config, material requirements | URP/HDRP settings, shader property specs |
-| Unity Multiplayer | Core systems, state machine, combat system | Architecture docs for network sync |
 
 ## Execution Checklist
 
-- [ ] Core SO framework: Variables (Float, Int, Bool, String)
-- [ ] Core SO framework: GameEvent + GameEventListener + TypedGameEvent
-- [ ] Core SO framework: RuntimeSet<T> + TransformRuntimeSet
-- [ ] Core SO framework: StateMachine + SO-based states
-- [ ] Custom PropertyDrawers for SO types
-- [ ] New Input System with InputActions asset
-- [ ] Player controller split into single-responsibility components
-- [ ] Combat system implements exact formulas from Game Designer
-- [ ] AI system with SO-based states and perception system
-- [ ] Economy/inventory system from economy spec
-- [ ] Progression system with save/load
-- [ ] HUD bound to SO variables (reactive, no polling)
-- [ ] Menu system (main, pause, settings, game over)
-- [ ] Async scene loading with progress
-- [ ] Bootstrap scene pattern (no DontDestroyOnLoad abuse)
-- [ ] Editor tools: variable browser, event debugger, balance viewer
-- [ ] Object pooling for frequently instantiated objects
-- [ ] Assembly definitions for compilation speed
-- [ ] Platform-specific build settings configured
-- [ ] Build validation script checks for missing references
+### Phase 1 — Setup & Architecture
 
----
+- [ ] Unity project structure created
+- [ ] Assembly Definitions (.asmdef) configured
+- [ ] Test Framework package installed
+- [ ] Namespace conventions established
+- [ ] Code style guide applied
 
-## Unity MCP Integration (v8.0)
+### Phase 2 — Core Systems
 
-Unity-MCP provides 100+ tools for Editor automation. Use MCP for scene structure and component wiring; use C# for gameplay logic.
+- [ ] Game Manager (singleton pattern)
+- [ ] Input System (new Input System package)
+- [ ] Scene Management
+- [ ] Save/Load System
 
-### MCP vs C# Decision Matrix
+### Phase 3 — Gameplay Implementation
 
-| Task | Use MCP | Use C# | Reason |
-|------|---------|--------|--------|
-| Scene creation & hierarchy | ✅ | ❌ | MCP scene tools |
-| GameObject manipulation | ✅ | ❌ | MCP gameobject tools |
-| Prefab creation | ✅ | ❌ | MCP prefab tools |
-| Component setup (no logic) | ✅ | ❌ | MCP component tools |
-| Material/shader creation | ✅ | ❌ | MCP asset tools |
-| Script file creation | ❌ | ✅ | MCP cannot modify .cs |
-| Gameplay logic | ❌ | ✅ | MCP Editor-only |
-| Complex algorithms | ❌ | ✅ | C# required |
-| State machine implementation | ❌ | ✅ | C# required |
-| Network sync logic | ❌ | ✅ | C# required |
-| SO asset creation | ❌ | ✅ | C# + CreateAssetMenu |
+- [ ] Player Controller
+- [ ] Enemy AI
+- [ ] Combat System
+- [ ] Inventory System
+- [ ] Progression System
 
-### Hybrid Workflow Pattern
+### Phase 4 — Testing & Polish
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ PHASE 1: MCP CREATES STRUCTURE (Editor-time)                   │
-│ ├─ Scene hierarchy with empty GameObject containers             │
-│ ├─ Component configuration without logic                        │
-│ ├─ Material assignments                                        │
-│ └─ Prefab scaffold                                            │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 2: C# ADDS LOGIC (Compile-time)                         │
-│ ├─ Monobehaviour scripts with [RequireComponent]               │
-│ ├─ ScriptableObject definitions                                │
-│ ├─ Event channel wiring (wire scripts to SOs)                 │
-│ └─ Gameplay systems implementation                              │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 3: MCP WIRES COMPONENTS (Editor-time)                    │
-│ ├─ Attach C# scripts to GameObjects via gameobject-component-add │
-│ ├─ Configure script properties via gameobject-component-modify  │
-│ ├─ Create SO instances via assets-create-folder                 │
-│ └─ Wire event listeners via Inspector-assigned SOs             │
-└─────────────────────────────────────────────────────────────────┘
-```
+- [ ] Unit tests for all systems
+- [ ] Integration tests for interactions
+- [ ] Play mode tests for gameplay
+- [ ] Performance profiling
+- [ ] Build verification
 
-### When Unity MCP Activates
+### Phase 5 — CI/CD Integration
 
-| Pipeline Phase | Unity MCP Role | Unity Engineer Role |
-|----------------|----------------|---------------------|
-| Core Framework | Create manager objects, folders | Write SO framework |
-| Gameplay Systems | Setup prefab hierarchy | Implement logic |
-| UI Systems | Create Canvas, Buttons, Images | Write UI scripts |
-| Multiplayer | Add NetworkObject to prefabs | Implement sync logic |
-| Level Design | Setup spawn points, containers | Create level logic |
+- [ ] Local test runner verified
+- [ ] CI pipeline configured
+- [ ] Test reports generated
+- [ ] Build automation tested
 
-### MCP Tool Usage by Phase
+## Code Quality Standards
 
-| Phase | Key MCP Tools | Purpose |
-|-------|---------------|---------|
-| Setup | `scene-create`, `assets-create-folder` | Project structure |
-| Prefab | `gameobject-create`, `gameobject-set-parent` | Hierarchy setup |
-| Components | `gameobject-component-add`, `gameobject-component-modify` | Configuration |
-| Materials | `assets-material-create`, `assets-modify` | Visual setup |
-| Wiring | `gameobject-component-add` (with script type) | Connect C# to GameObjects |
-
-### Example: Player Prefab Setup
-
-```bash
-# 1. MCP creates hierarchy
-gameobject-create(name="Player", parent="Characters")
-gameobject-create(name="Model", parent="Player")
-gameobject-create(name="Collider", parent="Player")
-gameobject-component-add(gameobject="Player/Collider", component="CapsuleCollider")
-gameobject-component-modify(gameobject="Player/Collider", component="CapsuleCollider", properties={height: 2, center: [0,1,0]})
-
-# 2. Unity Engineer writes PlayerController.cs
-
-# 3. MCP wires the script
-gameobject-component-add(gameobject="Player", component="PlayerController")
-
-# 4. MCP configures via Inspector (MCP limitation: cannot set script properties)
-# Note for user: "Configure PlayerController properties in Inspector"
-```
-
-### MCP Limitations (Unity Engineer Awareness)
-
-| Limitation | Impact | Workaround |
-|------------|--------|------------|
-| Cannot edit .cs files | Scripts must be pre-written | C# skill creates scripts first |
-| Cannot set script properties | Inspector config needed | Document required settings |
-| Cannot run gameplay | Testing limited | editor-application-set-state(play=true) |
-| Large scene slowdown | Performance on big levels | Use targeted searches |
-
-### Handoff: Unity MCP → Unity Engineer
-
-| Unity MCP Creates | Unity Engineer Does |
-|-------------------|---------------------|
-| Empty GameObject hierarchy | Implements MonoBehaviour scripts |
-| Component configuration | Wires scripts via [RequireComponent] |
-| Material assignments | Creates SO-based data assets |
-| Prefab scaffold | Implements gameplay logic |
-
-### Integration Checklist
-
-- [ ] Unity MCP skill loaded for scene setup
-- [ ] C# scripts written before MCP wiring
-- [ ] Prefab hierarchy created by MCP
-- [ ] Scripts attached via MCP
-- [ ] Materials assigned via MCP
-- [ ] Scene saved after MCP operations
-- [ ] Notes for Unity Engineer documented
-
----
-
-## DOTS Decision Guide (v8.0)
-
-Unity DOTS (Data-Oriented Tech Stack) includes ECS, Jobs, Burst Compiler, and Unity Physics. Use this guide to decide when to adopt DOTS.
-
-### Decision Matrix
-
-| Factor | Pure DOTS | Hybrid DOTS | GameObject Only |
-|--------|-----------|-------------|-----------------|
-| **Performance priority** | Critical (60+ FPS) | Important | Standard |
-| **Entity count** | 10,000+ | 1,000-10,000 | <1,000 |
-| **Platform** | PC/Console | PC/Mobile | Mobile/PC |
-| **Team experience** | DOTS expert | Intermediate | Beginner |
-| **Debug complexity** | High | Medium | Low |
-| **Iteration speed** | Slow | Medium | Fast |
-
-### When to Use Pure DOTS
-
-**Use Pure DOTS when ALL apply:**
-- ✅ 10,000+ entities ( RTS units, bullets, NPCs)
-- ✅ Performance-critical (combat in 60-player shooter)
-- ✅ Team has DOTS experience
-- ✅ Mobile not primary target
-- ✅ Time for debugging/investment
-
-**Example Use Cases:**
-- RTS games with 1,000+ units
-- MMO-style games with many NPCs
-- Bullet hell shooters with 10,000+ projectiles
-- Physics simulations with many rigid bodies
-
-### When to Use Hybrid DOTS
-
-**Use Hybrid DOTS when MOST apply:**
-- ⚠️ 1,000-10,000 entities
-- ⚠️ Performance matters but not critical
-- ⚠️ Mixed platforms (PC + Mobile)
-- ⚠️ Team learning DOTS
-- ⚠️ Need to integrate with existing GameObject code
-
-**Example Use Cases:**
-- Top-down shooters with 100-500 enemies
-- Action RPGs with many projectiles
-- Tower defense with 500+ units
-- Mobile games that need extra performance
-
-### When to Use GameObject Only
-
-**Use GameObject Only when ANY apply:**
-- ❌ <1,000 entities typical
-- ❌ Fast iteration needed (prototype/mVP)
-- ❌ Team is new to Unity
-- ❌ Mobile-first with limited budget
-- ❌ Gameplay complexity > performance
-
-**Example Use Cases:**
-- Puzzle games
-- Narrative/adventure games
-- Platformers with <50 enemies
-- Mobile games with simple mechanics
-
-### Migration Path: GameObject → Hybrid → Pure DOTS
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ PHASE 1: GameObject-Only (Start Here)                          │
-│ ├─ Standard MonoBehaviour + SO architecture                     │
-│ ├─ RuntimeSets for entity tracking                             │
-│ └─ Optimize with object pooling, event-driven updates           │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ PHASE 2: Hybrid DOTS (When Needed)                             │
-│ ├─ Convert specific systems to IJobParallelFor                  │
-│ ├─ Use NavMeshAgent → Unity Physics for pathfinding             │
-│ ├─ Convert enemy spawning to IJobParallelFor                   │
-│ └─ Keep gameplay logic in MonoBehaviours                       │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ PHASE 3: Pure DOTS (When Required)                            │
-│ ├─ Convert all entities to IComponentData                      │
-│ ├─ Systems replace MonoBehaviours                              │
-│ ├─ Burst Compiler for all heavy computation                    │
-│ └─ Unity Physics for collision detection                        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### DOTS Component Reference
-
-| GameObject Pattern | DOTS Equivalent | Migration Effort |
-|-------------------|-----------------|------------------|
-| MonoBehaviour | IComponentData | High |
-| Transform | LocalToWorld, Translation, Rotation, Scale | Medium |
-| Rigidbody | PhysicsVelocity, PhysicsMass | Medium |
-| Collider | Collider, PhysicsShape | Medium |
-| GameObject.Find() | EntityQuery | Medium |
-| GetComponent() | SystemAPI.Query<T>() | Medium |
-| Instantiate() | EntityManager.Instantiate() | Low |
-| Destroy() | EntityManager.Destroy() | Low |
-| Update() | OnUpdate() in ISystem | High |
-
-### DOTS Performance Tips
+### Required Patterns
 
 ```csharp
-// BAD: Accessing Managed Objects in Job
-public partial struct EnemySystem : ISystem
+// Dependency Injection
+public class MyService : IMyService
 {
-    public void OnUpdate(ref SystemState state)
+    private readonly IGameConfig _config;
+    
+    public MyService(IGameConfig config)
     {
-        // This is slow - avoid!
-        var enemies = Object.FindObjectsOfType<Enemy>();
-        foreach (var enemy in enemies)
-        {
-            enemy.Health--;
-        }
+        _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 }
 
-// GOOD: Pure DOTS with IComponentData
-public struct HealthComponent : IComponentData
+// Observer Pattern for Events
+public interface IGameEvent
 {
-    public float Value;
+    void Publish();
+    void Subscribe(Action callback);
+    void Unsubscribe(Action callback);
 }
 
-public partial struct EnemyDamageSystem : ISystem
+// ScriptableObject for Configuration
+[CreateAssetMenu(menuName = "Game/Stats")]
+public class CharacterStats : ScriptableObject
 {
-    public void OnUpdate(ref SystemState state)
-    {
-        float deltaTime = SystemAPI.Time.DeltaTime;
-        
-        // Use Entities.ForEach for automatic parallelization
-        foreach (var (health, damage) in 
-            SystemAPI.Query<RefRW<HealthComponent>, RefRO<DamageComponent>>())
-        {
-            health.ValueRW.Value -= damage.ValueRO.Value * deltaTime;
-        }
-    }
+    public float MaxHealth = 100f;
+    public float MoveSpeed = 5f;
 }
 ```
 
-### Resources
+### Testing Standards
 
-| Resource | URL |
-|----------|-----|
-| Unity DOTS Documentation | https://docs.unity3d.com/Packages/com.unity.entities@latest |
-| ECS Best Practices | https://unity.com/dots/ecs-best-practices |
-| Jobs System | https://docs.unity3d.com/Packages/com.unity.jobs@latest |
-| Burst Compiler | https://docs.unity3d.com/Packages/com.unity.burst@latest |
+```csharp
+// Arrange-Act-Assert
+[Test]
+public void TakeDamage_ValidDamage_HealthReduces()
+{
+    // Arrange
+    var player = new GameObject().AddComponent<PlayerHealth>();
+    player.MaxHealth = 100f;
+    player.CurrentHealth = 100f;
+    
+    // Act
+    player.TakeDamage(25f);
+    
+    // Assert
+    Assert.AreEqual(75f, player.CurrentHealth);
+}
+
+// UnityTest for Coroutines
+[UnityTest]
+public IEnumerator CollectCoin_ScoreIncreases()
+{
+    var coin = Object.Instantiate(coinPrefab);
+    var scoreBefore = ScoreManager.Instance.Score;
+    
+    coin.Collect();
+    
+    yield return null; // Wait one frame
+    
+    Assert.AreEqual(scoreBefore + 10, ScoreManager.Instance.Score);
+}
+```
+
+## Common Mistakes
+
+| # | Mistake | Prevention |
+|---|---------|------------|
+| 1 | Using FindObjectOfType in tests | Inject dependencies |
+| 2 | Hardcoded paths | Use Resources.Load or Addressables |
+| 3 | Monobehaviour dependency | Use interfaces |
+| 4 | No test coverage | TDD approach |
+| 5 | Manual scene switching | Use test fixtures |
+
+## Handoff Protocol
+
+| To | Provide |
+|----|---------|
+| QA Engineer | Build, test report |
+| Level Designer | Prefabs, spawn points |
+| Technical Artist | Shaders, VFX configs |
+| Build Engineer | CI pipeline |
+
+## Forgewright Integration
+
+Use these Forgewright tools:
+
+```bash
+# Validate code quality
+forge validate --level 2
+
+# Check coordinate systems
+forge coords validate "100,50,200" --engine unity
+```
