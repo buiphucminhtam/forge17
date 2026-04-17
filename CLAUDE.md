@@ -85,7 +85,7 @@ The following requests **MUST** trigger clarification:
 
 ## Step 1 — Mode Classification
 
-After interpretation, classify into one of 23 modes:
+After interpretation, classify into one of 24 modes:
 
 | Mode | Trigger Signals |
 |------|----------------|
@@ -182,8 +182,9 @@ antigravity/
 | "Build VR app..." | XR Build | XR Engineer |
 | "Mobile app" | Mobile | Mobile Engineer |
 | "improve prompts" | Prompt | Prompt Engineer + chat-interpreter |
+| "Run autonomous tests" | Autonomous | Autonomous Testing + Self-Healing E2E |
 
-## Available Skills (55 total)
+## Available Skills (56 total)
 
 See `skills/` directory for full list:
 - **Orchestrator**: `skills/production-grade/SKILL.md`

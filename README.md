@@ -2,9 +2,9 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-7.9.0-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/skills-55-brightgreen.svg" alt="Skills" />
-  <img src="https://img.shields.io/badge/modes-23-blueviolet.svg" alt="Modes" />
+  <img src="https://img.shields.io/badge/version-8.0.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/skills-56-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/modes-24-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-29-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
   <img src="https://img.shields.io/badge/Code_Intelligence-ForgeNexus·GitNexus-4B0082.svg" alt="Code Intelligence" />
@@ -16,7 +16,7 @@
 
 ## TL;DR — What is Forgewright?
 
-**Imagine:** You have a team of 55 AI experts. Each one excels at a different task — writing code, security auditing, game design, performance optimization. Forgewright is the "manager" — when you say "I want to build an e-commerce app", it automatically knows which experts to call, in what order, and how to validate quality.
+**Imagine:** You have a team of 56 AI experts. Each one excels at a different task — writing code, security auditing, game design, performance optimization. Forgewright is the "manager" — when you say "I want to build an e-commerce app", it automatically knows which experts to call, in what order, and how to validate quality.
 
 > **One sentence:** Forgewright automatically selects the right AI expert for the right job, from idea to production.
 
@@ -49,7 +49,7 @@ flowchart LR
     subgraph L1["⚡ Level 1 — Basic"]
         direction TB
         L1A["✅ What's included"]
-        L1B["• 55 AI skills"]
+        L1B["• 56 AI skills"]
         L1C["• Automated pipeline"]
         L1D["• Default on install"]
     end
@@ -204,7 +204,7 @@ flowchart TD
     START --> CHAT_INT
     CHAT_INT --> ORCH
 
-    ORCH --> MODE{{"Classify Request<br/>23 Modes"}}
+    ORCH --> MODE{{"Classify Request<br/>24 Modes"}}
 
     MODE --> |"Full Build"| PHASE_DEFINE["DEFINE Phase<br/>BA → PM → Architect"]
     MODE --> |"Feature"| PHASE_FEATURE["FEATURE Phase<br/>PM → BE/FE → QA"]
@@ -672,7 +672,7 @@ flowchart TD
     style G3 fill:#d35400,stroke:#e67e22,color:#fff
 ```
 
-### 23 Modes — What You Say, Forgewright Chooses
+### 24 Modes — What You Say, Forgewright Chooses
 
 ```mermaid
 flowchart LR
@@ -698,6 +698,7 @@ flowchart LR
     INPUT --> F18["Design Architecture<br/>API/Data Model"]
     INPUT --> F19["Write Docs"]
     INPUT --> F20["Improve Prompts<br/>Prompt Engineering"]
+    INPUT --> F21["Autonomous Testing<br/>Self-Healing E2E"]
 
     F1 --> M1{{"Full Build"}}
     F2 --> M2{{"Feature"}}
@@ -719,6 +720,7 @@ flowchart LR
     F18 --> M18{{"Architect"}}
     F19 --> M19{{"Document"}}
     F20 --> M20{{"Prompt"}}
+    F21 --> M21{{"Autonomous"}}
 
     M1 --> SK1["BA → PM → Architect →<br/>BE → FE → QA →<br/>Security → DevOps → SRE"]
     M2 --> SK2["PM → Architect →<br/>BE/FE → QA"]
@@ -740,6 +742,7 @@ flowchart LR
     M18 --> SK18["Solution Architect"]
     M19 --> SK19["Technical Writer"]
     M20 --> SK20["Prompt Engineer →<br/>chat-interpreter →<br/>prompt-techniques → templates"]
+    M21{{"Autonomous"}} --> SK21["Autonomous Testing →<br/>Self-Healing E2E →<br/>Vitest + Playwright + Applitools"]
 
     style INPUT fill:#1a1a2e,stroke:#e94560,color:#fff
     style M1 fill:#533483,stroke:#9b59b6,color:#fff
@@ -762,6 +765,8 @@ flowchart LR
     style M18 fill:#533483,stroke:#9b59b6,color:#fff
     style M19 fill:#533483,stroke:#9b59b6,color:#fff
     style M20 fill:#8e44ad,stroke:#9b59b6,color:#fff
+    style M21 fill:#8e44ad,stroke:#9b59b6,color:#fff
+    style F21 fill:#1a5276,stroke:#3498db,color:#fff
     style SK1 fill:#0f3460,stroke:#3498db,color:#fff
     style SK2 fill:#0f3460,stroke:#3498db,color:#fff
     style SK3 fill:#0f3460,stroke:#3498db,color:#fff
@@ -782,25 +787,28 @@ flowchart LR
     style SK18 fill:#0f3460,stroke:#3498db,color:#fff
     style SK19 fill:#0f3460,stroke:#3498db,color:#fff
     style SK20 fill:#8e44ad,stroke:#3498db,color:#fff
+    style SK21 fill:#8e44ad,stroke:#3498db,color:#fff
 ```
 
 ---
 
-## 55 Skills — Which One, When?
+## 56 Skills — Which One, When?
 
 ```mermaid
 flowchart TD
     USER["What do you want to do?"]
 
-    USER --> |"Build new website/app"| SaaS["📦 Core Engineering<br/>22 skills"]
+    USER --> |"Build new website/app"| SaaS["📦 Core Engineering<br/>23 skills"]
     USER --> |"Build game (Unity/Unreal/Godot)"| GAME["🎮 Game Development<br/>18 skills"]
+    USER --> |"Autonomous Testing"| AUT["🤖 Autonomous Testing<br/>Self-Healing E2E"]
     USER --> |"Optimize / debug code"| OPT["🔧 Optimization & Debug<br/>Performance · Debugger · QA"]
     USER --> |"Research / data analysis"| DATA["📊 Data & AI<br/>AI Engineer · Data Scientist · NotebookLM"]
     USER --> |"Deploy / CI/CD / infra"| DEVOPS["🚀 DevOps & Ship<br/>DevOps · SRE · Database"]
     USER --> |"Marketing / growth"| GROW["📈 Growth<br/>Growth Marketer · Conversion Optimizer"]
     USER --> |"Design / UX"| DESIGN["🎨 Design & UX<br/>UX Researcher · UI Designer"]
 
-    SaaS --> SaaS_DETAIL["<b>22 skills:</b><br/>Business Analyst · Product Manager<br/>Solution Architect · Software Engineer<br/>Frontend · QA · Security · DevOps · SRE<br/>Database · API Designer · Prompt Engineer"]
+    SaaS --> SaaS_DETAIL["<b>23 skills:</b><br/>Business Analyst · Product Manager<br/>Solution Architect · Software Engineer<br/>Frontend · QA · Security · DevOps · SRE<br/>Database · API Designer · Prompt Engineer"]
+    AUT --> AUT_DETAIL["<b>Autonomous Testing:</b><br/>Vitest · Playwright · Applitools<br/>Self-healing · Auto-fix · Continue"]
     GAME --> GAME_DETAIL["<b>18 skills:</b><br/>Game Designer · Unity/Unreal/Godot/Roblox Engineer<br/>Level Designer · Narrative Designer<br/>Technical Artist · Game Audio Engineer<br/>XR Engineer"]
     OPT --> OPT_DETAIL["<b>Optimize:</b> Performance Engineer<br/><b>Debug:</b> Debugger → Software Engineer<br/><b>Test:</b> QA Engineer"]
     DATA --> DATA_DETAIL["<b>AI:</b> AI Engineer · Prompt Engineer · Data Scientist<br/><b>Research:</b> NotebookLM Researcher<br/><b>Web:</b> Web Scraper · XLSX Engineer"]
@@ -810,6 +818,7 @@ flowchart TD
 
     style USER fill:#1a1a2e,stroke:#e94560,color:#fff
     style SaaS fill:#1a5276,stroke:#3498db,color:#fff
+    style AUT fill:#1e8449,stroke:#2ecc71,color:#fff
     style GAME fill:#1a5276,stroke:#3498db,color:#fff
     style OPT fill:#1a5276,stroke:#3498db,color:#fff
     style DATA fill:#1a5276,stroke:#3498db,color:#fff
@@ -817,6 +826,7 @@ flowchart TD
     style GROW fill:#1a5276,stroke:#3498db,color:#fff
     style DESIGN fill:#1a5276,stroke:#3498db,color:#fff
     style SaaS_DETAIL fill:#0f3460,stroke:#3498db,color:#fff
+    style AUT_DETAIL fill:#1e8449,stroke:#2ecc71,color:#fff
     style GAME_DETAIL fill:#0f3460,stroke:#3498db,color:#fff
     style OPT_DETAIL fill:#0f3460,stroke:#3498db,color:#fff
     style DATA_DETAIL fill:#0f3460,stroke:#3498db,color:#fff
@@ -1042,7 +1052,7 @@ If Forgewright helps you ship faster, you can support here:
 ---
 
 <p align="center">
-  <strong>Forgewright — 55 AI skills. 23 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
+  <strong>Forgewright — 56 AI skills. 24 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
 </p>
 <p align="center">
   <em>Plan precisely. Build confidently. Scale intelligently.</em>

@@ -1,10 +1,10 @@
 # Forgewright — Production Grade AI Pipeline
 
-> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 54 specialized skills.
+> **This file is read by Antigravity on every new chat.** It tells the AI assistant how to use Forgewright's 56 specialized skills.
 
 ## What is Forgewright?
 
-Forgewright is an adaptive orchestrator with **55 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Phaser 3/Three.js game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
+Forgewright is an adaptive orchestrator with **56 AI skills** that covers the entire software development lifecycle **plus game development, XR, data engineering, and MLOps**. From a single code review to a full Unity/Unreal/Godot/Phaser 3/Three.js game build, it routes to the right skills automatically. Supports **parallel execution** via git worktrees for faster builds.
 
 **Pipeline:** `INTERPRET → DEFINE → BUILD → HARDEN → SHIP → SUSTAIN`
 
@@ -17,7 +17,7 @@ Forgewright is an adaptive orchestrator with **55 AI skills** that covers the en
    - Detects vague/confusing requests and asks clarifying questions (MAX 3)
    - Generates a structured request with clear scope and success criteria
    - **DO NOT SKIP THIS STEP** — if the request is unclear, ask before proceeding
-2. **STEP 1 — Classify the request** into one of 23 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**, **Prompt**)
+2. **STEP 1 — Classify the request** into one of 24 modes (Full Build, Feature, Harden, Ship, Test, Review, Architect, Document, Explore, Research, Optimize, Design, Mobile, Mobile Test, Marketing, Grow, **Game Build**, **XR Build**, **Analyze**, **Prompt**, **Autonomous**)
 3. **STEP 2 — PLAN FIRST, ALWAYS** — Before ANY skill does ANY work, it MUST create a plan, score it (8 criteria, threshold ≥ 9.0/10), and improve until passing. See `skills/_shared/protocols/plan-quality-loop.md`
 4. **STEP 3 — Execute the pipeline** as defined in the orchestrator
 
@@ -98,7 +98,7 @@ If a newer version exists, mention it briefly: *"Forgewright update available (v
 
 ## Skills Directory
 
-All 55 skills are in the `skills/` directory:
+All 56 skills are in the `skills/` directory:
 
 | Skill | Location |
 |-------|----------|
@@ -140,6 +140,8 @@ All 55 skills are in the `skills/` directory:
 | Data Engineer | `skills/data-engineer/SKILL.md` |
 | XLSX Engineer | `skills/xlsx-engineer/SKILL.md` |
 | Project Manager | `skills/project-manager/SKILL.md` |
+| **Testing** | |
+| Autonomous Testing | `skills/autonomous-testing/SKILL.md` — Self-healing E2E workflow |
 | **Growth** | |
 | Growth Marketer | `skills/growth-marketer/SKILL.md` |
 | Conversion Optimizer | `skills/conversion-optimizer/SKILL.md` |
