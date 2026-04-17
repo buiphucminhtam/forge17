@@ -8,8 +8,10 @@
 - [x] P1-01: Create UnifiedAggregator
 - [x] P1-02: Add source tabs to dashboard
 - [x] P1-03: Add model comparison chart
-- [ ] P2-01: Add cost estimation
-- [ ] P2-02: Add per-project breakdown
+- [x] P2-01: Add cost estimation
+- [x] P2-02: Add per-project breakdown
+
+## All tasks completed ✅
 
 ---
 

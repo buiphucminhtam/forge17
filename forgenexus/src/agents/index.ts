@@ -26,3 +26,11 @@ export {
   verifyCitations, 
   calculateTokenShapley 
 } from './citations.js';
+
+// Token Tracking
+export { 
+  TokenTracker, 
+  getGlobalTracker,
+  createTracker,
+} from './token-tracker.js';
+export type { TokenUsage, TokenError, TokenSummary } from './token-tracker.js';

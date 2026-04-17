@@ -19,6 +19,11 @@ import {
   CITATION_PATTERN, 
   applyGuardrails 
 } from './prompts.js';
+import { 
+  TokenTracker, 
+  getGlobalTracker,
+  type TokenUsage,
+} from './token-tracker.js';
 
 // ============================================================================
 // LLM Client Implementation
@@ -113,18 +118,25 @@ export class GuardedLLMClient {
   private client: BaseLLMClient;
   private guardrails: Guardrails;
   private onError?: (error: Error) => void;
+  private tokenTracker: TokenTracker;
   
-  constructor(options: GuardedLLMClientOptions) {
+  constructor(options: GuardedLLMClientOptions & { tokenTracker?: TokenTracker }) {
     this.client = options.client;
     this.guardrails = options.guardrails;
     this.onError = options.onError;
+    this.tokenTracker = options.tokenTracker || getGlobalTracker();
   }
   
   /**
    * Generate content with guardrails applied
    */
-  async generate(prompt: string, options?: GenerateOptions): Promise<GuardedResult> {
+  async generate(
+    prompt: string, 
+    options?: GenerateOptions,
+    metadata?: { skill?: string; mode?: string }
+  ): Promise<GuardedResult> {
     const guardedPrompt = applyGuardrails(prompt, this.guardrails);
+    const startTime = Date.now();
     
     try {
       const response = await this.client.generate(guardedPrompt, {
@@ -133,8 +145,42 @@ export class GuardedLLMClient {
         system: options?.system,
       });
       
+      // Log token usage if available
+      const model = (this.client as any).config?.model || 'unknown';
+      const provider = (this.client as any).config?.provider || 'unknown';
+      
+      if (response.usage && this.tokenTracker.isEnabled()) {
+        const usage: TokenUsage = {
+          timestamp: new Date().toISOString(),
+          project: process.cwd(),
+          projectPath: process.cwd(),
+          model,
+          provider,
+          inputTokens: response.usage.inputTokens,
+          outputTokens: response.usage.outputTokens,
+          latencyMs: Date.now() - startTime,
+          skill: metadata?.skill,
+          mode: metadata?.mode,
+        };
+        this.tokenTracker.log(usage);
+      }
+      
       return this.processResponse(response);
     } catch (error) {
+      // Log error if tracking is enabled
+      if (this.tokenTracker.isEnabled()) {
+        const model = (this.client as any).config?.model || 'unknown';
+        const provider = (this.client as any).config?.provider || 'unknown';
+        this.tokenTracker.logError({
+          timestamp: new Date().toISOString(),
+          project: process.cwd(),
+          projectPath: process.cwd(),
+          model,
+          provider,
+          error: (error as Error).message,
+          errorType: (error as Error).name || 'Error',
+        });
+      }
       this.onError?.(error as Error);
       return this.handleError(error as Error);
     }
