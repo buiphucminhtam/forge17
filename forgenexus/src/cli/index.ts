@@ -69,7 +69,10 @@ Commands:
 
 // Only execute auto-routing if invoked directly as script (or via bin)
 // A lightweight check for execution vs import (ESM safe-ish for CLI bins)
-const isCLI = process.argv[1] && process.argv[1].endsWith('dist/cli/index.js');
+const isCLI = process.argv[1] && (
+  process.argv[1].endsWith('dist/cli/index.js') || 
+  process.argv[1].includes('forgenexus')
+);
 if (isCLI) {
   main();
 }
