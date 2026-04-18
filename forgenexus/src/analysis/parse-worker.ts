@@ -24,7 +24,6 @@ import { createRequire } from 'module'
 import { parentPort } from 'worker_threads'
 import Parser from 'tree-sitter'
 import type { CodeNode, CodeEdge } from '../types.js'
-import { LANGUAGE_QUERIES } from './queries.js'
 
 const _require = createRequire(import.meta.url)
 
@@ -55,17 +54,9 @@ interface PoolMessage {
 // Persistent state: loaded once, reused forever
 const langCache = new Map<string, any>()
 const parserCache = new Map<string, Parser>()   // lang → dedicated parser
-let initialized = false
 
 if (!parentPort) {
   throw new Error('parse-worker.ts must be run as a worker thread')
-}
-
-// ─── Language Loading ───────────────────────────────────────────────────────────
-
-async function preloadLanguages(tasks: ParseTask[]): Promise<void> {
-  const needed = [...new Set(tasks.map((t) => t.language))]
-  await Promise.all(needed.map((lang) => ensureLanguage(lang)))
 }
 
 async function ensureLanguage(lang: string): Promise<any> {

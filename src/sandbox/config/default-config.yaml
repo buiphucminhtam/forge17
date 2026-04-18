@@ -1,0 +1,281 @@
+# Forgewright Sandbox Configuration
+#
+# This file configures the sandbox for AI-generated code execution.
+# Based on research from Tian Pan (2026) - Agent Sandboxing Spectrum
+#
+# Documentation: https://docs.forgewright.ai/sandbox
+
+version: "1.0"
+
+# Feature toggle - enable sandbox for AI code execution
+enabled: false
+
+# Execution mode:
+# - preview: Show what would be executed, require confirmation
+# - strict: Block all non-allowed operations
+# - disabled: No sandboxing (not recommended)
+mode: preview
+
+# Isolation level (per Tian Pan's 5-level spectrum):
+# - none: No isolation (L0)
+# - container: Docker/LXC containers (L1)
+# - seccomp: seccomp-BPF hardened (L2) [default]
+# - gvisor: gVisor user-space kernel (L3)
+# - microvm: Firecracker microVM (L4) [gold standard]
+isolation:
+  level: seccomp
+  fallback: container
+
+  # seccomp-BPF configuration (L2)
+  seccomp:
+    enabled: true
+    profile: ai-agent  # "default" | "strict" | "ai-agent"
+    blockedSyscalls:
+      - mount
+      - ptrace
+      - unshare
+      - keyctl
+      - perf_event_open
+      - bpf
+      - init_module
+      - finit_module
+      - delete_module
+
+# Filesystem sandbox configuration
+filesystem:
+  enabled: true
+
+  # Paths that can be accessed (relative to project root)
+  allowedPaths:
+    - "./src"
+    - "./tests"
+    - "./lib"
+    - "./docs"
+    - "./scripts"
+    - "./.forgewright"
+
+  # Paths that are never accessible (blocked even if in allowedPaths)
+  blockedPaths:
+    - "~/.ssh"
+    - "~/.gitconfig"
+    - "~/.zshrc"
+    - "~/.bashrc"
+    - "~/.bash_profile"
+    - "~/.profile"
+    - "~/.config"
+    - "/etc"
+    - "/var"
+    - "/root"
+    - "/sys"
+    - "/proc"
+    - "/boot"
+    - "/dev"
+    - "/var/run/docker.sock"
+    - "*.cursorrules"
+    - "*.claude"
+    - "mcp*.json"
+    - ".env"
+    - ".env.local"
+    - ".env.*.local"
+
+  # File operation restrictions
+  maxFileSize: "10MB"
+  allowCreate: true
+  allowDelete: false  # Dangerous - data loss risk
+  allowSymlink: false  # Security risk - can bypass path restrictions
+  resolveRealPath: true  # Resolve symlinks before checking paths
+  readOnlyRoot: true  # Root filesystem is read-only
+  workspaceDir: "/tmp/forge-sandbox"  # Writable workspace
+
+# Network sandbox configuration
+network:
+  enabled: true
+
+  # Domains that can be accessed
+  allowedDomains:
+    - "api.github.com"
+    - "github.com"
+    - "pypi.org"
+    - "npmjs.com"
+    - "registry.npmjs.org"
+    - "registry.yarnpkg.com"
+    - "crates.io"
+    - "api.openai.com"
+    - "api.anthropic.com"
+
+  # Domains that are never accessible
+  blockedDomains:
+    - "internal.corp.com"
+    - "localhost"
+    - "127.0.0.1"
+    - "0.0.0.0"
+    - "*.local"
+    - "169.254.169.254"  # Cloud metadata endpoint
+
+  # Protocol restrictions
+  allowedProtocols:
+    - "https"
+
+  # DNS security
+  blockDns: true  # Block DNS to arbitrary resolvers
+  allowDnsResolution: false  # Allow resolving allowed domains only
+
+  # Request restrictions
+  timeout: 30  # seconds
+  maxResponseSize: "5MB"
+  logAllRequests: true
+
+# Shell sandbox configuration
+shell:
+  enabled: true
+
+  # Commands that can be executed
+  allowedCommands:
+    # Version control
+    - "git"
+    - "gh"
+
+    # Package managers
+    - "npm"
+    - "npx"
+    - "yarn"
+    - "pnpm"
+    - "pip"
+    - "pip3"
+    - "poetry"
+    - "cargo"
+
+    # Languages
+    - "node"
+    - "npm"
+    - "python"
+    - "python3"
+    - "ruby"
+    - "java"
+    - "go"
+
+    # Linters & formatters
+    - "ruff"
+    - "eslint"
+    - "prettier"
+    - "black"
+    - "rustfmt"
+
+    # Testing
+    - "pytest"
+    - "jest"
+    - "vitest"
+    - "cargo test"
+    - "npm test"
+
+    # Type checking
+    - "tsc"
+    - "typescript"
+    - "mypy"
+    - "cargo check"
+
+    # Build tools
+    - "make"
+    - "cmake"
+    - "webpack"
+    - "vite"
+    - "rollup"
+
+  # Commands that are never allowed
+  blockedCommands:
+    # File destruction
+    - "rm -rf"
+    - "rm -r /"
+    - "dd"
+    - "mkfs"
+
+    # Network utilities (data exfiltration risk)
+    - "curl"
+    - "wget"
+    - "nc"
+    - "netcat"
+    - "ncat"
+    - "socat"
+
+    # Remote access
+    - "ssh"
+    - "scp"
+    - "sftp"
+    - "rsync"
+    - "telnet"
+
+    # Shell spawning
+    - "bash -i"
+    - "sh -i"
+    - "zsh -i"
+    - "exec:"
+    - "eval"
+
+    # Encoding/decoding (potential payload delivery)
+    - "base64 -d"
+    - "xxd -r"
+    - "python -m base64"
+
+    # Privilege escalation
+    - "sudo"
+    - "su"
+    - "chmod +x"
+
+    # Docker (escape risk)
+    - "docker"
+    - "podman"
+    - "containerd"
+
+    # Kernel manipulation
+    - "insmod"
+    - "modprobe"
+    - "rmmod"
+
+  # Environment variable restrictions
+  envWhitelist:
+    - "PATH"
+    - "HOME"
+    - "USER"
+    - "TMPDIR"
+    - "PWD"
+    - "LANG"
+    - "LC_ALL"
+    - "EDITOR"
+    - "VISUAL"
+
+  stripSensitiveEnv: true  # Strip API keys, tokens, etc.
+
+  # Process restrictions
+  maxProcessTime: 60  # seconds
+  maxMemory: "512MB"
+  maxProcesses: 10
+
+  # Working directory
+  workingDirectory: "./"
+
+  # Shell metacharacter restrictions
+  allowPipes: false
+  allowRedirects: false
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+
+  # Audit logging
+  logAllOperations: true
+  auditPath: ".forgewright/sandbox-audit.jsonl"
+  auditMaxSize: "100MB"
+
+  # Bypass detection
+  detectEscapeAttempts: true
+  alertOnBypass: true
+
+  # Metrics
+  collectMetrics: true
+  metricsPath: ".forgewright/sandbox-metrics.json"
+
+# Feature flags
+features:
+  realTimeBlocking: true  # Block dangerous operations immediately
+  autoRollback: false     # Rollback on failure (experimental)
+  sessionPersistence: true  # Maintain session state across operations

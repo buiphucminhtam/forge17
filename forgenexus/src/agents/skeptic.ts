@@ -10,7 +10,6 @@ import type {
   DocumentVerification,
   ClaimVerification,
   Evidence,
-  SourceReference,
   GuardedResult,
   GroundingContext,
   VerificationStatus,

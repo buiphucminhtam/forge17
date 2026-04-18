@@ -10,7 +10,6 @@ import type {
   Guardrails,
   GuardedResult,
   Citation,
-  Evidence,
 } from './types.js';
 import { 
   DEFAULT_GUARDRAILS,
@@ -45,7 +44,7 @@ export class BaseLLMClient {
     this.config = config ?? { provider: 'anthropic', model: 'base', maxRetries: 0, timeout: 0 };
   }
   
-  async generate(prompt: string, options?: GenerateOptions): Promise<LLMResponse> {
+  async generate(_prompt: string, _options?: GenerateOptions): Promise<LLMResponse> {
     throw new Error('Not implemented');
   }
   
@@ -73,11 +72,11 @@ export class AnthropicClient extends BaseLLMClient {
     // For now, we'll use a placeholder
   }
   
-  async generate(prompt: string, options?: GenerateOptions): Promise<LLMResponse> {
+  async generate(_prompt: string, _options?: GenerateOptions): Promise<LLMResponse> {
     // In production, this would call the Anthropic API
     // For now, return a mock response
     return {
-      content: `Mock response for: ${prompt.slice(0, 100)}...`,
+      content: `Mock response for: ${_prompt.slice(0, 100)}...`,
       raw: {},
       usage: { inputTokens: 100, outputTokens: 50 },
     };
@@ -94,10 +93,10 @@ export class OpenAIClient extends BaseLLMClient {
     this.config = config;
   }
   
-  async generate(prompt: string, options?: GenerateOptions): Promise<LLMResponse> {
+  async generate(_prompt: string, _options?: GenerateOptions): Promise<LLMResponse> {
     // In production, this would call the OpenAI API
     return {
-      content: `Mock response for: ${prompt.slice(0, 100)}...`,
+      content: `Mock response for: ${_prompt.slice(0, 100)}...`,
       raw: {},
       usage: { inputTokens: 100, outputTokens: 50 },
     };

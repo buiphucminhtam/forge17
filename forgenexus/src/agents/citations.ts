@@ -131,7 +131,7 @@ export async function calculateTokenShapley(
   } = {}
 ): Promise<AttributionResult> {
   const startTime = Date.now();
-  const { sampleSize = 100 } = options;
+  void options;
 
   // Tokenize the generated text
   const tokens = tokenize(text);

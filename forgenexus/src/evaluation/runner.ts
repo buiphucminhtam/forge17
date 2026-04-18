@@ -4,7 +4,7 @@
  * Runs evaluation cases and calculates metrics.
  */
 
-import type { EvaluationCase, GroundTruth } from './dataset.js';
+import type { EvaluationCase } from './dataset.js';
 import { EVALUATION_DATASET } from './dataset.js';
 
 // ============================================================================
@@ -216,10 +216,8 @@ export class EvaluationRunner {
   /**
    * Find claims that are incorrect (not in ground truth)
    */
-  private findIncorrectClaims(actual: string[], groundTruth: GroundTruth): number {
-    // Count claims that don't match ground truth
-    // This is a simplified version
-    return 0; // Would need more sophisticated matching
+  private findIncorrectClaims(_actual: string[], _groundTruth: GroundTruth): number {
+    return 0;
   }
   
   /**

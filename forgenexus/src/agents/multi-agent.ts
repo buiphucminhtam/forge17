@@ -5,7 +5,6 @@
  */
 
 import type {
-  WorkflowConfig,
   WorkflowResult,
   GroundingContext,
   TaskType,

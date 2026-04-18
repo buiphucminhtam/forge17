@@ -145,7 +145,7 @@ const QUERY_PATTERNS = [
 
 // ─── Node Type Mapping ────────────────────────────────────────────────────────
 
-function inferNodeType(type: string, lang: string): NodeType {
+function inferNodeType(type: string, _lang: string): NodeType {
   switch (type) {
     // Functions
     case 'function_declaration':
@@ -154,7 +154,6 @@ function inferNodeType(type: string, lang: string): NodeType {
     case 'function_expression':
     case 'decorated_definition':
     case 'lambda':
-    case 'function_declaration':
     case 'function':
       return 'Function'
     // Methods
@@ -772,10 +771,6 @@ export class ParserEngine {
       case 'class':
       case 'module': {
         const n = getChild(node, 'constant')
-        return n ? getNodeText(n, content) : null
-      }
-      case 'method_declaration': {
-        const n = getChild(node, 'name') ?? getChild(node, 'property_identifier') ?? getChild(node, 'identifier')
         return n ? getNodeText(n, content) : null
       }
       case 'decorated_definition': {
@@ -1439,9 +1434,7 @@ export class ParserEngine {
 
   close(): void {
     // Cleanup: terminate dedicated parsers
-    for (const p of this.parserCache.values()) {
-      // Parser has no close() method, just let GC handle it
-    }
+    // Parser has no close() method, just let GC handle it
     this.parserCache.clear()
     this.langCache.clear()
     this.queriesCache.clear()

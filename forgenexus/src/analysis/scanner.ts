@@ -3,7 +3,7 @@
  */
 
 import { statSync } from 'fs'
-import { relative, extname } from 'path'
+import { extname } from 'path'
 import { globSync } from 'glob'
 import type { ForgeNexusConfig } from '../types.js'
 

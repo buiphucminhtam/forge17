@@ -4,7 +4,6 @@
  * Contains test cases for evaluating the verification system.
  */
 
-import type { Chunk } from '../agents/types.js';
 
 // ============================================================================
 // Type Definitions

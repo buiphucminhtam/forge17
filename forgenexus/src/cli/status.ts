@@ -5,7 +5,7 @@
  * server is running (no SQLite file-lock issues).
  */
 
-import { existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { execSync } from 'child_process'
 import { ensureNexusDataDirMigrated, nexusDataDir, defaultCodebaseDbPath } from '../paths.js'
@@ -24,7 +24,7 @@ export function status(opts: { repoPath: string }): void {
 
   // Detect format before opening
   try {
-    const header = require('fs').readFileSync(dbPath)
+    const header = readFileSync(dbPath)
     if (header.length >= 16 && !header.slice(0, 16).toString('utf8').startsWith('SQLite')) {
       // KuzuDB — proceed
     } else {

@@ -4,6 +4,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/version-8.0.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-56-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/features-3-brightgreen.svg" alt="New Features" />
   <img src="https://img.shields.io/badge/modes-24-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-29-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
@@ -145,6 +146,77 @@ node --version
 #   macOS: brew install node
 #   Windows: download from nodejs.org
 ```
+
+---
+
+## AgentScope-Inspired Features (v8.1)
+
+Inspired by [AgentScope Studio](https://github.com/agentscope-ai/agentscope), these 3 features enhance Forgewright's developer experience.
+
+### 1. Forgewright Studio — Real-time Pipeline Monitor
+
+Visual monitoring for pipeline execution, inspired by AgentScope's trajectory tracing.
+
+```mermaid
+flowchart LR
+    WS["WebSocket Server<br/>Port 7891"]
+    UI["Studio UI<br/>React Dashboard"]
+    EVENTS["Pipeline Events<br/>skill:start · progress · complete"]
+
+    WS <-->|real-time| UI
+    EVENTS --> WS
+
+    style WS fill:#0f3460,stroke:#3498db,color:#fff
+    style UI fill:#1e8449,stroke:#2ecc71,color:#fff
+    style EVENTS fill:#d35400,stroke:#e67e22
+```
+
+**Features:** Phase progress, Memory trace timeline, Token/cost tracker, Session history.
+
+### 2. Tool Sandboxing — Security Isolation
+
+Isolated execution environments for AI-generated code. Zero-trust security with policy enforcement.
+
+```mermaid
+flowchart TD
+    OP["Operation<br/>read/write/network/exec"]
+    PE["Policy Engine<br/>Allowlist + Denylist"]
+    BD["Bypass Detector<br/>Escape Vector Detection"]
+    AL["Audit Logger<br/>JSONL trail"]
+
+    OP --> PE
+    PE -->|allow| BD
+    PE -->|deny| AL
+    BD -->|blocked| AL
+
+    style OP fill:#0f3460,stroke:#e94560,color:#fff
+    style PE fill:#1a5276,stroke:#3498db,color:#fff
+    style BD fill:#c0392b,stroke:#e74c3c,color:#fff
+    style AL fill:#1e8449,stroke:#2ecc71,color:#fff
+```
+
+**Sandbox types:** Filesystem, Network, Shell. Default: dry-run mode (preview before execute).
+
+### 3. Skill Templates — Domain Scaffolding
+
+Pre-built templates for common patterns, auto-detected from requests.
+
+```mermaid
+flowchart LR
+    REQ["Request<br/>'add JWT auth'"]
+    MATCH["Template Matcher<br/>Keyword + Fuzzy"]
+    TEMPLATES["Templates<br/>auth-jwt · api-rest · db-migration"]
+
+    REQ --> MATCH
+    MATCH --> TEMPLATES
+    TEMPLATES -->|inject context| REQ
+
+    style REQ fill:#0f3460,stroke:#e94560,color:#fff
+    style MATCH fill:#1a5276,stroke:#3498db,color:#fff
+    style TEMPLATES fill:#1e8449,stroke:#2ecc71,color:#fff
+```
+
+**Included templates:** Auth JWT, API REST, Database Migration.
 
 ---
 
@@ -1052,7 +1124,7 @@ If Forgewright helps you ship faster, you can support here:
 ---
 
 <p align="center">
-  <strong>Forgewright — 56 AI skills. 24 modes. Persistent Memory. Code Intelligence. SaaS to AAA games.</strong>
+  <strong>Forgewright — 56 AI skills. 24 modes. Persistent Memory. Code Intelligence. Real-time Studio. Sandboxed Execution. Smart Templates.</strong>
 </p>
 <p align="center">
   <em>Plan precisely. Build confidently. Scale intelligently.</em>

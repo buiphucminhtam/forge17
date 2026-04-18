@@ -128,7 +128,6 @@ async function runPersistentPool(
   const totalFiles = allChunks.reduce((sum, c) => sum + c.length, 0)
 
   // Split chunks across workers — each worker gets N chunks to process sequentially
-  const chunksPerWorker = Math.ceil(allChunks.length / concurrency)
   const numWorkers = Math.min(concurrency, allChunks.length)
 
   // Create all workers upfront (persistent — they stay alive)
@@ -185,7 +184,6 @@ async function runPersistentPool(
 
       workers.push(w)
       let currentSubBatch = 0
-      let workerReady = false
 
       const sendNextBatch = () => {
         if (currentSubBatch >= subBatches.length) {

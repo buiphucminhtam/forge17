@@ -9,6 +9,7 @@
     "build:forgenexus": "cd forgenexus && npm run build",
     "test": "npm run test:forgenexus",
     "test:forgenexus": "cd forgenexus && npm test",
+    "lint": "npm run lint:forgenexus",
     "lint:forgenexus": "cd forgenexus && npm run lint",
     "format:forgenexus": "cd forgenexus && npm run format:write",
     "build:cli": "cd src/cli && npm install && npm run build",
@@ -17,5 +18,11 @@
   },
   "devDependencies": {
     "husky": "^9.1.7"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "ws": "^8.20.0",
+    "yaml": "^2.8.3",
+    "zod": "^4.3.6"
   }
 }

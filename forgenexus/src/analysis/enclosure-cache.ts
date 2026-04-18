@@ -16,12 +16,6 @@ interface CacheEntry {
   lastAccessed: number
 }
 
-interface EnclosureKey {
-  nodeType: string
-  row: number
-  filePath: string
-}
-
 /**
  * Simple LRU cache for class enclosure lookups.
  * Key: `${filePath}:${row}:${nodeType}`

@@ -157,24 +157,6 @@ function unwrapResult(result: any): any {
   return Array.isArray(result) ? result[0] : result
 }
 
-function sqlRowToProps(n: CodeNode, _embedding?: number[]): Record<string, any> {
-  return {
-    uid: esc(n.uid),
-    type: esc(n.type),
-    name: esc(n.name),
-    filePath: esc(n.filePath),
-    line: n.line,
-    endLine: n.endLine,
-    columnNum: n.column ?? 0,
-    returnType: n.returnType ? `"${esc(n.returnType)}"` : 'NULL',
-    paramCount: n.parameterCount ?? 0,
-    declaredType: n.declaredType ? `"${esc(n.declaredType)}"` : 'NULL',
-    language: n.language ? `"${esc(n.language)}"` : 'NULL',
-    signature: n.signature ? `"${esc(n.signature)}"` : 'NULL',
-    community: n.community ? `"${esc(n.community)}"` : 'NULL',
-    process: n.process ? `"${esc(n.process)}"` : 'NULL',
-  }
-}
 
 // ─── Write Queue ─────────────────────────────────────────────────────────────
 
@@ -228,7 +210,8 @@ export class ForgeDB {
       console.error(`[ForgeNexus] Detected legacy SQLite index — resetting for KuzuDB.`)
       try {
         // Remove all SQLite files so KuzuDB can create fresh ones
-        ;['', '-shm', '-wal'].forEach((suffix) => {
+        const suffixes = ['', '-shm', '-wal']
+        suffixes.forEach((suffix) => {
           const f = dbPath + suffix
           if (existsSync(f)) unlinkSync(f)
         })
@@ -785,9 +768,6 @@ export class ForgeDB {
     const files = this.query(`MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN count(DISTINCT n.filePath) AS cnt`)
     const comms = this.query(`MATCH (c:Community) RETURN count(c) AS cnt`)
     const procs = this.query(`MATCH (p:Process) RETURN count(p) AS cnt`)
-    // Embeddings: no longer stored in CodeNode table (KuzuDB UNWIND CREATE + DOUBLE[] is incompatible)
-    // Embeddings are stored in a separate key-value store if needed
-    const embs = 0
 
     return {
       files: Number(files[0]?.cnt ?? 0),

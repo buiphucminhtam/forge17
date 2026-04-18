@@ -217,7 +217,7 @@ export function rerankWithCrossEncoder<T extends { id: string; text: string }>(
   // Sort and limit
   scored.sort((a, b) => b.originalScore - a.originalScore);
 
-  return scored.slice(0, topK).map((r, i) => ({
+  return scored.slice(0, topK).map((r) => ({
     id: r.id,
     file: r.id,
     text: r.text,

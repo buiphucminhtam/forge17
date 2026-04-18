@@ -7,7 +7,6 @@
 import type { VerificationResult, ConfidenceResult } from '../../agents/types.js';
 import { checkStaleness } from '../../data/freshness.js';
 import { calculateConfidence } from '../../agents/confidence.js';
-import { calculateSemanticEnergy } from '../../agents/semantic-energy.js';
 import { extractCitations } from '../../agents/citations.js';
 
 // ============================================================================
@@ -170,7 +169,7 @@ export async function analyzeConfidence(params: {
     });
 
     // Extract citations
-    const citations = extractCitations(params.text);
+    extractCitations(params.text);
 
     // Calculate semantic energy (simplified)
     let semanticEnergy = 0.5;

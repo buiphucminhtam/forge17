@@ -21,29 +21,6 @@
 
 import Parser from 'tree-sitter'
 
-// ─── Query Compilation Cache ────────────────────────────────────────────────────
-
-type CompiledQuery = { query: Parser.Query; lang: string }
-
-// Shared compiled queries per language — compiled once, reused forever
-const compiledQueryCache = new Map<string, CompiledQuery>()
-
-function compileQuery(lang: string, source: string, langObj: any): Parser.Query | null {
-  const cacheKey = `${lang}:${source}`
-  const cached = compiledQueryCache.get(cacheKey)
-  if (cached) return cached.query
-
-  try {
-    const parser = new Parser()
-    parser.setLanguage(langObj)
-    const query = (langObj as any).query(source)
-    compiledQueryCache.set(cacheKey, { query, lang })
-    return query
-  } catch {
-    return null
-  }
-}
-
 // ─── Language Definitions ────────────────────────────────────────────────────────
 
 export interface LanguageQueries {

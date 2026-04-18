@@ -131,9 +131,9 @@ export function chunkCode(
   };
 
   const langPatterns = patterns[language] || patterns.javascript;
-  
+
   let currentChunk = '';
-  let currentLines: number[] = [];
+  const currentLines: number[] = [];
   let chunkId = 0;
   let startLine = 0;
 

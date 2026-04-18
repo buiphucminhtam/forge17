@@ -92,10 +92,9 @@ function closeRegistry(c: InstanceType<typeof Connection>): void {
   } catch {
     /* */
   }
-  try {
-    ;(c as any)._db?.close?.()
-  } catch {
-    /* */
+  const db = (c as any)._db
+  if (db) {
+    try { db.close() } catch { /* */ }
   }
 }
 

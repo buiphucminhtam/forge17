@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { FileScanner } from './scanner.js';
 
 describe('FileScanner', () => {
@@ -150,21 +150,6 @@ describe('Language Extension Mapping', () => {
 });
 
 describe('Skip Patterns', () => {
-  const DEFAULT_SKIP = [
-    '**/node_modules/**',
-    '**/dist/**',
-    '**/build/**',
-    '**/.git/**',
-    '**/coverage/**',
-    '**/*.min.js',
-    '**/*.map',
-    '**/*.d.ts',
-    '**/__pycache__/**',
-    '**/vendor/**',
-    '**/android/**',
-    '**/ios/**',
-  ];
-
   const SKIP_DIRS = ['node_modules', 'dist', 'build', 'vendor', 'coverage', 'android', 'ios', '__pycache__', '.git'];
 
   function isSkipped(path: string): boolean {

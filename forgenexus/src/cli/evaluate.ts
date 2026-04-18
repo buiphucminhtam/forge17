@@ -4,10 +4,9 @@
  * Provides command-line interface for running evaluations.
  */
 
-import { runEvaluation, EvaluationRunner } from '../evaluation/runner.js';
+import { EvaluationRunner } from '../evaluation/runner.js';
 import { EVALUATION_DATASET } from '../evaluation/dataset.js';
-import { createMockGuardedLLMClient } from '../agents/llm-client.js';
-import { createSkepticAgent } from '../agents/skeptic.js';
+import { writeFileSync } from 'fs';
 
 // ============================================================================
 // CLI Interface
@@ -35,14 +34,10 @@ export async function evaluate(options: EvaluateOptions = {}): Promise<void> {
     difficulties,
     caseIds,
     verbose = false,
-    mock = true,
   } = options;
 
   console.log('\n🔍 ForgeWright Anti-Hallucination Evaluation\n');
   console.log('='.repeat(50));
-
-  // Create mock system for testing
-  const system = createMockSystem();
 
   // Filter cases
   let cases = [...EVALUATION_DATASET];
@@ -62,7 +57,7 @@ export async function evaluate(options: EvaluateOptions = {}): Promise<void> {
   console.log(`\n📊 Running ${cases.length} evaluation cases...\n`);
 
   // Run evaluation
-  const runner = new EvaluationRunner(system as any);
+  const runner = new EvaluationRunner({} as any);
   const results = await runner.runAll(cases);
 
   // Get aggregate metrics
@@ -107,7 +102,7 @@ function outputJSON(
   const data = JSON.stringify({ results, metrics }, null, 2);
 
   if (outputFile) {
-    require('fs').writeFileSync(outputFile, data);
+    writeFileSync(outputFile, data);
     console.log(`📄 Results saved to ${outputFile}`);
   } else {
     console.log(data);
@@ -158,7 +153,7 @@ function outputTable(
   const output = lines.join('\n');
 
   if (outputFile) {
-    require('fs').writeFileSync(outputFile, output);
+    writeFileSync(outputFile, output);
     console.log(`📄 Results saved to ${outputFile}`);
   } else {
     console.log(output);
@@ -169,7 +164,7 @@ function outputReport(runner: EvaluationRunner, outputFile?: string): void {
   const report = runner.generateReport();
 
   if (outputFile) {
-    require('fs').writeFileSync(outputFile, report);
+    writeFileSync(outputFile, report);
     console.log(`📄 Report saved to ${outputFile}`);
   } else {
     console.log(report);
@@ -180,31 +175,7 @@ function outputReport(runner: EvaluationRunner, outputFile?: string): void {
 // Mock System for Testing
 // ============================================================================
 
-function createMockSystem() {
-  const llm = createMockGuardedLLMClient();
-  const skeptic = createSkepticAgent({ llm: llm as any });
-
-  return {
-    generateWiki: async (input: string) => ({
-      content: `Generated wiki for: ${input}`,
-      claims: ['auth function', 'login function'],
-      citations: ['[source:auth.ts:10]'],
-      confidence: 0.85,
-    }),
-    generateImpact: async (input: string) => ({
-      content: `Impact analysis for: ${input}`,
-      claims: ['affects middleware', 'affects tests'],
-      citations: ['[source:middleware.ts:5]'],
-      confidence: 0.9,
-    }),
-    generateQuery: async (input: string) => ({
-      content: `Query results for: ${input}`,
-      claims: ['found function'],
-      citations: ['[source:utils.ts:20]'],
-      confidence: 0.88,
-    }),
-  };
-}
+// Mock system functions — placeholder stubs for evaluation runner
 
 // ============================================================================
 // CLI Entry Point

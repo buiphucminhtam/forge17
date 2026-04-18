@@ -164,7 +164,7 @@ export function cosineSimilarity(
     normA += value * value;
   }
   
-  for (const [term, value] of b) {
+  for (const [, value] of b) {
     normB += value * value;
   }
   
@@ -289,7 +289,7 @@ export function reciprocalRankFusion(
     // Sort by score descending
     const sorted = [...ranking.entries()].sort((a, b) => b[1] - a[1]);
     
-    for (const [docId, score] of sorted) {
+    for (const [docId] of sorted) {
       const rrf = 1 / (k + rank);
       scores.set(docId, (scores.get(docId) ?? 0) + rrf);
       rank++;

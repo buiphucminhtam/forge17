@@ -4,8 +4,7 @@
  * Provides natural language query with confidence metrics.
  */
 
-import type { ConfidenceResult, SearchResult } from '../agents/types.js';
-import { calculateConfidence } from '../agents/confidence.js';
+import type { ConfidenceResult } from '../agents/types.js';
 
 // ============================================================================
 // Types
@@ -173,7 +172,7 @@ async function searchCode(
 
 function calculateQueryConfidence(
   results: QuerySearchResult[],
-  options: QueryOptions
+  _options: QueryOptions
 ): ConfidenceResult {
   if (results.length === 0) {
     return {
