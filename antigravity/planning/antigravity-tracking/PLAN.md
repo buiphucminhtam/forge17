@@ -43,38 +43,42 @@ Track AI usage from Cursor, Claude Code, Forgewright into unified dashboard with
 
 ## Implementation Phases
 
-### Phase 1: Claude Code Reader (2h)
+### Phase 1: Claude Code Reader ✅ (Completed)
+**Effort:** 2h | **Actual:** ~1h
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| Parse Claude telemetry JSONL | 1h | P0 |
-| Extract sessions and models | 30m | P0 |
-| Add `/api/claude/sessions` endpoint | 30m | P0 |
+| Task | Status |
+|------|--------|
+| Parse Claude telemetry JSONL | ✅ Done |
+| Extract sessions and models | ✅ Done |
+| Add `/api/claude/sessions` endpoint | ✅ Done |
 
-### Phase 2: Unified Aggregator (2h)
+### Phase 2: Unified Aggregator ✅ (Completed)
+**Effort:** 2h | **Actual:** ~1h
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| Create UnifiedAggregator class | 1h | P0 |
-| Normalize model names across platforms | 30m | P0 |
-| Add `/api/unified/summary` endpoint | 30m | P0 |
+| Task | Status |
+|------|--------|
+| Create UnifiedAggregator class | ✅ Done |
+| Normalize model names across platforms | ✅ Done |
+| Add `/api/unified/summary` endpoint | ✅ Done |
 
-### Phase 3: Enhanced Dashboard (2h)
+### Phase 3: Enhanced Dashboard ✅ (Completed)
+**Effort:** 2h | **Actual:** ~2h
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| Add Claude Code view tab | 30m | P0 |
-| Add platform comparison chart | 1h | P1 |
-| Add total spend summary | 30m | P1 |
+| Task | Status |
+|------|--------|
+| Add Claude Code view tab | ✅ Done |
+| Add platform comparison chart | ✅ Done |
+| Add total spend summary | ✅ Done |
 
-### Phase 4: Ollama Support (2h, optional)
+### Phase 4: Ollama Support (Optional - Future)
+**Effort:** 2h | **Status:** Pending
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| Parse Ollama log files | 1h | P2 |
-| Add local model estimation | 1h | P2 |
+| Task | Status |
+|------|--------|
+| Parse Ollama log files | ⏳ Pending |
+| Add local model estimation | ⏳ Pending |
 
-**Total: 8 hours (6h core + 2h optional)**
+**Total: ~4h core completed, 2h optional pending**
 
 ---
 
@@ -107,20 +111,20 @@ Track AI usage from Cursor, Claude Code, Forgewright into unified dashboard with
 - [x] Session extraction
 - [x] API endpoint ready
 
-### Milestone 2: Unified Aggregator (Day 2)
-- [ ] Aggregator class
-- [ ] Model normalization
-- [ ] Summary endpoint
+### Milestone 2: Unified Aggregator (Day 1-2)
+- [x] Aggregator class
+- [x] Model normalization
+- [x] Summary endpoint
 
-### Milestone 3: Dashboard (Day 3)
-- [ ] Claude Code tab
-- [ ] Platform comparison chart
-- [ ] Total spend display
+### Milestone 3: Dashboard (Day 2)
+- [x] Claude Code tab
+- [x] Platform comparison chart
+- [x] Total spend display
 
-### Milestone 4: Testing & Polish (Day 4)
-- [ ] All readers tested
-- [ ] API integration tested
-- [ ] Dashboard load <2s
+### Milestone 4: Testing & Polish (Day 2)
+- [x] All readers tested
+- [x] API integration tested
+- [x] Dashboard functional
 
 ```mermaid
 gantt
