@@ -202,7 +202,33 @@ See `skills/` directory for full list:
 | `/update` | Check for and install updates |
 | `/pipeline` | Show full pipeline reference |
 | `/onboard` | Deep project analysis (includes MCP setup) |
-| `/mcp` | Generate MCP workspace isolation config — creates `.antigravity/mcp-manifest.json` for Antigravity conflict-free multi-project support |
+| `/mcp` | Generate or check MCP setup — runs `forgewright-mcp-setup.sh` |
+| `/setup-mcp` | One-command MCP setup for this project |
+
+## MCP Setup (Level 4)
+
+When the user needs to set up or check MCP for a project, run:
+
+```bash
+bash <forgewright>/scripts/forgewright-mcp-setup.sh
+```
+
+**Single command does everything:**
+1. Detect forgewright location (standalone, submodule, or Antigravity plugin)
+2. Generate/verify MCP server
+3. Create workspace manifest
+4. Update global config (Claude Desktop or Cursor)
+5. Verify installation
+
+**Quick status check:**
+```bash
+bash scripts/forgewright-mcp-setup.sh --check
+```
+
+**Diagnose problems:**
+```bash
+bash scripts/forgewright-mcp-setup.sh --diagnose
+```
 
 ## Self-Check
 

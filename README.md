@@ -2,8 +2,9 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-8.0.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-8.1.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-56-brightgreen.svg" alt="Skills" />
+  <img src="https://img.shields.io/badge/templates-55-brightgreen.svg" alt="Templates" />
   <img src="https://img.shields.io/badge/features-3-brightgreen.svg" alt="New Features" />
   <img src="https://img.shields.io/badge/modes-24-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-29-00CED1.svg" alt="Protocols" />
@@ -197,26 +198,49 @@ flowchart TD
 
 **Sandbox types:** Filesystem, Network, Shell. Default: dry-run mode (preview before execute).
 
-### 3. Skill Templates — Domain Scaffolding
+### 3. Template System — 55 Templates for Fast Scaffolding
 
-Pre-built templates for common patterns, auto-detected from requests.
+Pre-built templates for Docker, CI/CD, SRE, Config, Cursor rules, Game engine scaffolding. Generate via CLI.
 
 ```mermaid
-flowchart LR
-    REQ["Request<br/>'add JWT auth'"]
-    MATCH["Template Matcher<br/>Keyword + Fuzzy"]
-    TEMPLATES["Templates<br/>auth-jwt · api-rest · db-migration"]
+flowchart TB
+    REQ["Generate template"]
+    CLI["scripts/generate-template.ts"]
+    TEMPLATES["templates/"]
 
-    REQ --> MATCH
-    MATCH --> TEMPLATES
-    TEMPLATES -->|inject context| REQ
+    subgraph TEMPLATES["templates/"]
+        DOCKER["docker/"]
+        CI["ci/"]
+        CONFIG["config/"]
+        SRE["sre/"]
+        CURSOR["cursor/"]
+        SKILLS["skills/"]
+        GAME["game/"]
+    end
 
-    style REQ fill:#0f3460,stroke:#e94560,color:#fff
-    style MATCH fill:#1a5276,stroke:#3498db,color:#fff
-    style TEMPLATES fill:#1e8449,stroke:#2ecc71,color:#fff
+    REQ --> CLI
+    CLI --> TEMPLATES
+
+    style CLI fill:#1a5276,stroke:#3498db,color:#fff
+    style TEMPLATES fill:#0f3460,stroke:#3498db,color:#fff
 ```
 
-**Included templates:** Auth JWT, API REST, Database Migration.
+**Generate a template:**
+```bash
+npx ts-node scripts/generate-template.ts \
+  --template ci/github-ci \
+  --output ./.github/workflows/ci.yml \
+  --data '{"project": "my-app"}'
+```
+
+**55 templates included:**
+- Docker: multi-stage Dockerfile, docker-compose dev/test/game, .dockerignore
+- CI/CD: GitHub Actions CI, CD staging/production, PR checks, commit lint, scheduled
+- Config: Jest, Prettier v3, ESLint, TSConfig base, .env.example, Makefile, EditorConfig
+- SRE: war room checklist, incident comms, on-call rotation, escalation policy, RCA
+- Cursor: rule templates, file-specific rules, agent prompts, rules index
+- Skills: DevOps checklist, SRE runbook, SWE patterns, DB migration, mobile assertions
+- Game: Godot lobby, NetworkManager, SyncVar, server-authoritative loop
 
 ---
 
@@ -977,13 +1001,36 @@ bash .antigravity/plugins/production-grade/scripts/ensure-mem0.sh "$(pwd)"
 
 ### Method 4: Install MCP server (Level 4)
 
-Run one command:
+**ONE command — does everything:**
 
 ```bash
-bash .antigravity/plugins/production-grade/scripts/mcp-generate.sh
+# Standard way (from project using forgewright as submodule)
+bash forgewright/scripts/forgewright-mcp-setup.sh
+
+# Or via Antigravity plugin (universal, works from any project)
+bash .antigravity/plugins/production-grade/scripts/forgewright-mcp-setup.sh
 ```
 
+This single command:
+- Detects forgewright location automatically
+- Generates the MCP server
+- Creates the workspace manifest
+- Updates your global config (Cursor/Claude)
+- Verifies the installation
+
 Then restart Cursor/VS Code.
+
+**Check status anytime:**
+
+```bash
+bash forgewright/scripts/forgewright-mcp-setup.sh --check
+```
+
+**Diagnose problems:**
+
+```bash
+bash forgewright/scripts/forgewright-mcp-setup.sh --diagnose
+```
 
 ### Verify your installation
 
@@ -1071,7 +1118,7 @@ bash scripts/forge-validate.sh --json
 | Issue | Solution |
 |-------|----------|
 | `forgenexus: command not found` | Use `npx forgenexus` instead of `forgenexus` |
-| `npm install` fails in submodule | Check `node --version` (needs 18+) |
+| MCP setup fails | Run `bash forgewright/scripts/forgewright-mcp-setup.sh --diagnose` |
 | Can't see MCP tools | Restart Cursor/VS Code after config change |
 | Stale index | Run `npx forgenexus analyze "$(pwd)"` |
 | Submodule not initialized | `git submodule update --init --recursive` |
@@ -1080,6 +1127,16 @@ bash scripts/forge-validate.sh --json
 | Windows: `bash` not found | Use equivalent PowerShell commands |
 | Mermaid diagrams not showing | Make sure viewer uses **mermaid 10+**. GitHub/GitLab supported. |
 | `better-sqlite3` error after merge | Run `cd forgenexus && npm install` to install `kuzu` instead |
+| Multi-project MCP conflicts | Use `forgewright-mcp-setup.sh` — one config per workspace |
+
+**Quick diagnostics:**
+```bash
+# Check MCP status
+bash forgewright/scripts/forgewright-mcp-setup.sh --check
+
+# Diagnose issues
+bash forgewright/scripts/forgewright-mcp-setup.sh --diagnose
+```
 
 ---
 
@@ -1091,7 +1148,8 @@ bash scripts/forge-validate.sh --json
 | `/update` | Check for and install updates (safe, keeps your changes) |
 | `/pipeline` | View full pipeline, modes, and skills list |
 | `/onboard` | Deep project analysis — creates `.forgewright/project-profile.json` |
-| `/mcp` | Generate or regenerate MCP server config |
+| `/mcp` | Check or regenerate MCP setup |
+| `/setup-mcp` | One-command MCP setup for any project |
 | `/setup-mobile-test` | Set up mobile testing for Android/iOS |
 
 ---
@@ -1124,7 +1182,7 @@ If Forgewright helps you ship faster, you can support here:
 ---
 
 <p align="center">
-  <strong>Forgewright — 56 AI skills. 24 modes. Persistent Memory. Code Intelligence. Real-time Studio. Sandboxed Execution. Smart Templates.</strong>
+  <strong>Forgewright — 56 AI skills. 24 modes. Persistent Memory. Code Intelligence. Real-time Studio. Sandboxed Execution. 55 Templates.</strong>
 </p>
 <p align="center">
   <em>Plan precisely. Build confidently. Scale intelligently.</em>

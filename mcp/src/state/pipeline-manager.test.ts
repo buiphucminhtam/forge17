@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,7 +28,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('startPipeline sets mode and phase', async () => {
-    const { startPipeline, getState, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, getState, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     const result = startPipeline('Full Build');
@@ -41,7 +42,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('advancePhase increments phase', async () => {
-    const { startPipeline, advancePhase, getState, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, advancePhase, getState, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');
@@ -51,7 +53,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('advancePhase blocked when waiting for gate', async () => {
-    const { startPipeline, requestGateApproval, advancePhase, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, requestGateApproval, advancePhase, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');
@@ -62,7 +65,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('advancePhase completes pipeline at end', async () => {
-    const { startPipeline, advancePhase, getState, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, advancePhase, getState, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');
@@ -76,7 +80,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('requestGateApproval locks pipeline', async () => {
-    const { startPipeline, requestGateApproval, getState, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, requestGateApproval, getState, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');
@@ -87,7 +92,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('approveGate unlocks pipeline', async () => {
-    const { startPipeline, requestGateApproval, approveGate, getState, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, requestGateApproval, approveGate, getState, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');
@@ -98,7 +104,8 @@ describe('Pipeline Manager', () => {
   });
 
   it('approveGate errors when not waiting', async () => {
-    const { startPipeline, approveGate, resetWorkspaceRoot } = await import('../state/pipeline-manager.js');
+    const { startPipeline, approveGate, resetWorkspaceRoot } =
+      await import('../state/pipeline-manager.js');
     resetWorkspaceRoot();
     cleanState();
     startPipeline('Feature');

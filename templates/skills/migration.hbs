@@ -1,0 +1,80 @@
+-- Migration: {{migrationName}}
+-- Created: {{createdAt}}
+-- Description: {{description}}
+
+-- ─── Up Migration ──────────────────────────────────────────────────────────────
+
+-- Up: {{upDescription}}
+
+BEGIN;
+
+-- Step 1: Add new columns
+-- {{step1}}
+
+-- Step 2: Create indexes
+-- {{step2}}
+
+-- Step 3: Backfill data (if needed)
+-- {{step3}}
+
+-- Step 4: Add constraints
+-- {{step4}}
+
+COMMIT;
+
+-- ─── Down Migration ────────────────────────────────────────────────────────────
+
+-- Down: {{downDescription}}
+
+BEGIN;
+
+-- Step 1: Remove constraints
+-- {{downStep1}}
+
+-- Step 2: Remove indexes
+-- {{downStep2}}
+
+-- Step 3: Drop columns
+-- {{downStep3}}
+
+COMMIT;
+
+-- ─── Verification ──────────────────────────────────────────────────────────────
+
+-- Run this to verify the migration:
+-- SELECT * FROM schema_migrations WHERE name = '{{migrationName}}';
+
+-- Run this to check the new table structure:
+-- \d {{tableName}}
+
+-- Run this to check indexes:
+-- \di {{tableName}}_*
+
+-- ─── Example (uncomment and customize) ─────────────────────────────────────────
+
+-- UP:
+-- CREATE TABLE IF NOT EXISTS users (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     email VARCHAR(255) NOT NULL UNIQUE,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+--
+-- CREATE UNIQUE INDEX idx_users_email ON users(email);
+-- CREATE INDEX idx_users_created_at ON users(created_at);
+
+-- DOWN:
+-- DROP INDEX IF EXISTS idx_users_created_at;
+-- DROP INDEX IF EXISTS idx_users_email;
+-- DROP TABLE IF EXISTS users;
+
+-- ─── Seed Data (if needed) ─────────────────────────────────────────────────────
+
+-- INSERT INTO {{tableName}} (id, name) VALUES
+--     ('uuid-1', 'Value 1'),
+--     ('uuid-2', 'Value 2');
+
+-- ─── Notes ────────────────────────────────────────────────────────────────────
+
+-- {{notes}}

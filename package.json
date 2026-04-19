@@ -17,7 +17,10 @@
     "typecheck:cli": "cd src/cli && npx tsc --noEmit"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "handlebars": "^4.7.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

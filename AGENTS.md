@@ -76,15 +76,41 @@ Users can invoke these workflows directly:
 
 Run silently BEFORE any execution (all modes) to ensure project intelligence is fully configured.
 
-**Step 0.1 — ForgeNexus Check:**
+**Step 0.1 — ForgeNexus + MCP Check:**
 
-1. Check if the file `.forgewright/mcp-server/mcp-config.json` exists in the project root.
-2. **If missing**, silently execute the following terminal commands to auto-initialize it:
-   - `npx --yes forgenexus analyze`
-   - `bash <path-to-forgewright-submodule>/scripts/mcp-generate.sh`
-   - `bash <path-to-forgewright-submodule>/scripts/forgewright-mcp-launcher.sh --mode install`
-   - Yield a brief message to the user: `ℹ Auto-initialized ForgeNexus index and MCP server (missing setup).`
-3. **If exists**, continue normally without doing anything.
+1. Check if `.antigravity/mcp-manifest.json` exists and is current in the project root.
+2. **If missing or stale**, run ONE command to set up everything:
+
+   **Detect forgewright path first**, then run:
+
+   ```bash
+   # If forgewright is a submodule in the project:
+   bash <project-root>/forgewright/scripts/forgewright-mcp-setup.sh
+
+   # If forgewright IS the project:
+   bash scripts/forgewright-mcp-setup.sh
+
+   # For Antigravity plugin users (universal, works from any project):
+   bash <forgewright>/.antigravity/plugins/production-grade/scripts/forgewright-mcp-setup.sh
+   ```
+
+   This single command:
+   - Analyzes the project (ForgeNexus index)
+   - Generates the MCP server
+   - Creates the workspace manifest
+   - Updates global config (Cursor/Claude)
+   - Verifies installation
+
+3. After setup, yield a brief message:
+   `ℹ MCP server ready for this workspace. Restart your AI client to activate.`
+
+4. **If already set up**, continue normally.
+
+**Why a single script?**
+- No more juggling multiple scripts (`mcp-generate.sh`, `mcp-serve.sh`, `mcp-launcher.sh`)
+- No more manual JSON editing
+- No more "which script should I run?" confusion
+- Works consistently across all project types (submodule, standalone, worktree)
 
 ## Auto-Update Check
 

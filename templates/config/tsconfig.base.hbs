@@ -1,0 +1,62 @@
+{
+  "compilerOptions": {
+    /* ─── Language & Environment ──────────────────────────────────────────── */
+    "target": "{{default tsconfig.target "ES2022"}}",
+    "{{default tsconfig.module "module" | json}}": "{{default tsconfig.module "NodeNext"}}",
+    "lib": [
+      "{{default tsconfig.target "ES2022"}}"
+    ],
+
+    /* ─── Emit ───────────────────────────────────────────────────────────── */
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": false,
+
+    /* ─── Interop Constraints ────────────────────────────────────────────── */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "{{default tsconfig.module "NodeNext"}}",
+
+    /* ─── Type Checking ──────────────────────────────────────────────────── */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+
+    /* ─── Completeness ──────────────────────────────────────────────────── */
+    "skipLibCheck": true,
+
+    /* ─── Editor Support ─────────────────────────────────────────────────── */
+    "composite": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "@typescript-eslint/tslint-plugin"
+      }
+    ]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**"
+  ],
+  "references": [
+    {{#if tsconfig.references}}
+    {{#each tsconfig.references}}
+    { "path": "{{this}}" },
+    {{/each}}
+    {{/if}}
+  ]
+}
