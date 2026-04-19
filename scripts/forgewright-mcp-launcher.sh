@@ -31,7 +31,7 @@ resolve_workspace() {
         workspace="$FORGEWRIGHT_WORKSPACE"
     elif [[ -n "${MCP_WORKSPACE_ROOT:-}" ]]; then
         workspace="$MCP_WORKSPACE_ROOT"
-    elif git rev-parse --show-toplevel 2>/dev/null; then
+    elif git rev-parse --show-toplevel >/dev/null 2>&1; then
         workspace="$(git rev-parse --show-toplevel)"
     else
         workspace="$(pwd)"
