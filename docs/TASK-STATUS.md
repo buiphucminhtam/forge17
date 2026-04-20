@@ -1,0 +1,125 @@
+# Forgewright — Roadmap Task Status
+
+> Last updated: 2026-04-20
+> Session: Token Efficiency Roadmap Implementation
+> Commit: `31a8dd8` — `feat(middleware): add shell filter + session dedup + RTK detection + tool sandbox`
+
+---
+
+## ✅ Completed Tasks
+
+### P1 — Core Token Efficiency Stack
+
+| Task ID | Name | Commit | Notes |
+|---------|------|--------|-------|
+| **P1-T1** | I-NEW-1.1: Shell Filter native | `31a8dd8` | `scripts/forgewright-shell-filter.sh` — 384 lines, 18 command filters (git, npm, cargo, pytest, ls, grep, tsc, docker, kubectl, curl, etc.). ANSI stripping, structured summaries, per-file diff parsing. macOS awk compatible. Synced to Antigravity plugin. |
+| **P1-T2** | I-NEW-1.2: Session Deduplication middleware | `31a8dd8` | `mcp/src/middleware/session-deduplication.ts` + `types.ts` + `chain.ts`. SHA-256 normalized keys, sliding turn/time window (10 turns / 5 min), LRU eviction (500 entries). 25 passing unit tests. Protocol: `skills/_shared/protocols/session-deduplication.md`. |
+| **P1-T3** | I-NEW-1.3: RTK Detection in MCP setup | `31a8dd8` | `scripts/forgewright-mcp-setup.sh` — Detects rtk, chop, snip, ctx, tkill at setup time. Writes `.forgewright/settings.env` with `FORGEWRIGHT_SHELL_COMPRESSOR`. Shows compressor in `--check` output. Synced to Antigravity plugin. |
+| **P1-T4** | I2: Tool Output Sandboxing middleware | `31a8dd8` | `mcp/src/middleware/tool-sandbox.ts`. ANSI stripping, prompt injection detection, compression (>10KB truncate), structured summaries per tool type. Audit log: `.forgewright/audit/{session}/{turn}/{tool}/{hash}.jsonl`. Protocol: `skills/_shared/protocols/tool-sandbox.md`. |
+
+---
+
+## 📋 Remaining Tasks (Priority Order)
+
+### P2 — ForgeNexus Code Intelligence (Medium Priority)
+
+| Task ID | Name | Score | Description |
+|---------|------|-------|-------------|
+| **P2-T1** | I5: ForgeNexus Outline Mode tool | 9.10 | Add outline mode to ForgeNexus MCP tools. Large files (>200 lines) return function signatures only. Inspired by Tilth's structural reading approach. Uses existing tree-sitter parse worker. Integrate with KuzuDB graph. |
+| **P2-T2** | I-NEW-2: ForgeNexus Callee Footer + Session Dedup | 9.30 | Show call targets (callees) as footer in code navigation. Integrate with session dedup to avoid re-querying graph for same symbol. |
+
+**Key files to read first:**
+- `forgenexus/src/mcp/tools.ts` — existing MCP tool definitions
+- `forgenexus/src/analysis/parse-worker.ts` — tree-sitter parsing
+- `forgenexus/src/data/graph.ts` — KuzuDB graph structure
+- `docs/improvement-roadmap-v2.md` §I5, §I-NEW-2
+
+### P3 — Memory Engine (High Priority)
+
+| Task ID | Name | Score | Description |
+|---------|------|-------|-------------|
+| **P3-T1** | I-NEW-3: Memory Engine v2 (SQLite + FTS5 + RRF) | 9.25 | Replace current mem0-cli.py JSONL with SQLite + FTS5 full-text search. Add RRF (Reciprocal Rank Fusion) for multi-source ranking. Token savings ~75%. |
+| **P3-T2** | I9: Memory Progressive Disclosure 3-layer | 9.10 | Layer 1: brief (1-2 lines). Layer 2: full fact. Layer 3: full source. Avoid loading everything at once. |
+
+**Key files to read first:**
+- `scripts/mem0-cli.py` — current memory implementation
+- `skills/memory-manager/SKILL.md` — memory system design
+- `skills/_shared/protocols/memory-manager.md`
+- `docs/improvement-roadmap-v2.md` §I-NEW-3, §I9
+
+### P4 — Conversation Pruning (Medium Priority)
+
+| Task ID | Name | Score | Description |
+|---------|------|-------|-------------|
+| **P4-T1** | I-NEW-5: DyCP KadaneDial Conversation Pruning | 9.05 | Implement KadaneDial algorithm for conversation context pruning. Deduplicate tool results, purge error-only messages, LLM-driven compression. 50-70% conversation reduction. |
+
+**Key files to read first:**
+- `docs/improvement-roadmap-v2.md` §I-NEW-5
+- `skills/_shared/protocols/summarization.md`
+
+### P5 — External Tool Integration (Low Priority)
+
+| Task ID | Name | Score | Description |
+|---------|------|-------|-------------|
+| **P5-T1** | I11: RTK + chop + snip Detection & Integration | 9.35 | Full integration once RTK is installed. Hook `run_shell_filter()` function into tool execution. |
+| **P5-T2** | I-NEW-4: Context-Mode Integration (ctx_execute MCP tool) | 9.15 | Add `ctx_execute` MCP tool to ForgeNexus MCP server. Sandbox code execution, return structured summary. |
+| **P5-T3** | I-NEW-6: Token-Savior MCP Integration | 9.00 | Integrate Token-Savior's structured navigation (97% reduction) and persistent memory (SQLite + vector embeddings). |
+
+**Key files to read first:**
+- `forgenexus/src/mcp/tools.ts`
+- `mcp/src/index.ts`
+- `docs/improvement-roadmap-v2.md` §I-NEW-4, §I-NEW-6
+
+---
+
+## 📁 Key Files Reference
+
+### Implemented in This Session
+
+| File | Purpose |
+|------|---------|
+| `scripts/forgewright-shell-filter.sh` | Shell output filter (main) |
+| `.antigravity/plugins/production-grade/scripts/forgewright-shell-filter.sh` | Shell filter (Antigravity plugin copy) |
+| `scripts/forgewright-mcp-setup.sh` | MCP setup with RTK detection + settings |
+| `.antigravity/plugins/production-grade/scripts/forgewright-mcp-setup.sh` | MCP setup (Antigravity plugin copy) |
+| `mcp/src/middleware/types.ts` | Shared middleware types (ToolContext, MiddlewareResult, etc.) |
+| `mcp/src/middleware/session-deduplication.ts` | Session dedup middleware (4b) |
+| `mcp/src/middleware/session-deduplication.test.ts` | 25 unit tests for session dedup |
+| `mcp/src/middleware/chain.ts` | Middleware chain orchestrator |
+| `mcp/src/middleware/tool-sandbox.ts` | Tool output sandbox middleware (4c) |
+| `skills/_shared/protocols/session-deduplication.md` | Session dedup protocol doc |
+| `skills/_shared/protocols/tool-sandbox.md` | Tool sandbox protocol doc |
+| `skills/_shared/protocols/shell-filter.md` | Shell filter protocol doc |
+| `skills/production-grade/middleware/05-session-deduplication.md` | Session dedup middleware spec |
+| `skills/production-grade/middleware/06-tool-sandbox.md` | Tool sandbox middleware spec |
+
+### Project Intelligence
+
+| File | Purpose |
+|------|---------|
+| `docs/improvement-roadmap-v2.md` | Full roadmap with scores, implementation details |
+| `skills/_shared/protocols/middleware-chain.md` | Middleware chain protocol (13 steps) |
+| `forgenexus/src/` | ForgeNexus code intelligence engine |
+| `mcp/src/` | Global MCP server |
+
+---
+
+## 🔄 How to Resume
+
+1. Read `docs/TASK-STATUS.md` (this file)
+2. Read relevant sections of `docs/improvement-roadmap-v2.md`
+3. Start with highest priority pending task
+4. Run `cd mcp && npm test` to verify baseline
+5. Implement task, write tests, run `npm run build && npm test`
+6. Format: `npx prettier --write`
+7. Lint: `npm run lint`
+8. Commit with clear message referencing task ID (e.g., "feat(forgenexus): add outline mode tool (I5)")
+
+## 🎯 Current Focus
+
+**Next task: P2-T1 — ForgeNexus Outline Mode tool**
+
+Read these files first:
+- `forgenexus/src/mcp/tools.ts` — existing tool definitions
+- `forgenexus/src/analysis/parse-worker.ts` — tree-sitter parsing
+- `forgenexus/src/data/graph.ts` — KuzuDB graph structure
