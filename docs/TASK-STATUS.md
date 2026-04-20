@@ -2,7 +2,7 @@
 
 > Last updated: 2026-04-20
 > Session: Token Efficiency Roadmap Implementation
-> Commit: `31a8dd8` — `feat(middleware): add shell filter + session dedup + RTK detection + tool sandbox`
+> Commit: `c6ab98c` — `feat(forgenexus): add outline mode tool (P2-T1, I5)`
 
 ---
 
