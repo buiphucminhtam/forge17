@@ -95,6 +95,383 @@ flowchart LR
 
 ---
 
+## 🚀 Quick Start — 5 Phút Đầu Tiên
+
+### Trước khi bắt đầu
+
+Kiểm tra máy đã cài đủ công cụ chưa:
+
+```bash
+# macOS/Linux
+node --version   # Cần Node.js 18+
+python3 --version  # Cần Python 3.8+ (cho Memory/Level 3)
+git --version    # Cần Git
+
+# Windows: Dùng PowerShell hoặc WSL2
+```
+
+**Nếu chưa cài Node.js:**
+```bash
+# macOS
+brew install node
+
+# Linux
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Windows: Tải từ https://nodejs.org
+```
+
+---
+
+### Cách 1: Dùng ngay (Khuyên dùng — Level 1)
+
+Đây là cách nhanh nhất, không cần cài gì thêm:
+
+**Bước 1:** Tạo thư mục project mới (hoặc dùng project hiện có)
+
+```bash
+cd /path/to/your/project
+# Hoặc tạo mới:
+mkdir my-project && cd my-project
+git init
+```
+
+**Bước 2:** Clone Forgewright
+
+```bash
+git clone https://github.com/buiphucminhtam/forgewright.git
+cd forgewright
+```
+
+**Bước 3:** Copy 2 file cần thiết vào project của bạn
+
+```bash
+# Quay lại thư mục project
+cd /path/to/your/project
+
+# Copy 2 file cấu hình (chạy từ thư mục chứa forgewright)
+cp forgewright/AGENTS.md .
+cp forgewright/CLAUDE.md .
+
+# Hoặc nếu dùng Claude Code/VS Code Agent, file sẽ tự đọc CLAUDE.md
+```
+
+**Bước 4:** Mở IDE và bắt đầu chat
+
+- **Cursor**: Mở Cursor, chọn thư mục project
+- **Claude Code**: Chạy `claude` trong terminal từ thư mục project
+- **VS Code + Claude Extension**: Mở project, bật Claude extension
+
+**Bước 5:** Gõ yêu cầu đầu tiên
+
+```bash
+# Ví dụ 1: Xây dựng website mới
+"Build me a landing page for my coffee shop"
+
+# Ví dụ 2: Thêm tính năng vào project hiện có
+"Add user authentication with JWT"
+
+# Ví dụ 3: Sửa bug
+"Fix the login bug where users get logged out randomly"
+
+# Ví dụ 4: Viết tests
+"Write unit tests for the payment module"
+```
+
+**Sau khi gõ, Forgewright sẽ tự động:**
+1. Phân tích yêu cầu của bạn
+2. Chọn đúng AI skill cần thiết
+3. Thực hiện công việc theo pipeline
+4. Báo kết quả kèm điểm chất lượng (0-100)
+
+---
+
+### Cách 2: Cài đặt đầy đủ (Level 4 — Full Power)
+
+Cách này thêm **12 công cụ AI** vào IDE của bạn:
+
+**Bước 1-3:** Làm tương tự **Cách 1** (Bước 1-3)
+
+**Bước 4:** Chạy MCP Setup
+
+```bash
+# Từ thư mục project (nơi chứa forgewright/)
+cd /path/to/your/project
+bash forgewright/scripts/forgewright-mcp-setup.sh
+```
+
+Script này sẽ tự động:
+- Tạo MCP server cho project
+- Cấu hình workspace isolation
+- Cập nhật config của Cursor/VS Code/Claude Desktop
+- Kiểm tra cài đặt
+
+**Bước 5:** Restart IDE
+
+```bash
+# Tắt và mở lại Cursor/VS Code/Claude Desktop
+```
+
+**Bước 6:** Kiểm tra
+
+```bash
+# Kiểm tra MCP đã hoạt động chưa
+bash forgewright/scripts/forgewright-mcp-setup.sh --check
+```
+
+**Bước 7:** Bắt đầu sử dụng
+
+Giờ bạn có thể dùng các lệnh đặc biệt:
+
+```bash
+# Phân tích project
+"/onboard"
+
+# Xem pipeline
+"/pipeline"
+
+# Kiểm tra chất lượng code
+"/quality"
+
+# Hoặc hỏi thẳng:
+"How does the authentication flow work?"
+"What will break if I change the User model?"
+"Show me all API endpoints"
+```
+
+---
+
+### Cách 3: Dùng như Submodule (Cho team)
+
+Khi muốn thêm Forgewright vào project để share với team:
+
+**Bước 1:** Thêm submodule
+
+```bash
+cd /path/to/your/project
+git submodule add -b main https://github.com/buiphucminhtam/forgewright.git \
+  .antigravity/plugins/production-grade
+```
+
+**Bước 2:** Copy file cấu hình
+
+```bash
+cp .antigravity/plugins/production-grade/AGENTS.md .
+cp .antigravity/plugins/production-grade/CLAUDE.md .
+```
+
+**Bước 3:** Commit
+
+```bash
+git add .gitmodules .antigravity AGENTS.md CLAUDE.md
+git commit -m "feat: add forgewright AI orchestrator"
+git push
+```
+
+**Bước 4:** Team member khác clone và init submodule
+
+```bash
+git clone https://github.com/your-org/your-project.git
+cd your-project
+git submodule update --init --recursive
+```
+
+---
+
+## 🎯 Sau Khi Cài Đặt — Làm Gì?
+
+### Dùng như thế nào?
+
+| Bạn muốn... | Gõ/Dùng... | Forgewright sẽ... |
+|-------------|-------------|-------------------|
+| Xây app mới | `"Build a todo app with React"` | BA → PM → Architect → Code → Test |
+| Thêm tính năng | `"Add dark mode"` | PM → Code → Test |
+| Viết tests | `"Write tests for auth"` | QA Engineer viết tests |
+| Review code | `"Review my API code"` | Code Reviewer check quality |
+| Sửa bug | `"Fix the memory leak"` | Debugger → Engineer fix |
+| Deploy | `"Deploy to Vercel"` | DevOps → SRE |
+| Tối ưu | `"Speed up the homepage"` | Performance Engineer analyze |
+| Bảo mật | `"Audit the auth flow"` | Security Engineer check |
+| Game | `"Build a 2D platformer in Unity"` | Game Designer → Unity Engineer |
+| Research | `"Research about RAG architecture"` | NotebookLM + Polymath |
+
+### Các lệnh đặc biệt
+
+```bash
+# Dashboard
+/onboard        # Phân tích sâu project, tạo profile
+/pipeline       # Xem tất cả 24 modes và 56 skills
+/quality        # Chấm điểm code 0-100
+/mcp            # Kiểm tra MCP setup
+
+# Trong chat
+"@file:auth.ts"    # Tham chiếu file cụ thể
+"how does X work?" # Hỏi về code
+"what depends on X?" # Hỏi về dependencies
+```
+
+### Hiểu output của Forgewright
+
+Khi Forgewright làm việc, bạn sẽ thấy:
+
+```
+🤔 INTERPRETING REQUEST...
+   Intent: Build a landing page
+   Mode: Full Build (simplified)
+   Confidence: HIGH
+
+📋 PLANNING...
+   Step 1: Business Analyst defines scope
+   Step 2: Architect designs structure
+   Step 3: Engineer builds code
+   Step 4: QA writes tests
+
+⚡ EXECUTING...
+   [████████░░░░░░░░░░] 45% - Building components...
+
+✅ DONE (Score: 87/100)
+   - 12 files created
+   - 3 tests passed
+   - No security issues
+```
+
+---
+
+## 🎨 Forgewright Studio — Real-time Pipeline Monitor
+
+Forgewright Studio là dashboard theo dõi pipeline theo thời gian thực, lấy cảm hứng từ [AgentScope Studio](https://github.com/agentscope-ai/agentscope-studio).
+
+### Tính năng
+
+| Tính năng | Mô tả |
+|------------|-------|
+| **Pipeline Monitor** | Theo dõi tiến độ các phase: DEFINE → BUILD → HARDEN → SHIP |
+| **Memory Trace** | Timeline của memory operations |
+| **Token Tracker** | Theo dõi tokens và chi phí API |
+| **Session History** | Lịch sử các phiên làm việc |
+
+### Cách chạy
+
+**Bước 1:** Cài đặt dependencies
+
+```bash
+cd /Users/buiphucminhtam/Documents/GitHub/forgewright
+npm install
+```
+
+**Bước 2:** Build ForgeNexus (nếu chưa có)
+
+```bash
+npm run build
+```
+
+**Bước 3:** Chạy Studio Server
+
+```bash
+# Cách 1: Chạy với ts-node
+npx ts-node src/studio/run.ts
+
+# Cách 2: Chạy với demo events
+npx ts-node src/studio/run.ts --demo
+
+# Cách 3: Chạy trên port khác
+STUDIO_PORT=9000 npx ts-node src/studio/run.ts
+```
+
+**Bước 4:** Mở Dashboard
+
+Sau khi chạy, bạn sẽ thấy:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                   Forgewright Studio                         ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  🎯 Dashboard:  http://localhost:7891                        ║
+║  📡 WebSocket: ws://localhost:7891                          ║
+║                                                              ║
+║  Status: Running                                             ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### Tự tạo UI Dashboard
+
+Component React của Studio có sẵn trong `src/studio/components/`. Bạn có thể tự tạo UI:
+
+```tsx
+import { StudioApp } from "@forgewright/studio";
+
+// Trong React app của bạn
+function App() {
+  return (
+    <StudioApp
+      sessionId="your-session-id"
+      wsUrl="ws://localhost:7891"
+    />
+  );
+}
+```
+
+### Architecture
+
+```
+┌─────────────┐     WebSocket      ┌──────────────┐
+│   IDE/CLI   │ ─────────────────► │  WS Server   │
+│ (Emitter)   │   port 7891       │  (run.ts)    │
+└─────────────┘                    └──────────────┘
+                                          │
+                                          ▼
+                                   ┌──────────────┐
+                                   │  Studio UI   │
+                                   │ (React App)  │
+                                   └──────────────┘
+```
+
+### Events được hỗ trợ
+
+| Event | Mô tả |
+|-------|-------|
+| `pipeline:start` | Pipeline bắt đầu |
+| `pipeline:progress` | Tiến độ thay đổi |
+| `pipeline:complete` | Pipeline hoàn thành |
+| `stats:update` | Cập nhật tokens/cost |
+| `memory:trace` | Memory operation |
+| `error:throw` | Error xảy ra |
+
+---
+
+## ❓ FAQ — Câu Hỏi Thường Gặp
+
+**Q: Cần trả tiền không?**
+A: Không. Forgewright miễn phí. Bạn chỉ cần trả tiền cho Claude API nếu dùng Claude.
+
+**Q: Dùng được với GPT-4 không?**
+A: Có. Forgewright hoạt động với Claude, GPT-4, và các LLM khác.
+
+**Q: Cần biết lập trình không?**
+A: Không bắt buộc. Level 1 có thể dùng như "AI assistant" đơn giản.
+
+**Q: Lưu dữ liệu ở đâu?**
+A: Tất cả data được lưu trong `.forgewright/` và `.antigravity/` của project bạn.
+
+**Q: Gặp lỗi thì làm sao?**
+A: Chạy `bash forgewright/scripts/forgewright-mcp-setup.sh --diagnose`
+
+---
+
+## 🔧 Troubleshooting Nhanh
+
+| Lỗi | Cách fix |
+|-----|----------|
+| MCP không hoạt động | Restart IDE, chạy `--diagnose` |
+| Không tìm thấy skills | Kiểm tra đã copy AGENTS.md và CLAUDE.md |
+| Index cũ | Chạy `npx forgenexus analyze` |
+| Submodule lỗi | `git submodule update --init --recursive` |
+
+---
+
 ## Getting Started — 3 Easiest Steps
 
 ```mermaid
