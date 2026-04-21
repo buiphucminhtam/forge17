@@ -1,0 +1,191 @@
+skill: security-engineer
+version: "1.0.0"
+description: Tests for the Security Engineer skill
+
+tests:
+  - id: test-sql-injection-audit
+    description: Audit code for SQL injection vulnerabilities
+    tags: [sql-injection, owasp, vulnerability]
+    input:
+      language: typescript
+      file: src/db/user.ts
+      code: |
+        async function getUser(id: string) {
+          return db.query(`SELECT * FROM users WHERE id = '${id}'`);
+        }
+    expected:
+      contains:
+        - "SQL injection"
+        - "parameterized query"
+        - "HIGH"
+        - "CWE-89"
+      min_high_findings: 1
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 90s
+  
+  - id: test-xss-audit
+    description: Audit React component for XSS vulnerabilities
+    tags: [xss, owasp, vulnerability]
+    input:
+      language: typescript
+      file: src/components/Comment.tsx
+      code: |
+        function Comment({ text }) {
+          return <div dangerouslySetInnerHTML={{ __html: text }} />;
+        }
+    expected:
+      contains:
+        - "XSS"
+        - "CWE-79"
+        - "sanitize"
+        - "HIGH"
+      min_high_findings: 1
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 90s
+  
+  - id: test-auth-bypass-audit
+    description: Audit authentication for bypass vulnerabilities
+    tags: [auth, bypass, vulnerability]
+    input:
+      language: typescript
+      file: src/middleware/auth.ts
+      code: |
+        function authMiddleware(req, res, next) {
+          if (req.path.startsWith('/api/public')) return next();
+          const token = req.headers.authorization;
+          if (!token) return res.status(401).send();
+          req.user = jwt.verify(token);
+          next();
+        }
+    expected:
+      contains:
+        - "auth"
+        - "bypass"
+        - "authorization"
+      min_findings: 1
+    validate:
+      - output_contains_all
+      - min_findings_satisfied
+    timeout: 90s
+  
+  - id: test-secrets-exposure-audit
+    description: Audit for exposed secrets in code
+    tags: [secrets, exposure, vulnerability]
+    input:
+      language: typescript
+      file: src/config.ts
+      code: |
+        export const config = {
+          apiKey: 'sk_live_1234567890abcdef',
+          dbPassword: 'SuperSecret123!',
+          jwtSecret: 'my-super-secret-key'
+        };
+    expected:
+      contains:
+        - "secret"
+        - "exposed"
+        - "environment variable"
+        - "HIGH"
+      min_high_findings: 3
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 60s
+  
+  - id: test-csrf-audit
+    description: Audit API endpoints for CSRF protection
+    tags: [csrf, owasp, vulnerability]
+    input:
+      language: typescript
+      file: src/api/profile.ts
+      code: |
+        router.post('/profile/update', async (req, res) => {
+          await db.updateUser(req.body);
+          res.json({ success: true });
+        });
+    expected:
+      contains:
+        - "CSRF"
+        - "CWE-352"
+        - "token"
+        - "MEDIUM"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 90s
+  
+  - id: test-dependency-audit
+    description: Audit package.json for vulnerable dependencies
+    tags: [dependencies, supply-chain, vulnerability]
+    input:
+      language: typescript
+      file: package.json
+      code: |
+        {
+          "dependencies": {
+            "express": "4.16.0",
+            "lodash": "4.17.5"
+          }
+        }
+    expected:
+      contains:
+        - "CVE"
+        - "outdated"
+        - "vulnerability"
+        - "advisory"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 60s
+  
+  - id: test-input-validation-audit
+    description: Audit for missing input validation
+    tags: [input-validation, owasp, vulnerability]
+    input:
+      language: typescript
+      file: src/api/users.ts
+      code: |
+        router.get('/users/search', async (req, res) => {
+          const { query } = req.query;
+          const results = await db.search(query);
+          res.json(results);
+        });
+    expected:
+      contains:
+        - "input validation"
+        - "sanitization"
+        - "injection"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 90s
+  
+  - id: test-cors-misconfiguration-audit
+    description: Audit CORS configuration for security issues
+    tags: [cors, security, misconfiguration]
+    input:
+      language: typescript
+      file: src/server.ts
+      code: |
+        app.use(cors({
+          origin: '*',
+          credentials: true
+        }));
+    expected:
+      contains:
+        - "CORS"
+        - "origin"
+        - "wildcard"
+        - "MEDIUM"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 60s

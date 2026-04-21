@@ -68,3 +68,135 @@ tests:
       - output_contains_all
       - file_count_matches
     timeout: 90s
+  
+  - id: test-mock-generation
+    description: Generate mock data for testing
+    tags: [mock, testing, faker]
+    input:
+      language: typescript
+      framework: faker
+      entities:
+        - User
+        - Product
+        - Order
+    expected:
+      contains:
+        - "faker"
+        - "User"
+        - "Product"
+        - "Order"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-contract-testing
+    description: Generate Pact contract tests
+    tags: [contract, pact, api]
+    input:
+      language: typescript
+      framework: pact
+      consumer: web-app
+      provider: api-service
+      interactions:
+        - getUser
+        - createOrder
+    expected:
+      contains:
+        - "Pact"
+        - "consumer"
+        - "provider"
+        - "interaction"
+      files_created: 2
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-performance-test
+    description: Generate k6 load test script
+    tags: [performance, k6, load-testing]
+    input:
+      language: javascript
+      framework: k6
+      endpoint: /api/users
+      scenarios:
+        - name: smoke
+          vus: 1
+          duration: 30s
+        - name: load
+          vus: 50
+          duration: 2m
+    expected:
+      contains:
+        - "k6"
+        - "http.get"
+        - "check"
+        - "sleep"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-snapshot-testing
+    description: Generate snapshot tests for component
+    tags: [snapshot, jest, component]
+    input:
+      language: typescript
+      framework: jest
+      component: UserCard
+      props:
+        name: "John Doe"
+        email: "john@example.com"
+    expected:
+      contains:
+        - "toMatchSnapshot"
+        - "renderer"
+        - "UserCard"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-api-contract-test
+    description: Generate API contract tests
+    tags: [api, contract, openapi]
+    input:
+      language: typescript
+      framework: jest
+      spec: openapi
+      endpoint: /api/users
+      method: GET
+    expected:
+      contains:
+        - "supertest"
+        - "expect"
+        - "status"
+        - "toEqual"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-mutation-testing
+    description: Generate Stryker mutation test config
+    tags: [mutation, stryker, testing]
+    input:
+      language: typescript
+      framework: stryker
+      target: src/**/*.ts
+    expected:
+      contains:
+        - "stryker"
+        - "mutate"
+        - "tsconfig"
+        - "reporters"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s

@@ -59,3 +59,128 @@ tests:
       - output_contains_all
       - min_criteria_satisfied
     timeout: 60s
+  
+  - id: test-prd-generation
+    description: Generate Product Requirements Document
+    tags: [prd, requirements, product]
+    input:
+      feature: "Real-time collaboration"
+      audience: enterprise
+      complexity: high
+    expected:
+      contains:
+        - "Product Requirements"
+        - "Overview"
+        - "User Stories"
+        - "Technical Requirements"
+        - "Success Metrics"
+      min_sections: 5
+    validate:
+      - output_contains_all
+      - min_sections_satisfied
+    timeout: 120s
+  
+  - id: test-release-planning
+    description: Generate release planning with sprints
+    tags: [release, sprint, planning]
+    input:
+      features:
+        - Login
+        - Dashboard
+        - Reports
+      sprints: 3
+      team_velocity: 40
+    expected:
+      contains:
+        - "Sprint"
+        - "Story Points"
+        - "Velocity"
+        - "Milestone"
+      min_sprints: 3
+    validate:
+      - output_contains_all
+      - min_sprints_satisfied
+    timeout: 90s
+  
+  - id: test-feature-spec
+    description: Generate detailed feature specification
+    tags: [feature-spec, detailed, requirements]
+    input:
+      feature: "Dark mode"
+      type: ui-feature
+    expected:
+      contains:
+        - "Feature Name"
+        - "Description"
+        - "User Story"
+        - "Acceptance Criteria"
+        - "Design Notes"
+      min_sections: 5
+    validate:
+      - output_contains_all
+      - min_sections_satisfied
+    timeout: 90s
+  
+  - id: test-kpi-definition
+    description: Generate KPI definitions for feature
+    tags: [kpi, metrics, success]
+    input:
+      feature: "Checkout flow"
+      metrics:
+        - conversion-rate
+        - abandonment-rate
+        - average-time
+    expected:
+      contains:
+        - "KPI"
+        - "Baseline"
+        - "Target"
+        - "Measurement"
+      min_metrics: 3
+    validate:
+      - output_contains_all
+      - min_metrics_satisfied
+    timeout: 60s
+  
+  - id: test-moscow-prioritization
+    description: Generate MoSCoW prioritized backlog
+    tags: [moscow, backlog, prioritization]
+    input:
+      features:
+        - User authentication
+        - File upload
+        - Email notifications
+        - Dark mode
+        - Export to PDF
+      business_impact: medium
+    expected:
+      contains:
+        - "Must"
+        - "Should"
+        - "Could"
+        - "Won't"
+      min_categorized: 4
+    validate:
+      - output_contains_all
+      - min_categorized_satisfied
+    timeout: 60s
+  
+  - id: test-user-journey-mapping
+    description: Generate user journey map
+    tags: [user-journey, ux, mapping]
+    input:
+      product: "E-commerce checkout"
+      personas:
+        - First-time buyer
+        - Returning customer
+    expected:
+      contains:
+        - "User Journey"
+        - "Touchpoints"
+        - "Pain Points"
+        - "Opportunities"
+      min_personas: 2
+    validate:
+      - output_contains_all
+      - min_personas_satisfied
+    timeout: 90s

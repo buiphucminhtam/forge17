@@ -1,0 +1,173 @@
+skill: sre
+version: "1.0.0"
+description: Tests for the SRE skill
+
+tests:
+  - id: test-slo-definition
+    description: Define SLOs for a service
+    tags: [slo, monitoring, reliability]
+    input:
+      service: payment-api
+      sli_type: availability
+      target: 99.9
+      window: 30d
+    expected:
+      contains:
+        - "SLO"
+        - "SLI"
+        - "error budget"
+        - "availability"
+      min_slo_definitions: 1
+    validate:
+      - output_contains_all
+      - min_slo_definitions_satisfied
+    timeout: 90s
+  
+  - id: test-runbook-generation
+    description: Generate incident runbook
+    tags: [runbook, incident, operations]
+    input:
+      scenario: high-error-rate
+      service: api-gateway
+      alert_threshold: "5%"
+    expected:
+      contains:
+        - "Runbook"
+        - "Symptoms"
+        - "Diagnosis"
+        - "Remediation"
+        - "Escalation"
+      min_sections: 4
+    validate:
+      - output_contains_all
+      - min_sections_satisfied
+    timeout: 90s
+  
+  - id: test-alert-definition
+    description: Define alerting rules for a service
+    tags: [alerting, monitoring, prometheus]
+    input:
+      service: user-service
+      metrics:
+        - error-rate
+        - latency-p99
+        - cpu-usage
+      severity: critical
+    expected:
+      contains:
+        - "alert"
+        - "expr"
+        - "for"
+        - "labels"
+      min_alert_rules: 3
+    validate:
+      - output_contains_all
+      - min_alert_rules_satisfied
+    timeout: 90s
+  
+  - id: test-chaos-scenario
+    description: Define chaos engineering scenario
+    tags: [chaos, engineering, resilience]
+    input:
+      scenario: database-failure
+      steady_state:
+        - error-rate < 1%
+        - latency-p99 < 500ms
+      abort_criteria:
+        - error-rate > 20%
+        - service-down > 5min
+    expected:
+      contains:
+        - "Chaos"
+        - "Experiment"
+        - "Steady State"
+        - "Abort Criteria"
+      min_sections: 4
+    validate:
+      - output_contains_all
+      - min_sections_satisfied
+    timeout: 90s
+  
+  - id: test-capacity-planning
+    description: Generate capacity planning model
+    tags: [capacity, planning, scaling]
+    input:
+      service: checkout-api
+      current_rps: 1000
+      growth_rate: 20
+      target_date: "2026-12-01"
+    expected:
+      contains:
+        - "Capacity"
+        - "Scaling"
+        - "Projection"
+        - "RPS"
+      min_projections: 3
+    validate:
+      - output_contains_all
+      - min_projections_satisfied
+    timeout: 120s
+  
+  - id: test-incident-severity
+    description: Define incident severity classification
+    tags: [incident, severity, classification]
+    input:
+      service: payment-gateway
+      criteria:
+        revenue_impact: true
+        user_impact: true
+        duration: true
+    expected:
+      contains:
+        - "SEV1"
+        - "SEV2"
+        - "SEV3"
+        - "SEV4"
+        - "Severity"
+      min_severity_levels: 4
+    validate:
+      - output_contains_all
+      - min_severity_levels_satisfied
+    timeout: 60s
+  
+  - id: test-error-budget-policy
+    description: Define error budget policy
+    tags: [error-budget, policy, slo]
+    input:
+      slo: 99.9
+      burn_rate_alert: 14.4x
+      window: 1h
+    expected:
+      contains:
+        - "Error Budget"
+        - "Burn Rate"
+        - "Policy"
+        - "Consumption"
+      min_policy_sections: 3
+    validate:
+      - output_contains_all
+      - min_policy_sections_satisfied
+    timeout: 60s
+  
+  - id: test-oncall-rotation
+    description: Define on-call rotation schedule
+    tags: [oncall, rotation, escalation]
+    input:
+      team_size: 4
+      rotation: weekly
+      escalation_levels:
+        - primary
+        - secondary
+        - manager
+    expected:
+      contains:
+        - "On-Call"
+        - "Rotation"
+        - "Escalation"
+        - "Primary"
+        - "Secondary"
+      min_escalation_levels: 3
+    validate:
+      - output_contains_all
+      - min_escalation_levels_satisfied
+    timeout: 60s

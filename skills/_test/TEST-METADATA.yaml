@@ -4,23 +4,35 @@ description: Core skill testing metadata
 
 skills:
   - name: software-engineer
-    tests_count: 0
+    tests_count: 12
     last_tested: null
     status: not_tested
   - name: code-reviewer
-    tests_count: 0
+    tests_count: 11
     last_tested: null
     status: not_tested
   - name: qa-engineer
-    tests_count: 0
+    tests_count: 10
     last_tested: null
     status: not_tested
   - name: security-engineer
-    tests_count: 0
+    tests_count: 8
+    last_tested: null
+    status: not_tested
+  - name: sre
+    tests_count: 8
+    last_tested: null
+    status: not_tested
+  - name: business-analyst
+    tests_count: 8
+    last_tested: null
+    status: not_tested
+  - name: devops
+    tests_count: 8
     last_tested: null
     status: not_tested
   - name: product-manager
-    tests_count: 0
+    tests_count: 10
     last_tested: null
     status: not_tested
 
@@ -30,3 +42,16 @@ coverage_targets:
   excellent: 90
 
 test_case_version: "1.0.0"
+
+summary:
+  total_skills: 8
+  total_tests: 75
+  categories:
+    engineering: 12
+    review: 11
+    testing: 10
+    security: 8
+    sre: 8
+    business: 8
+    devops: 8
+    product: 10

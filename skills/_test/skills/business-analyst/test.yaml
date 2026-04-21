@@ -1,0 +1,165 @@
+skill: business-analyst
+version: "1.0.0"
+description: Tests for the Business Analyst skill
+
+tests:
+  - id: test-requirements-elicitation
+    description: Elicit requirements using 6W1H framework
+    tags: [requirements, elicitation, 6w1h]
+    input:
+      request: "I want a feature to track project tasks"
+      mode: standard
+    expected:
+      contains:
+        - "Who"
+        - "What"
+        - "Why"
+        - "Where"
+        - "When"
+        - "Which"
+        - "How"
+      min_questions: 5
+    validate:
+      - output_contains_all
+      - min_questions_satisfied
+    timeout: 120s
+  
+  - id: test-stakeholder-analysis
+    description: Generate stakeholder analysis matrix
+    tags: [stakeholder, analysis, power-interest]
+    input:
+      project: "Customer portal redesign"
+      stakeholders:
+        - Engineering team
+        - Customer success
+        - Marketing
+    expected:
+      contains:
+        - "Stakeholder"
+        - "Power"
+        - "Interest"
+        - "Strategy"
+      min_stakeholders: 3
+    validate:
+      - output_contains_all
+      - min_stakeholders_satisfied
+    timeout: 90s
+  
+  - id: test-feasibility-assessment
+    description: Assess requirement feasibility
+    tags: [feasibility, assessment, requirements]
+    input:
+      requirement: "Build a real-time collaboration feature"
+      dimensions:
+        - technical
+        - financial
+        - time
+        - resource
+    expected:
+      contains:
+        - "Feasibility"
+        - "Technical"
+        - "Financial"
+        - "Time"
+        - "Resource"
+        - "Score"
+      min_dimensions: 4
+    validate:
+      - output_contains_all
+      - min_dimensions_satisfied
+    timeout: 90s
+  
+  - id: test-contradiction-detection
+    description: Detect contradictions in requirements
+    tags: [contradictions, requirements, analysis]
+    input:
+      requirements:
+        - "Must be simple to use"
+        - "Must support 100 advanced features"
+        - "Must deploy in 1 day"
+    expected:
+      contains:
+        - "Contradiction"
+        - "Conflict"
+        - "Resolution"
+      min_contradictions: 1
+    validate:
+      - output_contains_all
+      - min_contradictions_satisfied
+    timeout: 60s
+  
+  - id: test-user-story-generation
+    description: Generate user stories from requirements
+    tags: [user-stories, agile, requirements]
+    input:
+      feature: "Password reset"
+      format: "as-a-i-want-to-so-that"
+    expected:
+      contains:
+        - "As a"
+        - "I want"
+        - "So that"
+      min_stories: 2
+    validate:
+      - output_contains_all
+      - min_stories_satisfied
+    timeout: 60s
+  
+  - id: test-process-mapping
+    description: Map current business process
+    tags: [process, mapping, as-is]
+    input:
+      process: "Order fulfillment"
+      trigger: "Customer places order"
+      end_state: "Order delivered"
+    expected:
+      contains:
+        - "Process Map"
+        - "AS-IS"
+        - "Steps"
+        - "Trigger"
+        - "End State"
+      min_steps: 5
+    validate:
+      - output_contains_all
+      - min_steps_satisfied
+    timeout: 90s
+  
+  - id: test-gap-analysis
+    description: Perform requirements gap analysis
+    tags: [gap-analysis, requirements, completeness]
+    input:
+      feature: "User dashboard"
+      current_state: "No dashboard exists"
+      desired_state: "Interactive analytics dashboard"
+    expected:
+      contains:
+        - "Gap Analysis"
+        - "Current State"
+        - "Desired State"
+        - "Gaps"
+      min_gaps: 3
+    validate:
+      - output_contains_all
+      - min_gaps_satisfied
+    timeout: 90s
+  
+  - id: test-risk-assessment
+    description: Assess requirement risks
+    tags: [risk, assessment, requirements]
+    input:
+      requirements:
+        - "Integrate with legacy system"
+        - "Support 10 languages"
+        - "Handle 1M concurrent users"
+    expected:
+      contains:
+        - "Risk"
+        - "Impact"
+        - "Probability"
+        - "Mitigation"
+      min_risks: 2
+    validate:
+      - output_contains_all
+      - min_risks_satisfied
+    timeout: 60s

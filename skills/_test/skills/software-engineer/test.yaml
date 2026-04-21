@@ -109,3 +109,147 @@ tests:
       - output_contains_all
       - output_excludes_none
     timeout: 60s
+  
+  - id: test-graphql-resolver
+    description: Generate GraphQL resolver with type definitions
+    tags: [graphql, api, typescript]
+    input:
+      language: typescript
+      framework: graphql-yoga
+      type: user
+      operations: [query, mutation]
+    expected:
+      contains:
+        - "typeDefs"
+        - "resolvers"
+        - "Query"
+        - "Mutation"
+      files_created: 2
+      min_lines: 50
+    validate:
+      - output_contains_all
+      - file_count_matches
+      - min_lines_satisfied
+    timeout: 90s
+  
+  - id: test-websocket-server
+    description: Generate WebSocket server with rooms
+    tags: [websocket, realtime, socket]
+    input:
+      language: typescript
+      framework: ws
+      features: [rooms, broadcast, typing-indicator]
+    expected:
+      contains:
+        - "WebSocketServer"
+        - "on"
+        - "broadcast"
+        - "join"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-validation-schema
+    description: Generate Zod validation schema
+    tags: [validation, zod, typescript]
+    input:
+      language: typescript
+      library: zod
+      schema: user-registration
+      fields:
+        - name: email
+          type: email
+        - name: password
+          type: string
+          min: 8
+        - name: age
+          type: number
+          optional: true
+    expected:
+      contains:
+        - "z.object"
+        - "z.string"
+        - "z.number"
+        - "email"
+        - "min"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-api-client
+    description: Generate typed API client with fetch
+    tags: [api-client, fetch, typescript]
+    input:
+      language: typescript
+      type: api-client
+      endpoints:
+        - GET /users
+        - POST /users
+        - GET /users/:id
+    expected:
+      contains:
+        - "fetch"
+        - "async"
+        - "GET"
+        - "POST"
+        - "Content-Type"
+      files_created: 1
+      min_lines: 40
+    validate:
+      - output_contains_all
+      - file_count_matches
+      - min_lines_satisfied
+    timeout: 60s
+  
+  - id: test-state-management
+    description: Generate Zustand store with persistence
+    tags: [state, zustand, react]
+    input:
+      language: typescript
+      framework: zustand
+      store: cart
+      features: [persistence, devtools]
+      state:
+        - items
+        - total
+        - addItem
+        - removeItem
+    expected:
+      contains:
+        - "create"
+        - "persist"
+        - "useStore"
+        - "set"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-api-middleware-stack
+    description: Generate middleware stack for Express
+    tags: [middleware, express, cors]
+    input:
+      language: typescript
+      framework: express
+      middlewares:
+        - cors
+        - helmet
+        - compression
+        - morgan
+    expected:
+      contains:
+        - "cors"
+        - "helmet"
+        - "compression"
+        - "morgan"
+        - "app.use"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s

@@ -96,3 +96,152 @@ tests:
       - output_contains_all
       - min_findings_satisfied
     timeout: 90s
+  
+  - id: test-xss-vulnerability-review
+    description: Review for XSS vulnerabilities
+    tags: [xss, security, vulnerability]
+    input:
+      language: typescript
+      file: src/components/UserDisplay.tsx
+      code: |
+        function UserDisplay({ name, bio }) {
+          return (
+            <div>
+              <h1>{name}</h1>
+              <p dangerouslySetInnerHTML={{ __html: bio }}></p>
+            </div>
+          );
+        }
+    expected:
+      contains:
+        - "XSS"
+        - "dangerouslySetInnerHTML"
+        - "sanitize"
+        - "HIGH"
+      min_high_findings: 1
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 90s
+  
+  - id: test-auth-review
+    description: Review authentication implementation
+    tags: [auth, security, jwt]
+    input:
+      language: typescript
+      file: src/auth/middleware.ts
+      code: |
+        function authMiddleware(req) {
+          const token = req.headers.authorization;
+          if (!token) return null;
+          return jwt.verify(token);
+        }
+    expected:
+      contains:
+        - "auth"
+        - "token"
+        - "verify"
+        - "authorization"
+      min_findings: 1
+    validate:
+      - output_contains_all
+      - min_findings_satisfied
+    timeout: 90s
+  
+  - id: test-dependency-vuln-review
+    description: Review for dependency vulnerabilities
+    tags: [dependencies, security, supply-chain]
+    input:
+      language: typescript
+      file: package.json
+      code: |
+        {
+          "dependencies": {
+            "lodash": "4.17.11",
+            "axios": "0.19.0"
+          }
+        }
+    expected:
+      contains:
+        - "CVE"
+        - "outdated"
+        - "vulnerability"
+        - "update"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 60s
+  
+  - id: test-api-security-review
+    description: Review API endpoints for security issues
+    tags: [api, security, owasp]
+    input:
+      language: typescript
+      file: src/api/users.ts
+      code: |
+        router.delete('/users/:id', async (req, res) => {
+          await db.query(`DELETE FROM users WHERE id = ${req.params.id}`);
+          res.json({ success: true });
+        });
+    expected:
+      contains:
+        - "SQL injection"
+        - "parameterized"
+        - "HIGH"
+      min_high_findings: 1
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 90s
+  
+  - id: test-memory-leak-review
+    description: Review for memory leak patterns
+    tags: [performance, memory, leak]
+    input:
+      language: typescript
+      file: src/services/cache.ts
+      code: |
+        class Cache {
+          private store = new Map();
+          
+          set(key, value) {
+            this.store.set(key, value);
+          }
+        }
+    expected:
+      contains:
+        - "memory"
+        - "leak"
+        - "cache"
+        - "eviction"
+      min_medium_findings: 1
+    validate:
+      - output_contains_all
+      - min_medium_findings_satisfied
+    timeout: 60s
+  
+  - id: test-race-condition-review
+    description: Review for race condition vulnerabilities
+    tags: [concurrency, race-condition, security]
+    input:
+      language: typescript
+      file: src/services/balance.ts
+      code: |
+        async function withdraw(accountId: string, amount: number) {
+          const account = await db.getAccount(accountId);
+          if (account.balance >= amount) {
+            await db.updateBalance(accountId, account.balance - amount);
+          }
+        }
+    expected:
+      contains:
+        - "race condition"
+        - "concurrent"
+        - "transaction"
+        - "atomic"
+      min_high_findings: 1
+    validate:
+      - output_contains_all
+      - min_high_findings_satisfied
+    timeout: 90s

@@ -1,0 +1,172 @@
+skill: devops
+version: "1.0.0"
+description: Tests for the DevOps skill
+
+tests:
+  - id: test-dockerfile-generation
+    description: Generate production-ready Dockerfile
+    tags: [docker, container, devops]
+    input:
+      language: node
+      framework: express
+      multi_stage: true
+      port: 3000
+    expected:
+      contains:
+        - "FROM"
+        - "WORKDIR"
+        - "COPY"
+        - "RUN"
+        - "EXPOSE"
+        - "USER"
+      files_created: 1
+      min_lines: 25
+    validate:
+      - output_contains_all
+      - file_count_matches
+      - min_lines_satisfied
+    timeout: 90s
+  
+  - id: test-ci-pipeline
+    description: Generate GitHub Actions CI pipeline
+    tags: [ci, github-actions, pipeline]
+    input:
+      language: typescript
+      framework: node
+      stages:
+        - lint
+        - test
+        - build
+    expected:
+      contains:
+        - "jobs"
+        - "steps"
+        - "run"
+        - "uses"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-kubernetes-manifests
+    description: Generate Kubernetes deployment manifests
+    tags: [kubernetes, k8s, deployment]
+    input:
+      service: api-service
+      replicas: 3
+      port: 8080
+      resources:
+        cpu: "100m"
+        memory: "256Mi"
+    expected:
+      contains:
+        - "apiVersion"
+        - "kind: Deployment"
+        - "kind: Service"
+        - "replicas"
+      files_created: 2
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-terraform-module
+    description: Generate Terraform module for AWS Lambda
+    tags: [terraform, iac, aws]
+    input:
+      provider: aws
+      resource: lambda
+      runtime: nodejs18.x
+    expected:
+      contains:
+        - "resource"
+        - "aws_lambda_function"
+        - "variable"
+        - "output"
+      files_created: 3
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-docker-compose
+    description: Generate docker-compose for local development
+    tags: [docker-compose, local-dev, devops]
+    input:
+      services:
+        - api
+        - db
+        - redis
+      volumes: true
+    expected:
+      contains:
+        - "version"
+        - "services"
+        - "volumes"
+        - "ports"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-monitoring-config
+    description: Generate Prometheus monitoring config
+    tags: [monitoring, prometheus, observability]
+    input:
+      service: api
+      endpoints:
+        - /metrics
+        - /health
+    expected:
+      contains:
+        - "global"
+        - "scrape_configs"
+        - "targets"
+      files_created: 1
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
+  
+  - id: test-helm-chart
+    description: Generate Helm chart for deployment
+    tags: [helm, chart, kubernetes]
+    input:
+      name: my-app
+      version: "1.0.0"
+      values:
+        replicaCount: 2
+        image: myregistry/myapp
+    expected:
+      contains:
+        - "Chart.yaml"
+        - "values.yaml"
+        - "templates"
+      files_created: 4
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 90s
+  
+  - id: test-secrets-management
+    description: Generate secrets management configuration
+    tags: [secrets, vault, security]
+    input:
+      provider: hashicorp-vault
+      secrets:
+        - database-url
+        - api-key
+        - jwt-secret
+    expected:
+      contains:
+        - "vault"
+        - "secret"
+        - "path"
+        - "policy"
+      files_created: 2
+    validate:
+      - output_contains_all
+      - file_count_matches
+    timeout: 60s
