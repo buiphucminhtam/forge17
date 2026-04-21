@@ -182,6 +182,11 @@ WHEN TO USE: After query() to understand a specific symbol in depth. When you ne
 AFTER THIS: Use impact() if planning changes, or READ forgenexus://repo/{name}/process/{processName} for full execution trace.
 
 Handles disambiguation: if multiple symbols share the same name, use uid param for zero-ambiguity lookup from prior results.
+
+Session dedup: If the same symbol is queried again in this session, returns "[shown earlier]" to save tokens.
+
+Callee footer: Shows top 5 call targets inline at the bottom of the output.
+
 TIPS:
 - ACCESSES edges (field read/write tracking) are included with reason 'read' or 'write'.
 - CALLS edges resolve through field access chains and method-call chains.`,
@@ -211,6 +216,13 @@ TIPS:
       if (!uid) return `Symbol not found: ${args.name}`
       const node = db.getNode(uid)
       if (!node) return `No symbol with uid: ${uid}`
+
+      // Session dedup check
+      const { checkContextDedup, getDedupStats } = await import('./outline.js')
+      const dedup = checkContextDedup(uid, node.name)
+      if (dedup.isDedup) {
+        return `## ${node.name}\n\n\`${node.filePath}:${node.line}\` — *${dedup.note}*`
+      }
 
       const callers = db.getCallers(uid)
       const callees = db.getCallees(uid)
@@ -269,6 +281,23 @@ TIPS:
           properties.length > 0
             ? properties.map((p) => `- ${p.name} — ${p.filePath}:${p.line}`).join('\n')
             : '_No properties found._\n'
+      }
+
+      // Callee footer: show top 5 call targets inline
+      if (callees.length > 0) {
+        md += `\n---\n**Calls:** `
+        md += callees
+          .slice(0, 5)
+          .map((c) => `\`${c.name}\`(${c.filePath}:${c.line})`)
+          .join(', ')
+        if (callees.length > 5) md += ` _...and ${callees.length - 5} more_`
+        md += '\n'
+      }
+
+      // Append dedup stats footer if there were hits
+      const stats = getDedupStats()
+      if (stats.contextHits > 0) {
+        md += `\n_[🔄 ${stats.contextHits} repeat visits this session, ${Math.round((stats.contextHits / (stats.contextHits + stats.contextMisses)) * 100)}% dedup rate]_`
       }
 
       return md
@@ -1295,7 +1324,11 @@ TIPS:
     handler: async (_db, args, cwd) => {
       const { outlineTool, formatOutlineMarkdown, getDedupStats } = await import('./outline.js')
       const path = args.path.startsWith('/') ? args.path : `${cwd}/${args.path}`
-      const result = await outlineTool({ path, maxDepth: args.maxDepth, includeDocComments: args.includeDocComments })
+      const result = await outlineTool({
+        path,
+        maxDepth: args.maxDepth,
+        includeDocComments: args.includeDocComments,
+      })
       const md = formatOutlineMarkdown(result)
 
       // Append dedup stats if there were hits

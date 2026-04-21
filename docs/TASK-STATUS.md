@@ -1,8 +1,8 @@
 # Forgewright — Roadmap Task Status
 
-> Last updated: 2026-04-20
+> Last updated: 2026-04-21
 > Session: Token Efficiency Roadmap Implementation
-> Commit: `c6ab98c` — `feat(forgenexus): add outline mode tool (P2-T1, I5)`
+> Commit: `HEAD` — `feat(forgenexus): add callee footer + session dedup (P2-T2, I-NEW-2)`
 
 ---
 
@@ -21,23 +21,12 @@
 
 | Task ID | Name | Commit | Notes |
 |---------|------|--------|-------|
-| **P2-T1** | I5: ForgeNexus Outline Mode tool | `HEAD` | `forgenexus/src/mcp/outline.ts` + `outline.test.ts`. Pattern-based structural extraction for TS/JS/Python/Go/Rust/Java/C++. Thresholds: >200 lines or >6000 tokens triggers outline mode. Session dedup prevents re-reading. 19 unit tests. Integration: `forgenexus/src/mcp/tools.ts` (outline tool). |
+| **P2-T1** | I5: ForgeNexus Outline Mode tool | `c6ab98c` | `forgenexus/src/mcp/outline.ts` + `outline.test.ts`. Pattern-based structural extraction for TS/JS/Python/Go/Rust/Java/C++. Thresholds: >200 lines or >6000 tokens triggers outline mode. Session dedup prevents re-reading. 19 unit tests. Integration: `forgenexus/src/mcp/tools.ts` (outline tool). |
+| **P2-T2** | I-NEW-2: ForgeNexus Callee Footer + Session Dedup | `HEAD` | `forgenexus/src/mcp/outline.ts` + `tools.ts`. Extended DedupState to track contextUids separately. Added `checkContextDedup()` function. Context tool shows callee footer (top 5 call targets inline). Session dedup: revisits return "[shown earlier]". 24 passing tests. |
 
 ---
 
 ## 📋 Remaining Tasks (Priority Order)
-
-### P2 — ForgeNexus Code Intelligence (Medium Priority)
-
-| Task ID | Name | Score | Description |
-|---------|------|-------|-------------|
-| **P2-T2** | I-NEW-2: ForgeNexus Callee Footer + Session Dedup | 9.30 | Show call targets (callees) as footer in code navigation. Integrate with session dedup to avoid re-querying graph for same symbol. |
-
-**Key files to read first:**
-- `forgenexus/src/mcp/tools.ts` — existing MCP tool definitions
-- `forgenexus/src/analysis/parse-worker.ts` — tree-sitter parsing
-- `forgenexus/src/data/graph.ts` — KuzuDB graph structure
-- `docs/improvement-roadmap-v2.md` §I5, §I-NEW-2
 
 ### P3 — Memory Engine (High Priority)
 
@@ -97,9 +86,9 @@
 | `skills/_shared/protocols/shell-filter.md` | Shell filter protocol doc |
 | `skills/production-grade/middleware/05-session-deduplication.md` | Session dedup middleware spec |
 | `skills/production-grade/middleware/06-tool-sandbox.md` | Tool sandbox middleware spec |
-| `forgenexus/src/mcp/outline.ts` | Outline mode: structural file extraction (pattern-based) |
-| `forgenexus/src/mcp/outline.test.ts` | 19 unit tests for outline tool |
-| `forgenexus/src/mcp/tools.ts` | Added `outline` MCP tool |
+| `forgenexus/src/mcp/outline.ts` | Outline mode: structural file extraction + session dedup |
+| `forgenexus/src/mcp/outline.test.ts` | 24 unit tests for outline + context dedup |
+| `forgenexus/src/mcp/tools.ts` | Added `outline` + `context` tools with callee footer |
 
 ### Project Intelligence
 
@@ -117,7 +106,7 @@
 1. Read `docs/TASK-STATUS.md` (this file)
 2. Read relevant sections of `docs/improvement-roadmap-v2.md`
 3. Start with highest priority pending task
-4. Run `cd mcp && npm test` to verify baseline
+4. Run `cd forgenexus && npm test` to verify baseline
 5. Implement task, write tests, run `npm run build && npm test`
 6. Format: `npx prettier --write`
 7. Lint: `npm run lint`
@@ -125,9 +114,10 @@
 
 ## 🎯 Current Focus
 
-**Next task: P2-T2 — ForgeNexus Callee Footer + Session Dedup**
+**Next task: P3-T1 — Memory Engine v2 (SQLite + FTS5 + RRF)**
 
 Read these files first:
-- `forgenexus/src/mcp/tools.ts` — existing tool definitions
-- `forgenexus/src/data/graph.ts` — KuzuDB graph structure
-- `docs/improvement-roadmap-v2.md` §I-NEW-2
+- `scripts/mem0-cli.py` — current memory implementation
+- `skills/memory-manager/SKILL.md` — memory system design
+- `skills/_shared/protocols/memory-manager.md`
+- `docs/improvement-roadmap-v2.md` §I-NEW-3, §I9

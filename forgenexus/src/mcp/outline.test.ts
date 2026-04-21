@@ -5,7 +5,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { writeFileSync, mkdirSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
-import { outlineTool, formatOutlineMarkdown, resetSessionDedup, getDedupStats } from './outline.js'
+import {
+  outlineTool,
+  formatOutlineMarkdown,
+  resetSessionDedup,
+  getDedupStats,
+  checkContextDedup,
+} from './outline.js'
 
 const TEST_DIR = join(process.cwd(), '.test-outline-tmp')
 
@@ -30,8 +36,16 @@ function largeTSFile(lineCount: number): string {
   // ~100 chars/line * 250 lines = 25000 chars = ~6250 tokens
   let content = 'export class TestClass {\n'
   for (let i = 0; i < lineCount; i++) {
-    const longComment = '// This is a verbose comment for testing purposes that adds significant token overhead'
-    content += '    public method' + i + '(arg: number): number { ' + longComment + ' return ' + i + ' + arg; }\n'
+    const longComment =
+      '// This is a verbose comment for testing purposes that adds significant token overhead'
+    content +=
+      '    public method' +
+      i +
+      '(arg: number): number { ' +
+      longComment +
+      ' return ' +
+      i +
+      ' + arg; }\n'
   }
   content += '}\n'
   return content
@@ -40,9 +54,17 @@ function largeTSFile(lineCount: number): string {
 function largePyFile(lineCount: number): string {
   // Use 4-space indent for class methods (Python requires 4 spaces in class body)
   let content = 'class DataProcessor:\n'
-  const longComment = '# This is a verbose comment for testing that adds significant token overhead in Python'
+  const longComment =
+    '# This is a verbose comment for testing that adds significant token overhead in Python'
   for (let i = 0; i < lineCount; i++) {
-    content += '    def method' + i + '(self, x):\n        ' + longComment + '\n        return ' + i + ' + x\n'
+    content +=
+      '    def method' +
+      i +
+      '(self, x):\n        ' +
+      longComment +
+      '\n        return ' +
+      i +
+      ' + x\n'
   }
   content += '\ndef main():\n    pass\n'
   return content
@@ -62,7 +84,8 @@ describe('outlineTool', () => {
 
   describe('mode selection', () => {
     it('returns full mode for small TypeScript files (<200 lines)', async () => {
-      const content = 'export function hello(name: string): string {\n  return "Hello, " + name\n}\n\nexport class User {\n  name: string\n  constructor(name: string) {\n    this.name = name\n  }\n}\n'
+      const content =
+        'export function hello(name: string): string {\n  return "Hello, " + name\n}\n\nexport class User {\n  name: string\n  constructor(name: string) {\n    this.name = name\n  }\n}\n'
       const filePath = writeFile('small.ts', content)
       const result = await outlineTool({ path: filePath })
 
@@ -170,7 +193,8 @@ describe('outlineTool', () => {
 
   describe('structural extraction - Rust', () => {
     it('extracts structs, impls, and functions from Rust files', async () => {
-      let content = 'pub struct Config {\n  pub name: String,\n  pub value: i32,\n}\n\nimpl Config {\n  pub fn new(name: &str, value: i32) -> Self {\n    Config { name: name.to_string(), value }\n  }\n}\n\n'
+      let content =
+        'pub struct Config {\n  pub name: String,\n  pub value: i32,\n}\n\nimpl Config {\n  pub fn new(name: &str, value: i32) -> Self {\n    Config { name: name.to_string(), value }\n  }\n}\n\n'
       for (let i = 0; i < 250; i++) {
         content += 'pub fn process' + i + '(x: i32) -> i32 {\n  x * 2\n}\n'
       }
@@ -187,9 +211,11 @@ describe('outlineTool', () => {
 
   describe('structural extraction - Java', () => {
     it('extracts classes and methods from Java files', async () => {
-      let content = 'public class DataService {\n    private String name;\n\n    public DataService(String name) {\n      this.name = name;\n    }\n\n    public String getName() {\n      return this.name;\n    }\n}\n\n'
+      let content =
+        'public class DataService {\n    private String name;\n\n    public DataService(String name) {\n      this.name = name;\n    }\n\n    public String getName() {\n      return this.name;\n    }\n}\n\n'
       for (let i = 0; i < 250; i++) {
-        content += '    public void method' + i + '() {\n      System.out.println("method");\n    }\n'
+        content +=
+          '    public void method' + i + '() {\n      System.out.println("method");\n    }\n'
       }
       const filePath = writeFile('java-extract.java', content)
       const result = await outlineTool({ path: filePath })
@@ -302,9 +328,7 @@ describe('error handling', () => {
   })
 
   it('throws error for non-existent file', async () => {
-    await expect(
-      outlineTool({ path: '/non/existent/file.ts' })
-    ).rejects.toThrow('Cannot read file')
+    await expect(outlineTool({ path: '/non/existent/file.ts' })).rejects.toThrow('Cannot read file')
   })
 })
 
@@ -379,3 +403,69 @@ function flattenEntries(entries: any[]): any[] {
   }
   return result
 }
+
+describe('checkContextDedup', () => {
+  beforeEach(() => {
+    setupTestDir()
+    resetSessionDedup()
+  })
+
+  afterEach(() => {
+    teardownTestDir()
+  })
+
+  it('returns isDedup false on first call', () => {
+    const result = checkContextDedup('uid:test:1', 'testSymbol')
+    expect(result.isDedup).toBe(false)
+    expect(result.note).toBeUndefined()
+  })
+
+  it('returns isDedup true on revisit with note', () => {
+    checkContextDedup('uid:test:1', 'testSymbol')
+    const result = checkContextDedup('uid:test:1', 'testSymbol')
+    expect(result.isDedup).toBe(true)
+    expect(result.note).toContain('shown earlier')
+    expect(result.note).toContain('repeat visits')
+  })
+
+  it('tracks context hits and misses separately from outline hits', () => {
+    const filePath = writeFile('context-dedup.ts', 'export function test() {}\n')
+
+    // First call via outline
+    outlineTool({ path: filePath })
+
+    // First call via context
+    checkContextDedup('uid:context:1', 'contextSymbol')
+    const stats1 = getDedupStats()
+    expect(stats1.contextMisses).toBe(1)
+    expect(stats1.contextHits).toBe(0)
+    expect(stats1.misses).toBe(1) // outline miss
+
+    // Second call via context (should dedup)
+    checkContextDedup('uid:context:1', 'contextSymbol')
+    const stats2 = getDedupStats()
+    expect(stats2.contextMisses).toBe(1)
+    expect(stats2.contextHits).toBe(1)
+  })
+
+  it('handles different UIDs independently', () => {
+    checkContextDedup('uid:a:1', 'symbolA')
+    checkContextDedup('uid:b:1', 'symbolB')
+    checkContextDedup('uid:a:1', 'symbolA') // dedup
+
+    const stats = getDedupStats()
+    expect(stats.contextMisses).toBe(2)
+    expect(stats.contextHits).toBe(1)
+  })
+
+  it('resets context dedup stats with full reset', () => {
+    checkContextDedup('uid:x:1', 'symbolX')
+    checkContextDedup('uid:x:1', 'symbolX')
+
+    resetSessionDedup()
+
+    const stats = getDedupStats()
+    expect(stats.contextHits).toBe(0)
+    expect(stats.contextMisses).toBe(0)
+  })
+})

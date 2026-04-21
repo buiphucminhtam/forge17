@@ -59,9 +59,12 @@ export interface OutlineResult {
 
 export interface DedupState {
   shownPaths: Map<string, number> // path → turn shown
-  shownUids: Set<string>
+  shownUids: Set<string> // UIDs shown via outline
+  contextUids: Set<string> // UIDs shown via context tool
   hits: number
   misses: number
+  contextHits: number
+  contextMisses: number
   tokensSaved: number
 }
 
@@ -70,8 +73,11 @@ export interface DedupState {
 let sessionDedup: DedupState = {
   shownPaths: new Map(),
   shownUids: new Set(),
+  contextUids: new Set(),
   hits: 0,
   misses: 0,
+  contextHits: 0,
+  contextMisses: 0,
   tokensSaved: 0,
 }
 
@@ -79,8 +85,11 @@ export function resetSessionDedup(): void {
   sessionDedup = {
     shownPaths: new Map(),
     shownUids: new Set(),
+    contextUids: new Set(),
     hits: 0,
     misses: 0,
+    contextHits: 0,
+    contextMisses: 0,
     tokensSaved: 0,
   }
 }
@@ -90,6 +99,8 @@ export function getDedupStats(): {
   misses: number
   tokensSaved: number
   hitRate: number
+  contextHits: number
+  contextMisses: number
 } {
   const total = sessionDedup.hits + sessionDedup.misses
   return {
@@ -97,7 +108,31 @@ export function getDedupStats(): {
     misses: sessionDedup.misses,
     tokensSaved: sessionDedup.tokensSaved,
     hitRate: total > 0 ? sessionDedup.hits / total : 0,
+    contextHits: sessionDedup.contextHits,
+    contextMisses: sessionDedup.contextMisses,
   }
+}
+
+/**
+ * Check if a symbol UID has already been shown via context tool this session.
+ * Returns null if not seen (should show full content).
+ * Returns a deduplication marker if seen before.
+ */
+export function checkContextDedup(
+  uid: string,
+  symbolName: string,
+): { isDedup: boolean; note?: string } {
+  if (sessionDedup.contextUids.has(uid)) {
+    sessionDedup.contextHits++
+    const stats = getDedupStats()
+    return {
+      isDedup: true,
+      note: `[shown earlier — ${stats.contextHits} repeat visits this session]`,
+    }
+  }
+  sessionDedup.contextUids.add(uid)
+  sessionDedup.contextMisses++
+  return { isDedup: false }
 }
 
 // ─── Token Estimation ─────────────────────────────────────────────────────────
@@ -150,9 +185,18 @@ function detectLanguage(filePath: string): string {
 const PATTERNS: Record<string, PatternDef[]> = {
   typescript: [
     // Class declarations
-    { regex: /^(\s*)(?:export\s+)?(?:abstract\s+)?class\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?/, kind: 'class', captureGroup: 2 },
+    {
+      regex:
+        /^(\s*)(?:export\s+)?(?:abstract\s+)?class\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?/,
+      kind: 'class',
+      captureGroup: 2,
+    },
     // Interface declarations
-    { regex: /^(\s*)(?:export\s+)?interface\s+(\w+)(?:\s+extends\s+[\w,\s]+)?/, kind: 'interface', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?interface\s+(\w+)(?:\s+extends\s+[\w,\s]+)?/,
+      kind: 'interface',
+      captureGroup: 2,
+    },
     // Type aliases
     { regex: /^(\s*)(?:export\s+)?type\s+(\w+)\s*=/, kind: 'type', captureGroup: 2 },
     // Enum declarations
@@ -160,30 +204,68 @@ const PATTERNS: Record<string, PatternDef[]> = {
     // Function declarations (hoisted)
     { regex: /^(\s*)(?:export\s+)?function\s+(\w+)\s*\(/, kind: 'function', captureGroup: 2 },
     // Arrow functions assigned to const/let
-    { regex: /^(\s*)(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\([^)]*\)|[\w]+)\s*=>/, kind: 'function', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\([^)]*\)|[\w]+)\s*=>/,
+      kind: 'function',
+      captureGroup: 2,
+    },
     // Class methods
-    { regex: /^(\s{4,})(?:(?:public|private|protected|readonly)\s+)*(?:static\s+)?(?:async\s+)?(\w+)\s*\(/, kind: 'method', captureGroup: 2 },
+    {
+      regex:
+        /^(\s{4,})(?:(?:public|private|protected|readonly)\s+)*(?:static\s+)?(?:async\s+)?(\w+)\s*\(/,
+      kind: 'method',
+      captureGroup: 2,
+    },
     // Class properties
-    { regex: /^(\s{4,})(?:(?:public|private|protected|readonly)\s+)*(?:static\s+)?(?:readonly\s+)?(\w+)\s*[:?]/, kind: 'property', captureGroup: 2 },
+    {
+      regex:
+        /^(\s{4,})(?:(?:public|private|protected|readonly)\s+)*(?:static\s+)?(?:readonly\s+)?(\w+)\s*[:?]/,
+      kind: 'property',
+      captureGroup: 2,
+    },
     // Import statements (grouped)
     { regex: /^(\s*)(?:export\s+)?import\s+/, kind: 'import', captureGroup: 0 },
   ],
   javascript: [
-    { regex: /^(\s*)(?:export\s+)?(?:abstract\s+)?class\s+(\w+)(?:\s+extends\s+\w+)?/, kind: 'class', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?(?:abstract\s+)?class\s+(\w+)(?:\s+extends\s+\w+)?/,
+      kind: 'class',
+      captureGroup: 2,
+    },
     { regex: /^(\s*)(?:export\s+)?function\s+(\w+)\s*\(/, kind: 'function', captureGroup: 2 },
-    { regex: /^(\s*)(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\([^)]*\)|[\w]+)\s*=>/, kind: 'function', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:\([^)]*\)|[\w]+)\s*=>/,
+      kind: 'function',
+      captureGroup: 2,
+    },
     { regex: /^(\s{4,})(\w+)\s*\([^)]*\)\s*\{/, kind: 'method', captureGroup: 2 },
     { regex: /^(\s*)(?:export\s+)?import\s+/, kind: 'import', captureGroup: 0 },
   ],
   python: [
     // Class definitions
-    { regex: /^(\s*)(?:export\s+)?class\s+(\w+)(?:\s*\([^)]*\))?:/, kind: 'class', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?class\s+(\w+)(?:\s*\([^)]*\))?:/,
+      kind: 'class',
+      captureGroup: 2,
+    },
     // Methods (inside class) - MUST come before function pattern
-    { regex: /^(\s{4,})(?:@[\w]+\s+)*(?:async\s+)?def\s+(\w+)\s*\(/, kind: 'method', captureGroup: 2 },
+    {
+      regex: /^(\s{4,})(?:@[\w]+\s+)*(?:async\s+)?def\s+(\w+)\s*\(/,
+      kind: 'method',
+      captureGroup: 2,
+    },
     // Function definitions (def) - top-level only
-    { regex: /^(\s*)(?:export\s+)?(?:async\s+)?def\s+(\w+)\s*\(/, kind: 'function', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?(?:async\s+)?def\s+(\w+)\s*\(/,
+      kind: 'function',
+      captureGroup: 2,
+    },
     // Async arrow functions
-    { regex: /^(\s*)(?:export\s+)?(\w+)\s*=\s*async\s+(?:\([^)]*\)|\w+)\s*=>/, kind: 'function', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?(\w+)\s*=\s*async\s+(?:\([^)]*\)|\w+)\s*=>/,
+      kind: 'function',
+      captureGroup: 2,
+    },
     // Decorated functions
     { regex: /^(\s*)@(\w+)/, kind: 'const', captureGroup: 2 },
     // Import statements
@@ -226,27 +308,58 @@ const PATTERNS: Record<string, PatternDef[]> = {
   ],
   java: [
     // Class declarations
-    { regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*(?:abstract\s+|final\s+)*class\s+(\w+)/, kind: 'class', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*(?:abstract\s+|final\s+)*class\s+(\w+)/,
+      kind: 'class',
+      captureGroup: 2,
+    },
     // Interface declarations
-    { regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*interface\s+(\w+)/, kind: 'interface', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*interface\s+(\w+)/,
+      kind: 'interface',
+      captureGroup: 2,
+    },
     // Enum declarations
-    { regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*enum\s+(\w+)/, kind: 'enum', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:public\s+|private\s+|protected\s+)*enum\s+(\w+)/,
+      kind: 'enum',
+      captureGroup: 2,
+    },
     // Method declarations
-    { regex: /^(\s{4,})(?:public\s+|private\s+|protected\s+)*(?:static\s+)*(?:final\s+)*(?:synchronized\s+)*(\w+)\s*\([^)]*\)\s*(?:throws\s+[\w, ]+)?\s*(?:;|\{)/, kind: 'method', captureGroup: 2 },
+    {
+      regex:
+        /^(\s{4,})(?:public\s+|private\s+|protected\s+)*(?:static\s+)*(?:final\s+)*(?:synchronized\s+)*(\w+)\s*\([^)]*\)\s*(?:throws\s+[\w, ]+)?\s*(?:;|\{)/,
+      kind: 'method',
+      captureGroup: 2,
+    },
     // Field declarations
-    { regex: /^(\s{4,})(?:public\s+|private\s+|protected\s+)*(?:static\s+)*(?:final\s+)*(\w+)\s+\w+\s*[;=]/, kind: 'property', captureGroup: 2 },
+    {
+      regex:
+        /^(\s{4,})(?:public\s+|private\s+|protected\s+)*(?:static\s+)*(?:final\s+)*(\w+)\s+\w+\s*[;=]/,
+      kind: 'property',
+      captureGroup: 2,
+    },
     // Import statements
     { regex: /^(\s*)import\s+/, kind: 'import', captureGroup: 0 },
   ],
   cpp: [
     // Class declarations
-    { regex: /^(\s*)(?:export\s+)?class\s+(\w+)(?:\s*:\s*(?:public|private|protected)\s+\w+)?\s*\{/, kind: 'class', captureGroup: 2 },
+    {
+      regex: /^(\s*)(?:export\s+)?class\s+(\w+)(?:\s*:\s*(?:public|private|protected)\s+\w+)?\s*\{/,
+      kind: 'class',
+      captureGroup: 2,
+    },
     // Struct definitions
     { regex: /^(\s*)(?:export\s+)?struct\s+(\w+)/, kind: 'struct', captureGroup: 2 },
     // Enum declarations
     { regex: /^(\s*)(?:export\s+)?enum\s+(?:class\s+)?(\w+)/, kind: 'enum', captureGroup: 2 },
     // Function declarations
-    { regex: /^(\s*)(?:export\s+)?(?:inline\s+)?(?:constexpr\s+)?(?:noexcept\s+)?(?:void|int|bool|std::\w+|auto)\s+(\w+)\s*\(/, kind: 'function', captureGroup: 2 },
+    {
+      regex:
+        /^(\s*)(?:export\s+)?(?:inline\s+)?(?:constexpr\s+)?(?:noexcept\s+)?(?:void|int|bool|std::\w+|auto)\s+(\w+)\s*\(/,
+      kind: 'function',
+      captureGroup: 2,
+    },
     // Namespace
     { regex: /^(\s*)namespace\s+(\w+)\s*\{/, kind: 'class', captureGroup: 2 },
     // Include statements
@@ -288,14 +401,23 @@ function extractSignature(line: string, kind: OutlineEntry['kind']): string | un
 
 // ─── Complexity Estimation ────────────────────────────────────────────────────
 
-function estimateComplexity(content: string, startLine: number, endLine: number): OutlineEntry['complexity'] {
+function estimateComplexity(
+  content: string,
+  startLine: number,
+  endLine: number,
+): OutlineEntry['complexity'] {
   const lines = content.split('\n').slice(startLine - 1, endLine)
   let cyclomatic = 1 // Base complexity
   let linesOfCode = 0
 
   for (const line of lines) {
     const trimmed = line.trim()
-    if (trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('/*') && !trimmed.startsWith('*')) {
+    if (
+      trimmed &&
+      !trimmed.startsWith('//') &&
+      !trimmed.startsWith('/*') &&
+      !trimmed.startsWith('*')
+    ) {
       linesOfCode++
       // Count control flow keywords
       if (/\b(if|else if|elif|while|for|case|catch|\?\?|\|\|)\b/.test(trimmed)) {
@@ -311,7 +433,11 @@ function estimateComplexity(content: string, startLine: number, endLine: number)
 
 // ─── Core Outline Extraction ─────────────────────────────────────────────────
 
-function extractOutline(content: string, filePath: string, maxDepth: number = MAX_DEPTH_DEFAULT): OutlineEntry[] {
+function extractOutline(
+  content: string,
+  filePath: string,
+  maxDepth: number = MAX_DEPTH_DEFAULT,
+): OutlineEntry[] {
   const lines = content.split('\n')
   const lang = detectLanguage(filePath)
   const patterns = PATTERNS[lang] ?? PATTERNS['default']
@@ -332,7 +458,8 @@ function extractOutline(content: string, filePath: string, maxDepth: number = MA
       const match = line.match(pattern.regex)
       if (match) {
         const indent = (match[1] ?? '').length
-        const name = pattern.captureGroup > 0 ? match[pattern.captureGroup] : line.trim().substring(0, 30)
+        const name =
+          pattern.captureGroup > 0 ? match[pattern.captureGroup] : line.trim().substring(0, 30)
 
         const entry: OutlineEntry = {
           range: [lineNum, lineNum],
@@ -427,7 +554,11 @@ export async function outlineTool(args: {
   maxDepth?: number
   includeDocComments?: boolean
 }): Promise<OutlineResult> {
-  const { path: filePath, maxDepth = MAX_DEPTH_DEFAULT, includeDocComments: _includeDocComments = false } = args
+  const {
+    path: filePath,
+    maxDepth = MAX_DEPTH_DEFAULT,
+    includeDocComments: _includeDocComments = false,
+  } = args
   void _includeDocComments // TODO: implement doc comment extraction
 
   let content: string
@@ -506,7 +637,10 @@ function addLineNumbers(content: string): string {
 
 function computeDedupUid(filePath: string, entries: OutlineEntry[]): string {
   // Simple dedup key: file path + first 5 entry names
-  const names = entries.slice(0, 5).map((e) => `${e.kind}:${e.name}`).join('|')
+  const names = entries
+    .slice(0, 5)
+    .map((e) => `${e.kind}:${e.name}`)
+    .join('|')
   return `${filePath}#${names}`
 }
 
@@ -526,7 +660,9 @@ export function formatOutlineMarkdown(result: OutlineResult): string {
   const lines: string[] = []
   const fileName = basename(result.path)
 
-  lines.push(`# ${fileName} (${result.lineCount} lines, ~${result.estimatedTokens} tokens)  **[outline]**`)
+  lines.push(
+    `# ${fileName} (${result.lineCount} lines, ~${result.estimatedTokens} tokens)  **[outline]**`,
+  )
 
   if (result.entries) {
     lines.push(formatEntries(result.entries, 0, result.path))
@@ -534,7 +670,9 @@ export function formatOutlineMarkdown(result: OutlineResult): string {
 
   if (result.estimatedTokensSaved) {
     const savings = Math.round((result.estimatedTokensSaved / result.estimatedTokens) * 100)
-    lines.push(`\n_[${result.totalEntries} entries — ~${result.estimatedTokensSaved} tokens saved (${savings}%)]_`)
+    lines.push(
+      `\n_[${result.totalEntries} entries — ~${result.estimatedTokensSaved} tokens saved (${savings}%)]_`,
+    )
   }
 
   return lines.join('\n')
