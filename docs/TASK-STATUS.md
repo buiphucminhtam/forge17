@@ -2,7 +2,7 @@
 
 > Last updated: 2026-04-21
 > Session: Token Efficiency Roadmap Implementation
-> Commit: `HEAD` — `feat(memory): Memory v2 SQLite + FTS5 + RRF (P3-T1, I-NEW-3)`
+> Commit: `HEAD` — `feat(dycp): KadaneDial conversation pruning (p4-t1, i-new-5)`
 
 ---
 
@@ -24,10 +24,6 @@
 | **P2-T1** | I5: ForgeNexus Outline Mode tool | `c6ab98c` | `forgenexus/src/mcp/outline.ts` + `outline.test.ts`. Pattern-based structural extraction for TS/JS/Python/Go/Rust/Java/C++. Thresholds: >200 lines or >6000 tokens triggers outline mode. Session dedup prevents re-reading. 19 unit tests. Integration: `forgenexus/src/mcp/tools.ts` (outline tool). |
 | **P2-T2** | I-NEW-2: ForgeNexus Callee Footer + Session Dedup | `HEAD` | `forgenexus/src/mcp/outline.ts` + `tools.ts`. Extended DedupState to track contextUids separately. Added `checkContextDedup()` function. Context tool shows callee footer (top 5 call targets inline). Session dedup: revisits return "[shown earlier]". 24 passing tests. |
 
----
-
-## 📋 Remaining Tasks (Priority Order)
-
 ### P3 — Memory Engine (High Priority)
 
 | Task ID | Name | Commit | Notes |
@@ -36,13 +32,13 @@
 
 ### P4 — Conversation Pruning (Medium Priority)
 
-| Task ID | Name | Score | Description |
-|---------|------|-------|-------------|
-| **P4-T1** | I-NEW-5: DyCP KadaneDial Conversation Pruning | 9.05 | Implement KadaneDial algorithm for conversation context pruning. Deduplicate tool results, purge error-only messages, LLM-driven compression. 50-70% conversation reduction. |
+| Task ID | Name | Commit | Notes |
+|---------|------|--------|-------|
+| **P4-T1** | I-NEW-5: DyCP KadaneDial Conversation Pruning | `HEAD` | `scripts/dycp.py` — KadaneDial algorithm for conversation span selection. Z-score normalization, adaptive theta. Pre-processing: tool result dedup, error-only message purge. 3 strategies: structured_summary, truncate, offload. 25 passing tests. Integration: hooks between middleware ⑤ and ⑥. |
 
-**Key files to read first:**
-- `docs/improvement-roadmap-v2.md` §I-NEW-5
-- `skills/_shared/protocols/summarization.md`
+---
+
+## 📋 Remaining Tasks (Priority Order)
 
 ### P5 — External Tool Integration (Low Priority)
 
@@ -84,6 +80,8 @@
 | `forgenexus/src/mcp/tools.ts` | Added `outline` + `context` tools with callee footer |
 | `scripts/mem0-v2.py` | Memory v2: SQLite + FTS5 + RRF (thay thế mem0-cli.py) |
 | `scripts/mem0-v2.test.py` | 30 unit tests cho Memory v2 |
+| `scripts/dycp.py` | DyCP KadaneDial conversation pruning |
+| `scripts/dycp.test.py` | 25 unit tests for DyCP |
 
 ### Project Intelligence
 
@@ -91,6 +89,7 @@
 |------|---------|
 | `docs/improvement-roadmap-v2.md` | Full roadmap with scores, implementation details |
 | `skills/_shared/protocols/middleware-chain.md` | Middleware chain protocol (13 steps) |
+| `skills/_shared/protocols/summarization.md` | Context summarization protocol (DyCP integration) |
 | `forgenexus/src/` | ForgeNexus code intelligence engine |
 | `mcp/src/` | Global MCP server |
 
@@ -109,8 +108,9 @@
 
 ## 🎯 Current Focus
 
-**Next task: P4-T1 — DyCP KadaneDial Conversation Pruning**
+**Next task: P5-T1 — RTK + chop + snip Detection & Integration**
 
 Read these files first:
-- `docs/improvement-roadmap-v2.md` §I-NEW-5
-- `skills/_shared/protocols/summarization.md`
+- `forgenexus/src/mcp/tools.ts`
+- `mcp/src/index.ts`
+- `docs/improvement-roadmap-v2.md` §I11
