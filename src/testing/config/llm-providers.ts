@@ -1,9 +1,9 @@
 /**
  * LLM Provider Configuration
- * Multi-provider support: OpenAI, Anthropic, Gemini, Ollama, MiniMax
+ * Multi-provider support: OpenAI, Anthropic, Gemini, MiniMax
  */
 
-export type LLMProvider = 'openai' | 'anthropic' | 'gemini' | 'ollama' | 'minimax';
+export type LLMProvider = 'openai' | 'anthropic' | 'gemini' | 'minimax';
 
 export interface LLMConfig {
   provider: LLMProvider;
@@ -39,10 +39,6 @@ export const PROVIDER_ENDPOINTS: Record<LLMProvider, { baseURL: string; endpoint
     baseURL: 'https://generativelanguage.googleapis.com/v1beta',
     endpoint: '/models',
   },
-  ollama: {
-    baseURL: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/api',
-    endpoint: '/generate',
-  },
   minimax: {
     baseURL: 'https://api.minimax.io',
     endpoint: '/v1/text/chatcompletion_v2',
@@ -54,7 +50,6 @@ export const PROVIDER_MODELS: Record<LLMProvider, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
   anthropic: ['claude-3-5-sonnet-latest', 'claude-3-opus-latest', 'claude-3-haiku-latest'],
   gemini: ['gemini-2.0-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash'],
-  ollama: ['llama3.2', 'llama3.2:1b', 'qwen2.5-coder-7b', 'codellama', 'mistral'],
   minimax: ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.1', 'MiniMax-M2', 'MiniMax-Text-01'],
 };
 
@@ -63,7 +58,6 @@ export const DEFAULT_MODELS: Record<LLMProvider, string> = {
   openai: 'gpt-4o',
   anthropic: 'claude-3-5-sonnet-latest',
   gemini: 'gemini-2.0-flash',
-  ollama: 'llama3.2',
   minimax: 'MiniMax-M2.7',
 };
 

@@ -2,8 +2,8 @@
 """
 Graphiti Client for Forgewright Memory
 
-Temporal knowledge graph with Ollama + FalkorDB.
-No embedding API costs - fully local.
+Temporal knowledge graph with FalkorDB + API-based LLM/Embeddings.
+Supports: OpenAI, Anthropic, Gemini, MiniMax
 
 Usage:
     from graphiti_client import GraphitiClient
@@ -39,10 +39,19 @@ except ImportError:
 # ── Constants ──
 
 DEFAULT_GRAPH_NAME = "forgewright_memory"
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
-DEFAULT_LLM_MODEL = os.environ.get("OLLAMA_LLM_MODEL", "deepseek-r1:7b")
-DEFAULT_EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
-EMBED_DIM = 768  # nomic-embed-text dimension
+
+# LLM Provider config (supports: openai, anthropic, gemini, minimax)
+LLM_PROVIDER = os.environ.get("GRAPHITI_LLM_PROVIDER", "openai")
+LLM_BASE_URL = os.environ.get("GRAPHITI_BASE_URL", "https://api.openai.com/v1")
+LLM_API_KEY = os.environ.get("GRAPHITI_API_KEY", os.environ.get("OPENAI_API_KEY", ""))
+DEFAULT_LLM_MODEL = os.environ.get("GRAPHITI_LLM_MODEL", "gpt-4o-mini")
+
+# Embedding config
+EMBED_PROVIDER = os.environ.get("GRAPHITI_EMBED_PROVIDER", "openai")
+EMBED_API_KEY = os.environ.get("GRAPHITI_EMBED_API_KEY", os.environ.get("OPENAI_API_KEY", ""))
+EMBED_BASE_URL = os.environ.get("GRAPHITI_EMBED_BASE_URL", "https://api.openai.com/v1")
+DEFAULT_EMBED_MODEL = os.environ.get("GRAPHITI_EMBED_MODEL", "text-embedding-3-small")
+EMBED_DIM = 1536  # text-embedding-3-small dimension
 
 # Category weights (from mem0-cli)
 CATEGORY_WEIGHTS = {
@@ -199,7 +208,7 @@ class GraphitiClient:
         return self._graphiti
     
     def _create_graphiti(self) -> Graphiti:
-        """Create Graphiti instance with Ollama + FalkorDB."""
+        """Create Graphiti instance with API LLM + FalkorDB."""
         if not GRAPHITI_AVAILABLE:
             raise RuntimeError(
                 "Graphiti not available. Install: pip install -r requirements-graphiti.txt"
@@ -212,22 +221,22 @@ class GraphitiClient:
             database=self.graph_name,
         )
         
-        # Ollama LLM config (OpenAI-compatible)
+        # LLM config (API-based, OpenAI-compatible)
         llm_config = LLMConfig(
-            api_key=os.environ.get("OLLAMA_API_KEY", "ollama"),
+            api_key=LLM_API_KEY,
             model=self.llm_model,
             small_model=self.llm_model,
-            base_url=OLLAMA_BASE_URL,
+            base_url=LLM_BASE_URL,
         )
         llm_client = OpenAIGenericClient(config=llm_config)
         
-        # Ollama embedder (OpenAI-compatible)
+        # Embedder config (API-based, OpenAI-compatible)
         embedder = OpenAIEmbedder(
             config=OpenAIEmbedderConfig(
-                api_key=os.environ.get("OLLAMA_API_KEY", "ollama"),
+                api_key=EMBED_API_KEY,
                 embedding_model=self.embed_model,
                 embedding_dim=EMBED_DIM,
-                base_url=OLLAMA_BASE_URL,
+                base_url=EMBED_BASE_URL,
             )
         )
         

@@ -3,7 +3,7 @@ name: memory-manager
 description: >
   Persistent project memory using Graphiti (temporal knowledge graph) + FalkorDB.
   Temporal reasoning, entity extraction, relationship tracking, semantic search.
-  Zero embedding API costs (local Ollama models). Migrated from TF-IDF + JSONL.
+  Uses API-based LLM/Embeddings: OpenAI, Anthropic, Gemini, MiniMax.
 ---
 
 # Memory Manager Skill
@@ -95,7 +95,7 @@ python3 scripts/graphiti-cli.py migrate            # execute
 ## Search — How It Works
 
 Search uses **Graphiti's hybrid retrieval** combining:
-- **Semantic search** — embeddings via Ollama (nomic-embed-text)
+- **Semantic search** — embeddings via API (OpenAI/Gemini/etc.)
 - **Graph traversal** — entity relationships
 - **Temporal filtering** — time-based queries
 
@@ -146,11 +146,16 @@ Create `.memignore` at project root to exclude files/folders from ingestion.
 ### Graphiti (Primary)
 
 ```bash
-# Graphiti uses Ollama for LLM and embeddings (local, free)
-OLLAMA_BASE_URL=http://localhost:11434/v1   # Ollama endpoint
-OLLAMA_API_KEY=ollama                       # Auth key
-OLLAMA_LLM_MODEL=deepseek-r1:7b            # LLM for extraction
-OLLAMA_EMBED_MODEL=nomic-embed-text         # Embedding model
+# LLM Provider (supports: openai, anthropic, gemini, minimax)
+GRAPHITI_LLM_PROVIDER=openai
+GRAPHITI_API_KEY=sk-...                    # API key for LLM
+GRAPHITI_BASE_URL=https://api.openai.com/v1  # Custom endpoint (optional)
+GRAPHITI_LLM_MODEL=gpt-4o-mini             # Model to use
+
+# Embedding config
+GRAPHITI_EMBED_PROVIDER=openai
+GRAPHITI_EMBED_API_KEY=sk-...              # API key for embeddings
+GRAPHITI_EMBED_MODEL=text-embedding-3-small
 
 # FalkorDB connection
 FALKORDB_HOST=localhost
@@ -253,10 +258,10 @@ forgewright/
 ├── skills/memory-manager/
 │   └── SKILL.md              ← this file
 ├── scripts/
-│   ├── graphiti-cli.py       ← CLI tool (Graphiti + FalkorDB + Ollama)
+│   ├── graphiti-cli.py       ← CLI tool (Graphiti + FalkorDB + API)
 │   ├── graphiti_client.py    ← Graphiti client wrapper
 │   ├── migrate-memory-to-graphiti.py  ← Migration script
-│   ├── setup-graphiti-models.sh       ← Ollama model setup
+│   ├── setup-graphiti.sh     ← API configuration setup
 │   └── mem0-cli.py           ← Legacy CLI (TF-IDF + JSONL)
 ├── requirements-graphiti.txt  ← Graphiti dependencies
 ├── docker-compose.graphiti.yml ← FalkorDB container
@@ -272,7 +277,6 @@ forgewright/
 
 ### Infrastructure (Docker)
 - **FalkorDB** — Graph database (run via docker-compose.graphiti.yml)
-- **Ollama** — Local LLM and embeddings (run locally)
 
 ### Python Packages
 ```bash
@@ -282,4 +286,11 @@ pip install -r requirements-graphiti.txt
 Required packages:
 - `graphiti-core[falkordb]` — Temporal knowledge graph
 - `falkordb` — FalkorDB Python client
-- `ollama` — Ollama Python client
+
+### API Keys
+Set one of:
+- `GRAPHITI_API_KEY` — Direct API key
+- `OPENAI_API_KEY` — OpenAI key (fallback)
+- `ANTHROPIC_API_KEY` — Anthropic key
+- `GEMINI_API_KEY` — Google Gemini key
+- `MINIMAX_API_KEY` — MiniMax key

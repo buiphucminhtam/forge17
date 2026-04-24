@@ -80,20 +80,15 @@ def check_dependencies():
     if not GRAPHITI_AVAILABLE:
         issues.append("graphiti-core not installed")
     
-    # Check Ollama
-    try:
-        result = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode != 0:
-            issues.append("Ollama not running or not installed")
-        elif "deepseek-r1" not in result.stdout or "nomic-embed-text" not in result.stdout:
-            issues.append("Required models not pulled. Run: bash scripts/setup-graphiti-models.sh")
-    except Exception:
-        issues.append("Ollama not found. Install from https://ollama.ai")
+    # Check API key configuration
+    api_key = os.environ.get("GRAPHITI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        issues.append("No API key set (GRAPHITI_API_KEY or OPENAI_API_KEY)")
+    
+    # Check provider configuration
+    provider = os.environ.get("GRAPHITI_LLM_PROVIDER", "openai")
+    if provider not in ("openai", "anthropic", "gemini", "minimax"):
+        issues.append(f"Unsupported provider: {provider}")
     
     # Check FalkorDB
     try:
@@ -134,7 +129,7 @@ def cmd_setup(args):
             print(f"   • {issue}")
         print("\n📖 To fix:")
         print("   1. pip install -r requirements-graphiti.txt")
-        print("   2. bash scripts/setup-graphiti-models.sh")
+        print("   2. Set API key: export GRAPHITI_API_KEY=sk-...")
         print("   3. docker-compose -f docker-compose.graphiti.yml up -d")
         return 1
     
@@ -150,23 +145,17 @@ def cmd_setup(args):
     
     print_success("FalkorDB connected")
     
-    # Check Ollama
-    print("\n🧠 Checking Ollama...")
-    try:
-        result = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True
-        )
-        models = [l for l in result.stdout.split("\n") if "deepseek-r1" in l or "nomic-embed" in l]
-        if models:
-            print("   Models installed:")
-            for m in models:
-                print(f"   • {m.strip()}")
-        else:
-            print_warning("No models found")
-    except Exception:
-        pass
+    # Check API configuration
+    print("\n🔑 Checking API Configuration...")
+    api_key = os.environ.get("GRAPHITI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    provider = os.environ.get("GRAPHITI_LLM_PROVIDER", "openai")
+    
+    if api_key:
+        print_success(f"API key configured (provider: {provider})")
+    else:
+        print_warning("No API key found")
+        print("   Set: export GRAPHITI_API_KEY=sk-...")
+        print("   Or: export OPENAI_API_KEY=sk-...")
     
     # Create Forgewright directory
     print("\n📁 Creating directories...")
@@ -527,24 +516,17 @@ def cmd_health(args):
     else:
         print_success("All Python dependencies available")
     
-    # Check Ollama
-    print("\n🧠 Ollama:")
-    try:
-        result = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0:
-            print_success("Ollama running")
-            models = [l for l in result.stdout.split("\n") if l.strip()]
-            print(f"   {len(models)} model(s) available")
-        else:
-            print_error("Ollama error")
-            all_ok = False
-    except Exception:
-        print_error("Ollama not accessible")
+    # Check API configuration
+    print("\n🔑 LLM API Configuration:")
+    api_key = os.environ.get("GRAPHITI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    provider = os.environ.get("GRAPHITI_LLM_PROVIDER", "openai")
+    model = os.environ.get("GRAPHITI_LLM_MODEL", "gpt-4o-mini")
+    
+    if api_key:
+        print_success(f"API configured (provider: {provider}, model: {model})")
+    else:
+        print_error("No API key configured")
+        print("   Set: export GRAPHITI_API_KEY=sk-...")
         all_ok = False
     
     # Check FalkorDB
