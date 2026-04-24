@@ -1,0 +1,22 @@
+# Docker Compose for Graphiti + FalkorDB
+# Usage: docker-compose -f docker-compose.graphiti.yml up -d
+
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: forgewright-falkordb
+    ports:
+      - "6379:6379"
+    environment:
+      - FALKORDB_DATABASE=${FALKORDB_DATABASE:-forgewright_memory}
+    volumes:
+      - falkordb_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  falkordb_data:
+    driver: local

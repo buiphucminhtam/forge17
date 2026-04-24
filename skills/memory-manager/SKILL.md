@@ -1,16 +1,16 @@
 ---
 name: memory-manager
 description: >
-  Persistent project memory using JSONL (git-committed). TF-IDF search,
-  markdown-aware chunking, value-weighted GC. Stores decisions, architecture,
-  blockers, and task status for cross-session continuity.
+  Persistent project memory using Graphiti (temporal knowledge graph) + FalkorDB.
+  Temporal reasoning, entity extraction, relationship tracking, semantic search.
+  Zero embedding API costs (local Ollama models). Migrated from TF-IDF + JSONL.
 ---
 
 # Memory Manager Skill
 
-> **Purpose:** Give the AI agent persistent, searchable project memory so it
-> doesn't re-discover the same context every session. Retrieve only what's
-> relevant, compress the rest.
+> **Purpose:** Give the AI agent persistent, searchable project memory with temporal
+> reasoning — track what was discussed when, extract entities and relationships,
+> and query historical context.
 
 ## When to Use
 
@@ -36,57 +36,85 @@ description: >
 
 ## CLI Commands
 
-All commands use `scripts/mem0-cli.py`:
+All commands use `scripts/graphiti-cli.py`:
 
 ```bash
-# Search memory — TF-IDF with cosine similarity
-python3 scripts/mem0-cli.py search "authentication flow" --limit 5
+# Setup - check dependencies and create graph
+python3 scripts/graphiti-cli.py setup
 
-# Add a memory manually
-python3 scripts/mem0-cli.py add "Decided to use JWT + refresh tokens for auth" --category decisions
+# Add a memory (auto-extracts entities and relations)
+python3 scripts/graphiti-cli.py add "Decided to use JWT + refresh tokens for auth" --category decisions
 
-# Refresh project state — replaces old ingested data with current reality
-python3 scripts/mem0-cli.py refresh
+# Search with semantic similarity
+python3 scripts/graphiti-cli.py search "authentication flow" --limit 5
 
-# Ingest files — markdown-aware chunking with section context
-python3 scripts/mem0-cli.py ingest README.md VISION.md
+# Temporal search - filter by time
+python3 scripts/graphiti-cli.py search "architecture decisions" --when "last 30 days"
+python3 scripts/graphiti-cli.py search "project changes" --when "in April 2026"
 
-# Ingest from recent git history
-python3 scripts/mem0-cli.py ingest-git --days 7
-
-# Summarize file — extracts structured facts (key-value, decisions, blockers)
-python3 scripts/mem0-cli.py summarize path/to/conversation.md
+# Get entity history - timeline of mentions
+python3 scripts/graphiti-cli.py history "Graphiti"
+python3 scripts/graphiti-cli.py history "KuzuDB" --limit 20
 
 # List all memories (with optional category filter)
-python3 scripts/mem0-cli.py list --category decisions
+python3 scripts/graphiti-cli.py list --category decisions
 
-# Delete a specific memory
-python3 scripts/mem0-cli.py delete <memory_id>
+# Stats - graph statistics
+python3 scripts/graphiti-cli.py stats
 
-# Export all memories to markdown
-python3 scripts/mem0-cli.py export > project-memory.md
+# Garbage collection
+python3 scripts/graphiti-cli.py gc --max 100
 
-# Stats: memory count, file size, token estimate, categories
-python3 scripts/mem0-cli.py stats
+# Health check
+python3 scripts/graphiti-cli.py health
+```
 
-# Garbage collection — value-weighted (category × recency)
-python3 scripts/mem0-cli.py gc --max-memories 200
+## Legacy Commands (mem0-cli)
+
+The old `mem0-cli.py` is preserved for backward compatibility:
+
+```bash
+# These still work but use the old TF-IDF + JSONL system
+python3 scripts/mem0-cli.py search "query" --limit 5
+python3 scripts/mem0-cli.py add "text" --category decisions
+```
+
+## Migration
+
+To migrate from mem0-cli to Graphiti:
+
+```bash
+# One-time migration of existing memories
+python3 scripts/migrate-memory-to-graphiti.py --backup --verify
+
+# Or use the built-in migrate command
+python3 scripts/graphiti-cli.py migrate --dry-run  # preview
+python3 scripts/graphiti-cli.py migrate            # execute
 ```
 
 ## Search — How It Works
 
-Search uses **TF-IDF (Term Frequency × Inverse Document Frequency)** with **cosine similarity** — all Python stdlib, zero external dependencies.
+Search uses **Graphiti's hybrid retrieval** combining:
+- **Semantic search** — embeddings via Ollama (nomic-embed-text)
+- **Graph traversal** — entity relationships
+- **Temporal filtering** — time-based queries
 
 ```
-Query: "authentication JWT"
-→ Tokenize → Compute TF-IDF vectors → Cosine similarity against all memories
-→ Return top-N ranked results
+Query: "authentication"
+→ Embed query → Find similar facts → Filter by time (--when)
+→ Return results with entity context
 ```
 
-**Advantages over keyword search:**
-- Matches semantic relevance, not just keyword overlap
-- Rare terms (e.g., "JWT") get higher weight than common terms
-- Better results for paraphrased or related concepts
+**Temporal Queries:**
+- `--when "last 7 days"` — last week
+- `--when "last 30 days"` — last month
+- `--when "in April 2026"` — specific month
+
+**NEW: Entity History:**
+```bash
+graphiti-cli.py history "KuzuDB"
+```
+Returns all mentions of "KuzuDB" ordered by time, with extracted relationships.
 
 ## Token Optimization Strategy
 
@@ -115,6 +143,25 @@ Create `.memignore` at project root to exclude files/folders from ingestion.
 
 ## Configuration
 
+### Graphiti (Primary)
+
+```bash
+# Graphiti uses Ollama for LLM and embeddings (local, free)
+OLLAMA_BASE_URL=http://localhost:11434/v1   # Ollama endpoint
+OLLAMA_API_KEY=ollama                       # Auth key
+OLLAMA_LLM_MODEL=deepseek-r1:7b            # LLM for extraction
+OLLAMA_EMBED_MODEL=nomic-embed-text         # Embedding model
+
+# FalkorDB connection
+FALKORDB_HOST=localhost
+FALKORDB_PORT=6379
+
+# Graph settings
+GRAPHITI_REDACT_SECRETS=true    # Auto-redact API keys, passwords
+```
+
+### Legacy (mem0-cli)
+
 ```bash
 # Storage (JSONL, git-committed)
 MEM0_PROJECT_ID=my-project        # namespace for multi-project
@@ -137,11 +184,23 @@ The orchestrator calls memory-manager at specific lifecycle points. All hooks ar
 | Hook | Trigger | Memory Command |
 |------|---------|---------------|
 | `SESSION_START` | Pipeline begins | `search "<project> <keywords>" --limit 5` |
-| `TURN_CLOSE` | After every user request is answered (before idle) | **Mandatory** `add "REQ:… | DONE:… | OPEN:…" --category session` (+ optional `decisions` / `architecture` / `blockers`). See session-lifecycle §Per-request memory. |
+| `TURN_CLOSE` | After every user request is answered | **Mandatory** `add "REQ:… | DONE:… | OPEN:…" --category session` (+ optional `decisions` / `architecture` / `blockers`). See session-lifecycle §Per-request memory. |
 | `PHASE_COMPLETE` | After DEFINE/BUILD/HARDEN/SHIP | `add "Phase [name]: [summary]" --category tasks` |
 | `GATE_DECISION` | After Gate 1/2/3 | `add "Gate [N] [decision]: [feedback]" --category decisions` |
-| `SESSION_END` | Pipeline completes | `add "Session completed: [summary]" --category session` + `refresh` |
+| `SESSION_END` | Pipeline completes | `add "Session completed: [summary]" --category session` |
 | `ERROR` | Task failure/escalation | `add "BLOCKER: [task] failed: [details]" --category blockers` |
+
+### Temporal Context
+
+**NEW with Graphiti:** Query historical context with time filters:
+
+```bash
+# What architecture decisions were made last month?
+graphiti-cli.py search "architecture decision" --when "last 30 days" --category decisions
+
+# Timeline of a specific topic
+graphiti-cli.py history "Graphiti"
+```
 
 ### Context Integration with Project Profile
 
@@ -194,12 +253,33 @@ forgewright/
 ├── skills/memory-manager/
 │   └── SKILL.md              ← this file
 ├── scripts/
-│   └── mem0-cli.py           ← CLI tool (TF-IDF, JSONL, zero deps)
+│   ├── graphiti-cli.py       ← CLI tool (Graphiti + FalkorDB + Ollama)
+│   ├── graphiti_client.py    ← Graphiti client wrapper
+│   ├── migrate-memory-to-graphiti.py  ← Migration script
+│   ├── setup-graphiti-models.sh       ← Ollama model setup
+│   └── mem0-cli.py           ← Legacy CLI (TF-IDF + JSONL)
+├── requirements-graphiti.txt  ← Graphiti dependencies
+├── docker-compose.graphiti.yml ← FalkorDB container
 ├── .memignore                ← exclusion patterns
 └── .forgewright/
-    ├── memory.jsonl          ← source of truth (committed to git)
+    ├── memory.jsonl          ← Legacy storage (can be archived after migration)
     ├── project-profile.json  ← project fingerprint (committed)
     ├── code-conventions.md   ← detected patterns (committed)
-    ├── session-log.json      ← session history (gitignored)
-    └── .gitignore            ← auto-generated
+    └── session-log.json      ← session history (gitignored)
 ```
+
+## Dependencies
+
+### Infrastructure (Docker)
+- **FalkorDB** — Graph database (run via docker-compose.graphiti.yml)
+- **Ollama** — Local LLM and embeddings (run locally)
+
+### Python Packages
+```bash
+pip install -r requirements-graphiti.txt
+```
+
+Required packages:
+- `graphiti-core[falkordb]` — Temporal knowledge graph
+- `falkordb` — FalkorDB Python client
+- `ollama` — Ollama Python client
