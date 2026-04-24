@@ -414,6 +414,16 @@ MIT — Use it however you want.
 
 ---
 
+## Support the Project
+
+If Forgewright helps you ship faster, consider buying me a coffee:
+
+<p align="center">
+  <img src="assets/donate/give-me-a-coffee-international.png" width="280" alt="Buy Me a Coffee" />
+</p>
+
+---
+
 <p align="center">
   <strong>Forgewright — The AI that learns from every mistake.</strong>
   <br />
