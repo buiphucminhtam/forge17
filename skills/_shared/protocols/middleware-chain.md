@@ -29,6 +29,8 @@ User Request
 │  ⑧ TaskTracking    Update todos, emit events        │
 │  ⑨ Memory          Async fact extraction + store     │
 │  ⑩ GracefulFailure Retry logic, stuck detection     │
+│  ⑪ ASIP            Mandatory research + skill self-improvement │
+│  ⑫ CircuitBreaker Fault isolation + state machine  │
 │                                                     │
 └─────────────────────────────────────────────────────┘
   │
@@ -58,7 +60,8 @@ Result / Next Skill
 | ⑧ | **TaskTracking** | session-lifecycle.md §Hooks | `after_skill()` | Emit SKILL_COMPLETED event, update task.md |
 | ⑨ | **Memory** | memory-manager.md §Hooks + session-lifecycle §Per-request | `after_skill()` **and** `turn_close()` | After each skill: extract decisions/blockers → mem0. **After each completed user request:** mandatory Turn-Close `add` (session + optional decisions/architecture/blockers) — not optional unless `MEM0_DISABLED` / `FORGEWRIGHT_SKIP_MEM0` |
 | ⑩ | **GracefulFailure** | graceful-failure.md | `on_error()` | Detect stuck states, manage retry counts, trigger exit |
-| ⑪ | **CircuitBreaker** | circuit-breaker.md | `after_skill()` | Update circuit state, transition based on outcome |
+| ⑪ | **ASIP** | self-improving-loop.md | `after_skill()` + `on_error()` | Mandatory 2-failure-then-research loop. Track attempts, trigger research gate, update skills |
+| ⑫ | **CircuitBreaker** | circuit-breaker.md | `after_skill()` | Update circuit state, transition based on outcome |
 
 ## Execution Rules
 
@@ -129,6 +132,7 @@ Per-Skill hooks (run once per skill invocation):
   ⑧ TaskTracking.after_skill()
   ⑨ Memory.after_skill()
   ⑩ GracefulFailure.on_error()
+  ⑪ ASIP.after_skill() / ASIP.on_error()
 
 Per-Tool hooks (run on EVERY tool call within a skill):
   ④ Guardrail.before_tool()    ← runs before each write_to_file, run_command, etc.
@@ -167,6 +171,14 @@ middleware:
       enabled: true
     - name: graceful-failure
       enabled: true
+    - name: asip
+      enabled: true
+      enforceResearchGate: true  # Cannot be disabled - safety critical
+      planQuality:
+        threshold: 9.0
+        mandatoryResearchAfter: 2
+      executionBlocker:
+        failureThreshold: 2
     - name: circuit-breaker
       enabled: true
       failure_threshold: 3

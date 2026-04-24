@@ -71,27 +71,43 @@ Identify the blocker type to focus research:
 
 ## Step 2: RESEARCH — Find Solution
 
+**⚠️ MANDATORY for 2+ failures: Use NotebookLM for deep research**
+
+### NotebookLM Research (Required for 2+ failures)
+
+```bash
+# 1. Create notebook
+nlm notebook create "[Project] - [Blocker Type] - [Problem Summary]"
+
+# 2. Deep research (not fast mode!)
+nlm research start "[specific problem description]" \
+  --notebook-id <id> \
+  --mode deep
+
+# 3. Wait for completion (up to 5 min)
+nlm research status <id> --max-wait 300
+
+# 4. Import sources
+nlm research import <id> <task-id>
+
+# 5. Query for solutions
+nlm notebook query <id> "How to solve [specific problem]? What are best practices?"
+
+# 6. Generate study materials
+nlm report create <id> --format "Study Guide" --confirm
+nlm flashcards create <id> --difficulty medium --confirm
+
+# 7. Get notebook URL
+# https://notebooklm.google.com/notebook/<uuid>
+```
+
 ### Research Priority Order
 
-1. **Web Search** (for technical/external blockers)
-   - Search error message directly
-   - Search technology + "best practice"
-   - Search "how to [specific task] [framework]"
-
-2. **Forgewright Knowledge** (for architectural/tooling)
-   - Check `skills/*/SKILL.md` for related patterns
-   - Check `skills/_shared/protocols/` for existing solutions
-   - Check `antigravity/docs/` for design references
-
-3. **Codebase Search** (for existing patterns)
-   - `forgenexus_query({query: "related pattern"})`
-   - Search for similar implementations
-   - Check `.forgewright/` for past solutions
-
-4. **Documentation** (for unknown blockers)
-   - Official docs for the technology
-   - Stack Overflow / GitHub issues
-   - Library README and examples
+1. **NotebookLM Research** (for 2+ failures) — comprehensive source discovery
+2. **Web Search** (for technical/external blockers) — search error message directly
+3. **Forgewright Knowledge** (for architectural/tooling) — check `skills/*/SKILL.md`
+4. **Codebase Search** (for existing patterns) — `forgenexus_query({query: "..."})`
+5. **Documentation** (for unknown blockers) — official docs, Stack Overflow
 
 ### Research Template
 
@@ -147,7 +163,7 @@ Apply the synthesized solution:
 
 When solution worked, document it for future use:
 
-### Append to relevant SKILL.md:
+### Append to relevant SKILL.md (Execution Learnings):
 
 ```markdown
 ## Execution Learnings
@@ -156,16 +172,20 @@ When solution worked, document it for future use:
 
 ### [Date] — [Blocker Type]: [Brief Description]
 - **Problem:** [What was blocking]
+- **Failed Attempts:** [What was tried and failed]
+- **Research Source:** [NotebookLM notebook URL]
 - **Solution:** [What fixed it]
-- **Pattern:** [When to apply this pattern]
-- **Example:** [Code snippet if applicable]
+- **Key Insight:** [1-sentence takeaway]
+- **Apply When:** [When to apply this pattern]
 
 Example:
-### 2026-04-10 — Technical: React useEffect infinite loop
+### 2026-04-24 — Technical: React useEffect infinite loop
 - **Problem:** useEffect causing infinite re-render when setting state
-- **Solution:** Add dependency array, use useCallback for handlers
-- **Pattern:** Always specify dependencies in useEffect, use ESLint exhaustive-deps
-- **Example:** `useEffect(() => { fetchData(id) }, [id])`
+- **Failed Attempts:** Added dependency array without useCallback, tried removing dependency
+- **Research Source:** https://notebooklm.google.com/notebook/uuid
+- **Solution:** Add dependency array with useCallback for handlers
+- **Key Insight:** Always use useCallback for functions passed to useEffect dependencies
+- **Apply When:** Any React component with useEffect that calls setState
 ```
 
 ### Also append to `.forgewright/execution-lessons.md`:
@@ -173,8 +193,10 @@ Example:
 ```markdown
 ## [Date] — [Skill Name]
 ### Problem: [blocker]
+### Failed Attempts: [what was tried]
+### Research Source: [NotebookLM notebook URL]
 ### Solution: [what worked]
-### Source: [where found]
+### Key Insight: [1-sentence takeaway]
 ### Apply to: [what projects/tasks]
 ```
 

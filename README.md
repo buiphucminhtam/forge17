@@ -2,10 +2,10 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/version-8.2.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-8.3.0-blue.svg" alt="Version" />
   <img src="https://img.shields.io/badge/skills-56-brightgreen.svg" alt="Skills" />
   <img src="https://img.shields.io/badge/templates-55-brightgreen.svg" alt="Templates" />
-  <img src="https://img.shields.io/badge/features-3-brightgreen.svg" alt="New Features" />
+  <img src="https://img.shields.io/badge/features-4-brightgreen.svg" alt="New Features" />
   <img src="https://img.shields.io/badge/modes-24-blueviolet.svg" alt="Modes" />
   <img src="https://img.shields.io/badge/protocols-29-00CED1.svg" alt="Protocols" />
   <img src="https://img.shields.io/badge/Game_Dev-Unity·Unreal·Godot·Roblox-FF4500.svg" alt="Game Dev" />
@@ -707,9 +707,106 @@ bash scripts/forgewright-mcp-setup.sh --check
 
 ---
 
+## Adaptive Self-Improving Protocol (ASIP) — v8.3.0
+
+> **Skills that learn from every failure.** ASIP is Forgewright's built-in self-improvement system that forces knowledge acquisition via NotebookLM before retry, making skills smarter over time.
+
+### Core Philosophy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│      Every failure is a LEARNING OPPORTUNITY, not a setback. │
+│      Every skill improves over time based on REAL failures. │
+│      The longer you use Forgewright, the SMARTER it becomes.│
+│                                                             │
+│      Rule: 2 failures → Research → Update skill → Retry     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### How It Works
+
+```mermaid
+flowchart TD
+    START["Attempt 1"]
+    START --> |"Fail"| ATTEMPT2["Attempt 2"]
+    ATTEMPT2 --> |"Fail"| GATE["🔬 MANDATORY RESEARCH GATE"]
+    ATTEMPT2 --> |"Success"| SUCCESS["Continue"]
+
+    GATE --> RESEARCH["1. NotebookLM Research<br/>(deep mode)"]
+    RESEARCH --> UPDATE["2. Update Skill Files<br/>(append to SKILL.md)"]
+    UPDATE --> LESSONS["3. Write Lessons<br/>(.forgewright/lessons.md)"]
+    LESSONS --> RETRY["4. Retry with Updated Skill"]
+    RETRY --> |"Success"| DONE["Skill Improved! ✓"]
+    RETRY --> |"Fail Again"| ESCALATE["Escalate to User"]
+
+    style GATE fill:#c0392b,stroke:#e74c3c,color:#fff
+    style RESEARCH fill:#8e44ad,stroke:#9b59b6,color:#fff
+    style UPDATE fill:#1e8449,stroke:#2ecc71,color:#fff
+    style ESCALATE fill:#d35400,stroke:#e67e22,color:#fff
+```
+
+### Two Integrated Loops
+
+| Loop | When | Action |
+|------|------|--------|
+| **Plan Quality Loop** | Plan scores < 9.0 twice | Mandatory research before re-planning |
+| **Execution Blocker Loop** | Same problem fails twice | Mandatory research before retry |
+
+### What Gets Updated
+
+```
+.forgewright/
+├── lessons.md              # Session lessons (Plan + Execution)
+├── asip-metrics.json     # Track: research gates, skill updates
+└── skill-adaptations/    # Project-specific skill knowledge
+
+skills/*/SKILL.md
+└── ## Planning Improvements    # Pre-execution lessons
+└── ## Execution Learnings       # Implementation lessons
+```
+
+### Research Sources
+
+When triggered, NotebookLM research is mandatory:
+- **81+ sources** discovered via deep research
+- **Study guides** generated automatically
+- **Flashcards** for knowledge retention
+- **Grounded solutions** — no more hallucinations
+
+### Metrics Tracked
+
+```json
+{
+  "totalResearchGates": 15,
+  "totalSkillUpdates": 23,
+  "uniquePatterns": 8,
+  "lessonsLearned": 42,
+  "failuresAvoided": 7
+}
+```
+
+### Enforcement Rules
+
+```
+⚠️  2 failures WITHOUT research = PROTOCOL VIOLATION
+
+✅ MANDATORY:
+1. STOP current execution
+2. RUN NotebookLM research
+3. UPDATE skill files
+4. RETRY with updated skill
+
+❌ NEVER SKIP:
+- "We can figure it out without research"
+- "This is just a quick task, no need to log"
+- "I already know the solution"
+```
+
+---
+
 ## AgentScope-Inspired Features
 
-Inspired by [AgentScope Studio](https://github.com/agentscope-ai/agentscope), these 3 features enhance Forgewright's developer experience.
+Inspired by [AgentScope Studio](https://github.com/agentscope-ai/agentscope), these 4 features enhance Forgewright's developer experience.
 
 ### 1. Forgewright Studio — Real-time Pipeline Monitor
 
