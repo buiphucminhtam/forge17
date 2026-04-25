@@ -154,13 +154,11 @@ async function runPersistentPool(
       if (settled) return
       if (settledWorkers.size === numWorkers) {
         settled = true
-        for (const w of workers) {
-          try { w.terminate() } catch { /* ignore */ }
-        }
-        masterResolve(allResults)
+        Promise.allSettled(workers.map((w) => w.terminate())).then(() => {
+          masterResolve(allResults)
+        })
       }
     }
-
     for (let wid = 0; wid < numWorkers; wid++) {
       const workerChunks = workerAssignments[wid]
 

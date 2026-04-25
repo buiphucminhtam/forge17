@@ -148,7 +148,7 @@ export async function main() {
         }
 
         await analyze(analyzeOpts)
-        break
+        process.exit(0)
       }
 
       case 'status': {
@@ -235,9 +235,11 @@ export async function main() {
         await queryCommand(['--cypher', ...commandArgs])
         break
 
-      case 'mcp':
-        await startMCPServer(process.cwd())
+      case 'mcp': {
+        const repoPath = commandArgs[0] || process.cwd()
+        await startMCPServer(repoPath)
         break
+      }
 
       default:
         console.error(`\x1b[31mUnknown command: ${command}\x1b[0m`)
