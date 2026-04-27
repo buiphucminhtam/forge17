@@ -20,6 +20,8 @@ const DEFAULT_SKIP = [
   '**/vendor/**',
   '**/android/**',
   '**/ios/**',
+  '**/venv/**',
+  '**/.venv/**',
 ]
 
 const EXT_MAP: Record<string, string> = {
@@ -110,7 +112,7 @@ export class FileScanner {
         const pathParts = relPath.split('/')
         if (
           pathParts.some((p) =>
-            ['node_modules', 'dist', 'build', 'vendor', 'coverage', 'android', 'ios', '__pycache__', '.git'].includes(p),
+            ['node_modules', 'dist', 'build', 'vendor', 'coverage', 'android', 'ios', '__pycache__', '.git', 'venv', '.venv'].includes(p),
           ) ||
           absPath.endsWith('.d.ts') ||
           absPath.endsWith('.map') ||
