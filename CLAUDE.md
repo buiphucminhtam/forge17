@@ -10,6 +10,34 @@
 
 Before ANY skill execution, interpret the user's request:
 
+### 0.5 — Load Conversation Memory (MANDATORY)
+
+**⚠️ DO NOT SKIP THIS STEP. EVER. This prevents context loss when model hits context limit.**
+
+Run BEFORE processing the user's request. This ensures continuity across context windows:
+
+```
+# Step 1: Load conversation summary from previous turns
+IF .forgewright/subagent-context/CONVERSATION_SUMMARY.md exists:
+  Read it → inject into context
+  Log: "✓ Conversation summary loaded"
+
+# Step 2: Search for relevant recent memories
+IF LOCAL_MEMORY_DISABLED != true AND FORGEWRIGHT_SKIP_MEMORY != 1:
+  python3 scripts/mem0-v2.py search "conversation recent" --limit 3
+  python3 scripts/mem0-v2.py list --category session --limit 3
+  Log: "✓ Recent turns loaded"
+
+# Step 3: Load BA scope if exists
+IF .forgewright/business-analyst/handoff/ba-package.md exists:
+  Read key sections → inject scope summary
+  Log: "✓ BA scope context loaded"
+```
+
+**Why mandatory?** Without this, conversation facts from Turn N are lost in Turn N+1 when context resets. The model "forgets" what was just discussed.
+
+**Token budget:** Max 500 tokens for memory injection.
+
 ### 1. Extract 9 Dimensions
 
 | Dimension | What to Find | Always Required? |
@@ -243,6 +271,7 @@ Before finishing ANY task, verify ALL of the following:
 | 5 | ✅ Tests passed? | Fix issues first |
 | 6 | ✅ Scope respected? | Flag scope creep |
 | 7 | ✅ User approval? | Wait for approval (if gate) |
+| 8 | ✅ Turn-Close memory saved? | Save before ending turn |
 
 **⚠️ MANDATORY RULE:**
 ```
@@ -252,3 +281,91 @@ Code Changed → Write Tests → Run Tests → Verify Pass → Done
 ```
 
 **Never wait for user to ask for tests. After any code change, auto-run QA.**
+
+## Memory Middleware (Cross-IDE, Auto-Save)
+
+**⚠️ Memory checkpoints are automatic. No manual action needed.**
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  MEMORY MIDDLEWARE (Cross-IDE)                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────────────┐  │
+│  │ Claude Code │    │    Cursor    │    │      VS Code        │  │
+│  │   Hooks    │    │    MCP       │    │    Remote SSH       │  │
+│  └──────┬──────┘    └──────┬───────┘    └──────────┬──────────┘  │
+│         │                   │                        │              │
+│         └───────────────────┼────────────────────────┘              │
+│                             ▼                                       │
+│              ┌──────────────────────────┐                          │
+│              │   memory-middleware.py   │                          │
+│              │   (or memory-session.sh)  │                          │
+│              └─────────────┬────────────┘                          │
+│                            │                                       │
+│         ┌──────────────────┼──────────────────┐                    │
+│         ▼                  ▼                  ▼                    │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐             │
+│  │ Session DB  │   │  mem0-v2    │   │  CONVERSATION│             │
+│  │ JSON        │   │  SQLite     │   │  _SUMMARY.md │             │
+│  └─────────────┘   └─────────────┘   └─────────────┘             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Automatic Triggers
+
+Memory checkpoint runs automatically when:
+
+| Trigger | Threshold | Action |
+|---------|-----------|--------|
+| Message count | Every N messages | Auto-checkpoint |
+| Token budget | ≥ 70% context | Force checkpoint |
+| File write | After code changes | Optional save |
+| Long task | > 30 seconds | Context freeze |
+
+### Usage (Manual Override)
+
+```bash
+# Start session tracking
+python3 scripts/memory-middleware.py start
+# or
+bash scripts/memory-session.sh start
+
+# Force checkpoint
+python3 scripts/memory-middleware.py checkpoint
+
+# Check status
+python3 scripts/memory-middleware.py status
+
+# Resume from last checkpoint
+python3 scripts/memory-middleware.py resume
+```
+
+### IDE Integration
+
+**Claude Code:**
+Add to `.claude/hooks.yml` or global config:
+```yaml
+post_tool_use:
+  - name: memory-tick
+    command: python3 scripts/memory-middleware.py tick
+```
+
+**Cursor/Custom Runtime:**
+Import `memory-middleware.py` as module and call hooks programmatically.
+
+### Step 0.5 — Memory Retrieval
+
+When context resets (overflow), these are auto-loaded:
+
+```
+1. .forgewright/subagent-context/CONVERSATION_SUMMARY.md
+2. ~/.forgewright/sessions/current-session.json
+3. mem0-v2.py search "session recent" --limit 5
+```
+
+**Token budget:** Max 500 tokens for memory injection.
+
