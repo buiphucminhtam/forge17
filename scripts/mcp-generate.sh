@@ -25,11 +25,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FORGEWRIGHT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Detect project root: either parent of forgewright submodule, or forgewright itself
-if [ -f "${FORGEWRIGHT_DIR}/../.git" ] || [ -d "${FORGEWRIGHT_DIR}/../.git" ]; then
-  PROJECT_ROOT="$(cd "${FORGEWRIGHT_DIR}/.." && pwd)"
+# Detect project root: use FORGEWRIGHT_WORKSPACE if set, otherwise PWD
+if [ -n "${FORGEWRIGHT_WORKSPACE:-}" ]; then
+  PROJECT_ROOT="$FORGEWRIGHT_WORKSPACE"
+elif [ -n "${MCP_WORKSPACE_ROOT:-}" ]; then
+  PROJECT_ROOT="$MCP_WORKSPACE_ROOT"
 else
-  PROJECT_ROOT="$FORGEWRIGHT_DIR"
+  PROJECT_ROOT="$(pwd)"
 fi
 
 TEMPLATE_DIR="${FORGEWRIGHT_DIR}/skills/mcp-generator/templates"
@@ -124,6 +126,15 @@ read_project_vars() {
 generate_server() {
   log_info "Generating MCP server at ${OUTPUT_DIR}..."
 
+  # Cross-platform sed -i
+  sed_i() {
+    if sed --version 2>/dev/null | grep -q GNU; then
+      sed -i "$@"
+    else
+      sed -i '' "$@"
+    fi
+  }
+
   # Clean previous generation
   rm -rf "$OUTPUT_DIR"
   mkdir -p "$OUTPUT_DIR"
@@ -134,20 +145,21 @@ generate_server() {
     cp "${TEMPLATE_DIR}/${template}" "${OUTPUT_DIR}/${output_name}"
 
     # Substitute Handlebars variables
-    sed -i '' "s|{{projectName}}|${PROJECT_NAME}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{projectSlug}}|${PROJECT_SLUG}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{generatedAt}}|${GENERATED_AT}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{forgewrightVersion}}|${FORGEWRIGHT_VERSION}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{projectLanguage}}|${PROJECT_LANGUAGE}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{projectFramework}}|${PROJECT_FRAMEWORK}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{mcpServerPath}}|${MCP_SERVER_PATH}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{hasConventions}}|${HAS_CONVENTIONS}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{hasTestCommand}}|${HAS_TEST}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{hasLintCommand}}|${HAS_LINT}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{hasBuildCommand}}|${HAS_BUILD}|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{testCommand}}|npm test|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{lintCommand}}|npm run lint|g" "${OUTPUT_DIR}/${output_name}"
-    sed -i '' "s|{{buildCommand}}|npm run build|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{projectName}}|${PROJECT_NAME}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{projectSlug}}|${PROJECT_SLUG}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{generatedAt}}|${GENERATED_AT}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{forgewrightVersion}}|${FORGEWRIGHT_VERSION}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{projectLanguage}}|${PROJECT_LANGUAGE}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{projectFramework}}|${PROJECT_FRAMEWORK}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{mcpServerPath}}|${MCP_SERVER_PATH}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{hasConventions}}|${HAS_CONVENTIONS}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{hasTestCommand}}|${HAS_TEST}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{hasLintCommand}}|${HAS_LINT}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{hasBuildCommand}}|${HAS_BUILD}|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{testCommand}}|npm test|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{lintCommand}}|npm run lint|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{buildCommand}}|npm run build|g" "${OUTPUT_DIR}/${output_name}"
+    sed_i "s|{{forgenexusPath}}|${FORGEWRIGHT_DIR}/forgenexus|g" "${OUTPUT_DIR}/${output_name}"
 
     log_ok "Generated ${output_name}"
   done

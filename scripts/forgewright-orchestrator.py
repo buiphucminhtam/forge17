@@ -43,6 +43,21 @@ class ForgewrightAgent:
         return resp_json['choices'][0]['message']
 
     async def run(self, task: str):
+        import subprocess
+        # 1. Auto-Setup MCP for the project if manifest does not exist
+        manifest_path = os.path.join(self.code_dir, ".antigravity", "mcp-manifest.json")
+        forgewright_manifest_path = os.path.join(self.code_dir, "..", ".forgewright", "mcp-manifest.json")
+        if not os.path.exists(manifest_path) and not os.path.exists(forgewright_manifest_path):
+            print(f"[*] Missing MCP Manifest in '{self.code_dir}'. Running auto-setup...")
+            try:
+                subprocess.run(
+                    ["bash", "/root/openclaw/scripts/forgewright-mcp-setup.sh"],
+                    cwd=self.code_dir,
+                    check=True
+                )
+            except Exception as e:
+                print(f"[!] Warning: Auto-setup failed: {e}")
+
         # Define isolated path for DB
         forgenexus_db_path = os.path.normpath(os.path.join(self.code_dir, "..", "forgenexus_db"))
         
@@ -56,16 +71,9 @@ class ForgewrightAgent:
                 "name": "forgenexus",
                 "params": StdioServerParameters(
                     command="npx",
-                    args=["tsx", "/root/forgewright/forgenexus/src/server.ts"],
+                    args=["tsx", "src/mcp/server.ts"],
+                    cwd="/root/openclaw/forgenexus",
                     env=forgenexus_env
-                )
-            },
-            {
-                "name": "forgewright",
-                "params": StdioServerParameters(
-                    command="bash",
-                    args=["/root/openclaw/scripts/forgewright-mcp-launcher.sh"],
-                    env={**os.environ, "FORGEWRIGHT_WORKSPACE": self.code_dir}
                 )
             },
             {
@@ -77,6 +85,17 @@ class ForgewrightAgent:
                 )
             }
         ]
+
+        if os.path.exists(os.path.join(self.code_dir, ".antigravity", "mcp-manifest.json")) or \
+           os.path.exists(os.path.join(self.code_dir, "..", ".forgewright", "mcp-manifest.json")):
+            mcp_servers.append({
+                "name": "forgewright",
+                "params": StdioServerParameters(
+                    command="bash",
+                    args=["/root/openclaw/scripts/forgewright-mcp-launcher.sh"],
+                    env={**os.environ, "FORGEWRIGHT_WORKSPACE": self.code_dir}
+                )
+            })
         
         # Extract Project Context to give Tieu Mo better background
         project_context = ""
