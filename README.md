@@ -164,7 +164,7 @@ flowchart TB
         direction TB
         L4A["🚀 12 AI tools in your IDE"]
         L4A2["Instant code lookup"]
-        L4A3["Auto-index on commit"]
+        L4A3["Multi-project support"]
         L4A4["Requires: MCP setup"]
     end
 
@@ -180,33 +180,180 @@ flowchart TB
     style LEVEL4 fill:#c0392b,stroke:#e74c3c,color:#fff
 ```
 
-### Level 4 Setup (Full Power)
+### Level 4 Setup — Multi-Project MCP
+
+Level 4 gives you **12 ForgeNexus tools** and **multi-project support** with a single global config.
+
+#### Step 1: Set Up Your Project
 
 ```bash
-# One command does everything
-cd your-project
-bash forgewright/scripts/forgewright-setup.sh
+cd /path/to/your-project
 
-# Restart your IDE, then:
-# Type "/onboard" to analyze your project
-# Type "/mcp" to check status
+# Option A: Clone as submodule (recommended)
+git submodule add -b main https://github.com/buiphucminhtam/forgewright.git forgewright
+git submodule update --init --recursive
+
+# Option B: Clone directly (for non-git projects)
+git clone https://github.com/buiphucminhtam/forgewright.git
 ```
 
-Or use the quick setup for fastest results:
+#### Step 2: Copy Config Files
 
 ```bash
-# Ultra-simple one-liner
-bash forgewright/scripts/forgeNexus-quick-setup.sh
+cp forgewright/AGENTS.md .
+cp forgewright/CLAUDE.md .
 ```
 
-**For existing installations, update with:**
+#### Step 3: Generate MCP Server
 
 ```bash
+cd forgewright
+bash scripts/mcp-generate.sh
+cd ..
+```
+
+#### Step 4: Update Global MCP Config
+
+Add **both launchers** to your IDE's MCP config:
+
+**For Cursor (`~/.cursor/mcp.json`):**
+```json
+{
+  "mcpServers": {
+    "forgewright": {
+      "command": "bash",
+      "args": ["/path/to/forgewright/scripts/forgewright-mcp-launcher.sh"]
+    },
+    "forgenexus": {
+      "command": "bash",
+      "args": ["/path/to/forgewright/scripts/forgenexus-mcp-launcher.sh"]
+    }
+  }
+}
+```
+
+**For Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):**
+```json
+{
+  "mcpServers": {
+    "forgewright": {
+      "command": "bash",
+      "args": ["/path/to/forgewright/scripts/forgewright-mcp-launcher.sh"]
+    },
+    "forgenexus": {
+      "command": "bash",
+      "args": ["/path/to/forgewright/scripts/forgenexus-mcp-launcher.sh"]
+    }
+  }
+}
+```
+
+> ⚠️ Replace `/path/to/forgewright` with the actual path to your forgewright directory.
+
+#### Step 5: Index Your Project (ForgeNexus)
+
+```bash
+# Install ForgeNexus dependencies (if not already built)
+cd forgewright
+npm install && npm run build
+cd ..
+
+# Index your project
+npx forgenexus analyze "$(pwd)"
+
+# Verify
+npx forgenexus status
+```
+
+#### Step 6: Restart Your IDE
+
+Restart Cursor or Claude Desktop to load the MCP servers.
+
+#### Step 7: Verify Setup
+
+```bash
+cd forgewright
+bash scripts/forgewright-mcp-setup.sh --check
+```
+
+---
+
+### Multi-Project Architecture
+
+With the launcher setup, **ONE global config works for ALL projects**:
+
+```mermaid
+flowchart TB
+    subgraph GLOBAL["~/.cursor/mcp.json / Claude Config"]
+        FW["forgewright → forgewright-mcp-launcher.sh"]
+        FNX["forgenexus → forgenexus-mcp-launcher.sh"]
+    end
+
+    FW --> LAUNCHER_FW["forgewright-mcp-launcher"]
+    FNX --> LAUNCHER_FNX["forgenexus-mcp-launcher"]
+
+    LAUNCHER_FW --> WS_DETECT["Workspace Detection"]
+    LAUNCHER_FNX --> WS_DETECT2["Workspace Detection"]
+
+    WS_DETECT --> P1["Project A"]
+    WS_DETECT --> P2["Project B"]
+    WS_DETECT --> P3["Project C"]
+
+    WS_DETECT2 --> P1
+    WS_DETECT2 --> P2
+    WS_DETECT2 --> P3
+
+    P1 --> MANIFEST1[".antigravity/mcp-manifest.json"]
+    P1 --> IDX1[".forgenexus/codebase.db"]
+
+    P2 --> MANIFEST2[".antigravity/mcp-manifest.json"]
+    P2 --> IDX2[".forgenexus/codebase.db"]
+
+    P3 --> MANIFEST3[".antigravity/mcp-manifest.json"]
+    P3 --> IDX3[".forgenexus/codebase.db"]
+
+    style GLOBAL fill:#1a1a2e,stroke:#e94560,color:#fff
+    style LAUNCHER_FW fill:#1a5276,stroke:#3498db,color:#fff
+    style LAUNCHER_FNX fill:#1a5276,stroke:#3498db,color:#fff
+```
+
+**Workspace Detection Priority:**
+
+1. `FORGEWRIGHT_WORKSPACE` env var (set by Antigravity)
+2. `MCP_WORKSPACE_ROOT` env var (MCP standard)
+3. `FORGENEXUS_WORKSPACE` env var
+4. Git repository root (auto-detected)
+5. Current working directory
+
+**Each project has isolated state:**
+
+| Project | MCP Server | Code Graph | Manifest |
+|---------|------------|------------|----------|
+| Project A | `.forgewright/mcp-server/` | `.forgenexus/codebase.db` | `.antigravity/mcp-manifest.json` |
+| Project B | `.forgewright/mcp-server/` | `.forgenexus/codebase.db` | `.antigravity/mcp-manifest.json` |
+| Project C | `.forgewright/mcp-server/` | `.forgenexus/codebase.db` | `.antigravity/mcp-manifest.json` |
+
+**Benefits:**
+- ✅ Single config entry per tool, works everywhere
+- ✅ No need to update config when switching projects
+- ✅ Each project has its own isolated state
+- ✅ Antigravity auto-detects workspace
+
+---
+
+### Updating Existing Installations
+
+```bash
+# Pull latest changes
+cd forgewright
+git pull origin main
+git submodule update --init --recursive
+
+# Re-generate MCP server for current project
+bash scripts/mcp-generate.sh
+
 # Check for updates
-bash forgewright/scripts/forgewright-update.sh --check
-
-# Update + migrate + reindex everything
-bash forgewright/scripts/forgewright-update.sh --all
+bash scripts/forgewright-update.sh --check
 ```
 
 ---
@@ -342,82 +489,6 @@ bash scripts/forge-validate.sh
 
 ---
 
-## Multi-Project Workflow
-
-Each project has isolated state:
-
-```mermaid
-flowchart TB
-    PC["Your Machine"]
-
-    PC --> P1["Project A"]
-    PC --> P2["Project B"]
-    PC --> P3["Project C"]
-
-    P1 --> M1[".forgewright/"]
-    P2 --> M2[".forgewright/"]
-    P3 --> M3[".forgewright/"]
-
-    M1 --> DB1["memory_db/"]
-    M1 --> IDX1["index.db"]
-    M2 --> DB2["memory_db/"]
-    M2 --> IDX2["index.db"]
-    M3 --> DB3["memory_db/"]
-    M3 --> IDX3["index.db"]
-
-    style PC fill:#1a1a2e,stroke:#e94560,color:#fff
-    style P1 fill:#1a5276,stroke:#3498db,color:#fff
-    style P2 fill:#1a5276,stroke:#3498db,color:#fff
-    style P3 fill:#1a5276,stroke:#3498db,color:#fff
-```
-
-- Project A: Remembers "We use Next.js 14"
-- Project B: Remembers "We use Django + PostgreSQL"
-- No cross-contamination
-
----
-
-## FAQ
-
-**Q: Is it free?**
-A: Yes, Forgewright is free. You only pay for your AI API (Claude/GPT-4).
-
-**Q: Does it work with GPT-4?**
-A: Yes! Works with Claude, GPT-4, and other LLMs.
-
-**Q: Do I need to code?**
-A: No. Level 1 works as a simple AI assistant. No coding required.
-
-**Q: What about privacy?**
-A: All data stays in your `.forgewright/` folder. Nothing sent elsewhere.
-
-**Q: Multiple projects?**
-A: Yes! Each project has isolated memory and index.
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| MCP not working | Restart IDE, run `--diagnose` |
-| Skills not found | Check AGENTS.md + CLAUDE.md copied |
-| Stale index | Run `npx forgenexus analyze --force` |
-| Submodule issues | `git submodule update --init --recursive` |
-| Need to update | `bash forgewright/scripts/forgewright-update.sh` |
-
-```bash
-# Quick diagnostics
-bash forgewright/scripts/forgewright-setup.sh --check
-bash forgewright/scripts/forgewright-setup.sh --diagnose
-
-# Update ForgeWright
-bash forgewright/scripts/forgewright-update.sh --check
-bash forgewright/scripts/forgewright-update.sh --all
-```
-
----
-
 ## ForgeNexus — Code Intelligence CLI
 
 ForgeNexus indexes your codebase and provides instant code context:
@@ -440,6 +511,55 @@ npx forgenexus list
 ```
 
 See [`forgenexus/ARCHITECTURE.md`](forgenexus/ARCHITECTURE.md) for full documentation.
+
+---
+
+## FAQ
+
+**Q: Is it free?**
+A: Yes, Forgewright is free. You only pay for your AI API (Claude/GPT-4).
+
+**Q: Does it work with GPT-4?**
+A: Yes! Works with Claude, GPT-4, and other LLMs.
+
+**Q: Do I need to code?**
+A: No. Level 1 works as a simple AI assistant. No coding required.
+
+**Q: What about privacy?**
+A: All data stays in your `.forgewright/` folder. Nothing sent elsewhere.
+
+**Q: Multiple projects?**
+A: Yes! Each project has isolated memory, index, and MCP server. With the launcher setup, a single global config works for all projects.
+
+**Q: What's the difference between forgewright and forgenexus MCP?**
+A: `forgewright` provides Forgewright skills, memory, and orchestrator tools. `forgenexus` provides code intelligence (query, context, impact analysis).
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| MCP not working | Restart IDE, run `--diagnose` |
+| Skills not found | Check AGENTS.md + CLAUDE.md copied |
+| Stale index | Run `npx forgenexus analyze --force` |
+| Submodule issues | `git submodule update --init --recursive` |
+| Need to update | `bash forgewright/scripts/forgewright-update.sh` |
+| Wrong project detected | Set `FORGEWRIGHT_WORKSPACE` env var |
+
+```bash
+# Quick diagnostics
+bash forgewright/scripts/forgewright-mcp-setup.sh --check
+bash forgewright/scripts/forgewright-mcp-setup.sh --diagnose
+
+# Debug workspace detection
+FORGEWRIGHT_DEBUG=1 bash forgewright/scripts/forgewright-mcp-launcher.sh
+FORGENEXUS_DEBUG=1 bash forgewright/scripts/forgenexus-mcp-launcher.sh
+
+# Update ForgeWright
+bash forgewright/scripts/forgewright-update.sh --check
+bash forgewright/scripts/forgewright-update.sh --all
+```
 
 ---
 
