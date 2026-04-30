@@ -48,9 +48,9 @@ Theme requirements:
 - CSS custom properties as the bridge between tokens and components
 - No flash of unstyled content (FOUC) on theme load — use `<script>` in `<head>` or cookie-based detection for SSR
 
-## 2.3 Tailwind Configuration (if Tailwind selected)
+## 2.3 Tailwind Configuration (MANDATORY)
 
-Create `frontend/tailwind.config.ts`:
+Create `frontend/tailwind.config.ts` AND `frontend/app/globals.css` (with `@tailwind base; @tailwind components; @tailwind utilities;`):
 - Extend default theme with design tokens
 - Custom color palette mapped to semantic tokens
 - Typography plugin configuration

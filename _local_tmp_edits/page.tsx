@@ -190,11 +190,11 @@ export default function Dashboard() {
           <form onSubmit={handleDispatch} className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-4">
                {/* Mode Selection Toggle */}
-               <div className="flex bg-black/5 dark:bg-white/5 rounded-[12px] p-1 h-[52px]">
-                   <button type="button" onClick={() => { setDispatchMode("EXISTING"); setDispatchProj(projects[0]?.id || ""); setDispatchRepo(""); }} className={`px-4 text-sm font-semibold rounded-[8px] transition-colors ${dispatchMode === "EXISTING" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Dự án có sẵn</button>
-                   <button type="button" onClick={() => { setDispatchMode("NEW"); setDispatchProj(""); setDispatchRepo(""); }} className={`px-4 text-sm font-semibold rounded-[8px] transition-colors ${dispatchMode === "NEW" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Thêm mới</button>
-                   <button type="button" onClick={() => { setDispatchMode("FORGEWRIGHT"); setDispatchProj("forgewright"); setDispatchRepo("https://github.com/aicode82-sketch/forgewright.git"); }} className={`px-4 text-sm font-semibold rounded-[8px] transition-colors ${dispatchMode === "FORGEWRIGHT" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Forgewright Core</button>
-                   <button type="button" onClick={() => { setDispatchMode("TIEUMO"); setDispatchProj("tieumo"); setDispatchRepo("https://github.com/aicode82-sketch/tieumo_openclaw.git"); }} className={`px-4 text-sm font-semibold rounded-[8px] transition-colors ${dispatchMode === "TIEUMO" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Tiểu Mơ System</button>
+               <div className="flex flex-wrap md:flex-nowrap bg-black/5 dark:bg-white/5 rounded-[12px] p-1 min-h-[52px] h-auto gap-1 md:gap-0">
+                   <button type="button" onClick={() => { setDispatchMode("EXISTING"); setDispatchProj(projects[0]?.id || ""); setDispatchRepo(""); }} className={`flex-1 md:flex-none px-3 py-2 md:py-0 md:px-4 text-[13px] md:text-sm font-semibold rounded-[8px] transition-colors whitespace-nowrap ${dispatchMode === "EXISTING" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Dự án có sẵn</button>
+                   <button type="button" onClick={() => { setDispatchMode("NEW"); setDispatchProj(""); setDispatchRepo(""); }} className={`flex-1 md:flex-none px-3 py-2 md:py-0 md:px-4 text-[13px] md:text-sm font-semibold rounded-[8px] transition-colors whitespace-nowrap ${dispatchMode === "NEW" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Thêm mới</button>
+                   <button type="button" onClick={() => { setDispatchMode("FORGEWRIGHT"); setDispatchProj("forgewright"); setDispatchRepo("https://github.com/aicode82-sketch/forgewright.git"); }} className={`flex-1 md:flex-none px-3 py-2 md:py-0 md:px-4 text-[13px] md:text-sm font-semibold rounded-[8px] transition-colors whitespace-nowrap ${dispatchMode === "FORGEWRIGHT" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Forgewright Core</button>
+                   <button type="button" onClick={() => { setDispatchMode("TIEUMO"); setDispatchProj("tieumo"); setDispatchRepo("https://github.com/aicode82-sketch/tieumo_openclaw.git"); }} className={`flex-1 md:flex-none px-3 py-2 md:py-0 md:px-4 text-[13px] md:text-sm font-semibold rounded-[8px] transition-colors whitespace-nowrap ${dispatchMode === "TIEUMO" ? "bg-white dark:bg-[#2C2C2E] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-amber-50"}`}>Tiểu Mơ System</button>
                </div>
                
                {/* Dropdown or Input based on mode */}
@@ -252,7 +252,7 @@ export default function Dashboard() {
         </div>
 
         {/* --- Kanban --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-[65vh]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-auto lg:h-[70vh]">
           <KanbanColumn title="Backlog / Clarify" statusId="QUEUED" projects={projects} onClickProject={setSelected} />
           <KanbanColumn title="Planning Phase" statusId="PLAN" projects={projects} onClickProject={setSelected} />
           <KanbanColumn title="Execution & Sync" statusId="EXECUTE" projects={projects} onClickProject={setSelected} />
@@ -264,8 +264,8 @@ export default function Dashboard() {
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-[24px]" onClick={() => setSelected(null)}></div>
-          <div className="relative bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] w-full max-w-[800px] max-h-[85vh] overflow-y-auto rounded-[32px] p-[40px] shadow-2xl border border-black/5 dark:border-white/10 z-10 animate-in fade-in zoom-in-95 duration-200">
-            <button id="mo-task-close-btn" onClick={() => setSelected(null)} className="absolute top-8 right-8 p-2.5 bg-black/5 dark:bg-white/10 rounded-full text-slate-500 hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
+          <div className="relative bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-[40px] w-full max-w-[800px] max-h-[85vh] overflow-y-auto rounded-[24px] md:rounded-[32px] p-6 md:p-[40px] shadow-2xl border border-black/5 dark:border-white/10 z-10 animate-in fade-in zoom-in-95 duration-200">
+            <button id="mo-task-close-btn" onClick={() => setSelected(null)} className="absolute top-4 right-4 md:top-8 md:right-8 p-2.5 bg-black/5 dark:bg-white/10 rounded-full text-slate-500 hover:bg-black/10 dark:hover:bg-white/20 transition-colors">
                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <h2 className="text-[32px] font-bold tracking-tight mb-8 pr-12">{selected.id}</h2>
@@ -328,12 +328,14 @@ export default function Dashboard() {
             {/* Delete Project Section */}
             <div className="mt-8 pt-6 border-t border-red-500/10 flex justify-end">
                {!deleteConfirm ? (
-                   <button onClick={() => setDeleteConfirm(true)} className="px-5 py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-semibold rounded-[14px] text-[14px] hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors">🗑️ Phá Huỷ Dự Án Tuyệt Đối</button>
+                   <button onClick={() => setDeleteConfirm(true)} className="px-5 py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-semibold rounded-[14px] text-[14px] hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors w-full sm:w-auto">🗑️ Phá Huỷ Dự Án Tuyệt Đối</button>
                ) : (
-                   <div className="flex items-center gap-4 bg-red-50/50 dark:bg-red-900/20 p-2 pl-4 rounded-[16px] border border-red-500/20">
-                       <span className="text-[14px] font-semibold text-red-600 dark:text-red-400">Không thể khôi phục. Xoá?</span>
-                       <button onClick={() => setDeleteConfirm(false)} className="px-5 py-2 bg-white dark:bg-[#2C2C2E] text-slate-700 dark:text-white font-semibold rounded-[12px] text-[14px] hover:bg-slate-50 transition-colors border border-black/5 dark:border-white/5">Huỷ</button>
-                       <button onClick={handleDelete} className="px-5 py-2 bg-red-600 text-white font-semibold rounded-[12px] text-[14px] hover:bg-red-700 active:scale-95 transition-all shadow-md shadow-red-600/20">Xác Nhận Xoá</button>
+                   <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 bg-red-50/50 dark:bg-red-900/20 p-3 rounded-[16px] border border-red-500/20 w-full sm:w-auto">
+                       <span className="text-[14px] font-semibold text-red-600 dark:text-red-400 flex-1 sm:flex-none">Không thể khôi phục. Xoá?</span>
+                       <div className="flex gap-2 w-full sm:w-auto">
+                           <button onClick={() => setDeleteConfirm(false)} className="flex-1 sm:flex-none px-5 py-2 bg-white dark:bg-[#2C2C2E] text-slate-700 dark:text-white font-semibold rounded-[12px] text-[14px] hover:bg-slate-50 transition-colors border border-black/5 dark:border-white/5">Huỷ</button>
+                           <button onClick={handleDelete} className="flex-1 sm:flex-none px-5 py-2 bg-red-600 text-white font-semibold rounded-[12px] text-[14px] hover:bg-red-700 active:scale-95 transition-all shadow-md shadow-red-600/20">Xác Nhận Xoá</button>
+                       </div>
                    </div>
                )}
             </div>
