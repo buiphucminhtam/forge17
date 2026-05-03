@@ -43,3 +43,4 @@ antigravity/planning/
 .tieu-mo-config.md
 scripts/cf-dns-add.sh
 scripts/cf-dns-remove.sh
+.next/
