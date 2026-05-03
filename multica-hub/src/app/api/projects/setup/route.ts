@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
       // Run setup
       try {
-        const setupScript = `${forgewrightPath}/.antigravity/plugins/production-grade/scripts/forgewright-mcp-setup.sh`;
+        const setupScript = `${forgewrightPath}/scripts/forgewright-mcp-setup.sh`;
         if (existsSync(setupScript)) {
           const output = execSync(`bash "${setupScript}"`, {
             cwd: projectPath,
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       }
 
       try {
-        const setupScript = `${forgewrightPath}/.antigravity/plugins/production-grade/scripts/forgewright-mcp-setup.sh`;
+        const setupScript = `${forgewrightPath}/scripts/forgewright-mcp-setup.sh`;
         if (existsSync(setupScript)) {
           const output = execSync(`bash "${setupScript}"`, {
             cwd: projectPath,
