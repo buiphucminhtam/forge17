@@ -824,6 +824,12 @@ Sign up with [my referral link](https://platform.minimax.io/subscribe/token-plan
 
 ---
 
+## GitHub Stars Growth
+
+[![Star History Chart](https://api.star-history.com/svg?repos=buiphucminhtam/forgewright&type=Date)](https://star-history.com/#buiphucminhtam/forgewright&Date)
+
+---
+
 If Forgewright helps you ship faster, consider buying me a coffee:
 
 <p align="center">
