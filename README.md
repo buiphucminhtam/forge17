@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/github/forks/buiphucminhtam/forgewright?style=flat-square&logo=github&label=Forks" alt="Forks" />
   </a>
   <img src="https://img.shields.io/badge/version-8.3.0-blue?style=flat-square" alt="Version" />
-  <img src="https://img.shields.io/badge/skills-56-brightgreen?style=flat-square" alt="Skills" />
+  <img src="https://img.shields.io/badge/skills-58-brightgreen?style=flat-square" alt="Skills" />
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License" />
   </a>
@@ -419,35 +419,6 @@ skills/*/SKILL.md
 
 ---
 
-## Recommended: MiniMax for Parallel Execution
-
-For **parallel worktrees** (multiple AI agents running simultaneously), you'll need fast, cheap AI tokens.
-
-**MiniMax** offers competitive pricing with low latency — perfect for parallel dispatch workflows.
-
-[![MiniMax](https://img.shields.io/badge/MiniMax-API-blue?style=flat-square&logo=link)](https://platform.minimax.io/subscribe/token-plan?code=400F3VSO0b&source=link)
-
-### Why MiniMax for Parallel?
-
-| Feature | Benefit for Forgewright |
-|---------|------------------------|
-| **Low latency** | Faster parallel task completion |
-| **Competitive pricing** | Reduced cost per parallel worker |
-| **High throughput** | More concurrent agents |
-| **Referral bonus** | [Sign up with my link](https://platform.minimax.io/subscribe/token-plan?code=400F3VSO0b&source=link) and get bonus credits |
-
-### Setup for Parallel Dispatch
-
-```bash
-# Set your MiniMax API key
-export MINIMAX_API_KEY="your-api-key-here"
-
-# Forgewright parallel-dispatch will automatically use MiniMax
-# when running multiple worktree agents simultaneously
-```
-
----
-
 ## Token Efficiency — 90% Cost Reduction
 
 ```
@@ -555,7 +526,7 @@ Use the Token Tracker skill for AI-powered analysis:
 
 ---
 
-## 56 Skills, 24 Modes
+## 58 Skills, 24 Modes
 
 ```mermaid
 flowchart TD
@@ -651,6 +622,128 @@ npx forgenexus list
 | Trie Build | 3-4ms | 3-4ms |
 
 See [`forgenexus/README.md`](forgenexus/README.md) for full documentation.
+
+---
+
+## Parallel Dispatch — Multi-Agent Execution
+
+Run multiple AI agents simultaneously for parallel task execution.
+
+```bash
+# Dispatch parallel worktrees
+npx forgenexus dispatch --parallel 4 --task "build,test,deploy"
+
+# Or use MiniMax for faster parallel execution
+export MINIMAX_API_KEY="your-key"
+npx forgenexus dispatch --provider minimax --parallel 8
+```
+
+### MiniMax Integration
+
+For **parallel worktrees** (multiple AI agents running simultaneously), you'll need fast, cheap AI tokens.
+
+| Feature | Benefit |
+|---------|---------|
+| **Low latency** | Faster parallel task completion |
+| **High throughput** | More concurrent agents |
+| **Competitive pricing** | Reduced cost per parallel worker |
+
+[![MiniMax](https://img.shields.io/badge/MiniMax-API-blue?style=flat-square&logo=link)](https://platform.minimax.io/subscribe/token-plan?code=400F3VSO0b&source=link)
+
+---
+
+## Multica Hub — Unified Multi-Project Dashboard
+
+Manage all Forgewright workspaces from a single dashboard.
+
+```bash
+cd multica-hub && pnpm install && pnpm dev
+# Dashboard: http://localhost:4000
+```
+
+| Feature | Description |
+|---------|-------------|
+| **Environment Status** | Per-project Forgewright, MCP, Git status |
+| **Auto-scan** | Detect all projects in `~/Documents/GitHub` |
+| **Setup Buttons** | One-click init + setup for any project |
+| **Real-time Refresh** | Live status updates |
+
+See [`multica-hub/README.md`](multica-hub/README.md) for full documentation.
+
+---
+
+## Antigravity — Project Intelligence Layer
+
+Automatic workspace detection and project-specific context.
+
+```
+forgewright-mcp-launcher.sh
+├── Detect workspace (env vars, git root, cwd)
+├── Load .antigravity/mcp-manifest.json
+└── Start MCP server with project context
+```
+
+| Feature | Description |
+|---------|-------------|
+| **Auto-detect** | No config needed when switching projects |
+| **Isolated State** | Each project has own memory & index |
+| **Manifest System** | `.antigravity/mcp-manifest.json` per project |
+
+See [`antigravity/docs/README.md`](antigravity/docs/README.md) for details.
+
+---
+
+## Workflows — Pre-built Pipelines
+
+Ready-to-use workflows for common tasks.
+
+```bash
+# AI Feature Build
+npx forgenexus workflow ai-feature-build
+
+# Security Audit
+npx forgenexus workflow security-audit
+
+# Deep Research
+npx forgenexus workflow deep-research
+
+# SaaS MVP
+npx forgenexus workflow ship-saas-mvp
+```
+
+| Workflow | Use Case |
+|----------|----------|
+| `ai-feature-build` | RAG, chatbots, AI agents |
+| `security-audit` | OWASP Top 10 review |
+| `deep-research` | NotebookLM + Polymath research |
+| `ship-saas-mvp` | Full-stack SaaS from scratch |
+| `setup-paperclip` | Paperclip testing setup |
+| `midscene-testing` | Midscene E2E automation |
+| `mobile-test` | React Native testing |
+
+---
+
+## Memory Manager — Persistent Context
+
+Forgewright remembers everything across sessions.
+
+```bash
+# Check memory status
+npx forgenexus memory status
+
+# Save decision
+npx forgenexus memory save "auth: use JWT refresh tokens"
+
+# Recall context
+npx forgenexus memory recall "auth decisions"
+```
+
+| Memory Type | Location | Purpose |
+|------------|----------|---------|
+| **Lessons** | `.forgewright/lessons.md` | Project-specific learnings |
+| **Architecture** | `.forgewright/architecture.md` | Design decisions |
+| **Decisions** | `.forgewright/decisions/` | ADR records |
+| **Context** | `.forgewright/context/` | Session summaries |
 
 ---
 
