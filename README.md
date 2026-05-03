@@ -467,6 +467,94 @@ After:  $5/month (same productivity)
 
 ---
 
+## Token Tracking & Cost Analytics
+
+Track your LLM usage, costs, and optimization opportunities in real-time.
+
+```bash
+# Start the token API server
+python3 scripts/token-api-server.py
+
+# Open the dashboard
+open scripts/token-dashboard.html
+
+# Or use the CLI analyzer
+python3 scripts/token-analyzer.py --project $(pwd) --period week
+```
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Real-time Tracking** | Logs every LLM call with tokens, latency, cost |
+| **Cost Dashboard** | Visual analytics by provider, model, project |
+| **Budget Alerts** | Configurable thresholds with notifications |
+| **Trend Analysis** | Daily/weekly/monthly usage patterns |
+| **Optimization Tips** | AI-powered cost reduction suggestions |
+
+### Dashboard Preview
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Token Usage Dashboard                              │
+├─────────────┬─────────────┬─────────────┬──────────┤
+│ Total Tokens│ Total Cost  │ LLM Calls   │ Latency  │
+│   1.25M     │   $12.45    │    245      │  850ms   │
+├─────────────┴─────────────┴─────────────┴──────────┤
+│  Input/Output Ratio: ████████░░ 76% / 24%         │
+├─────────────────────────────────────────────────────┤
+│  Top Models                                         │
+│  ├─ claude-3-5-sonnet  850K tokens  $8.50         │
+│  ├─ gpt-4o             100K tokens  $3.00          │
+│  └─ gpt-4o-mini         50K tokens  $0.20         │
+└─────────────────────────────────────────────────────┘
+```
+
+### Budget Configuration
+
+Create `.forgewright/budget.yaml` to track spending:
+
+```yaml
+budget:
+  daily: 5.00      # USD per day
+  weekly: 25.00    # USD per week
+  monthly: 80.00   # USD per month
+
+  alerts:
+    warning: 0.80   # Warn at 80%
+    danger: 0.95    # Alert at 95%
+    critical: 1.00  # Block at 100%
+```
+
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/usage` | Token usage by project/period |
+| `GET /api/projects` | List tracked projects |
+| `GET /api/unified/summary` | Cross-platform summary |
+
+### Skill Integration
+
+Use the Token Tracker skill for AI-powered analysis:
+
+```
+/usage      # Check current usage
+/budget     # View budget status
+/report     # Export detailed report
+/optimize   # Get cost-saving tips
+```
+
+### Data Storage
+
+| Type | Location |
+|------|---------|
+| Usage Logs | `~/.forgewright/usage/{project}/{date}.jsonl` |
+| Error Logs | `~/.forgewright/usage/{project}/errors-{date}.jsonl` |
+| Budget Config | `{project}/.forgewright/budget.yaml` |
+
+---
+
 ## 56 Skills, 24 Modes
 
 ```mermaid
