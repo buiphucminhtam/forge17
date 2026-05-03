@@ -31,6 +31,9 @@ const config: Config = {
         'accent-primary': '#6366f1',
         'accent-glow': 'rgba(99, 102, 241, 0.3)',
 
+        /* Tertiary */
+        'tertiary': '#8b5cf6',
+
         /* Text */
         'text-primary': '#f8fafc',
         'text-secondary': '#94a3b8',

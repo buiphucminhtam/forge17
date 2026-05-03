@@ -1,6 +1,7 @@
 'use client';
 
 import { EnvironmentStatus } from '@/components/hub/EnvironmentStatus';
+import { TokenStats } from '@/components/hub/TokenStats';
 import { Activity } from 'lucide-react';
 
 export default function StatusPage() {
@@ -47,6 +48,11 @@ export default function StatusPage() {
           </p>
 
           <EnvironmentStatus />
+
+          {/* Token Stats */}
+          <div className="mt-6">
+            <TokenStats />
+          </div>
 
           <div className="mt-6 p-4 bg-bg-card rounded-xl border border-border">
             <h3 className="font-medium text-text-primary mb-3">Quick Actions</h3>
