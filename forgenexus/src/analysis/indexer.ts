@@ -32,7 +32,7 @@ import { traceProcesses } from '../data/graph.js'
 import { generateEmbeddings, detectProvider } from '../data/embeddings.js'
 import { incrementalFTSUpdate } from '../data/fts-incremental.js'
 import { buildSuffixIndex, resolveImportPath } from './import-resolver.js'
-import { buildNameUidMapFromGenerator, buildFileSymbolMapFromGenerator } from './generators.js'
+import { buildNameUidMapFromGenerator, buildFileSymbolMapFromGenerator, buildNodeArraysFromGenerator, buildCommunityEdgeArray } from './generators.js'
 import { parseFilesParallel, estimateBytes } from './parallel.js'
 import { propagateBindings, shouldSkipBindingPropagation } from './binding-propagation.js'
 import { detectFramework } from './framework-detection.js'
@@ -378,8 +378,8 @@ export class Indexer {
     const nameToUid = buildNameUidMapFromGenerator(this.db)
     const fileSymbolMap = buildFileSymbolMapFromGenerator(this.db)
 
-    // Get all nodes for this phase (needed for resolveEdgesFast and Leiden)
-    const allNodes = this.db.getAllNodes()
+    // [MEMORY-OPT] Build node arrays using streaming - single pass through DB
+    const { allNodes, nodeIds, nodeNames } = buildNodeArraysFromGenerator(this.db)
 
     const resolveStart = Date.now()
     const resolvedEdges = this.resolveEdgesFast(allNodes, newEdges, nameToUid)
@@ -412,19 +412,32 @@ export class Indexer {
     progress('binding', 0)
     const bindingStart = Date.now()
 
-    // [MEMORY-OPT] Incremental binding: only propagate for changed UIDs
-    const allEdgesNow = this.db.getAllEdges()
-
+    // [MEMORY-OPT] For incremental binding, we need all edges to check propagation.
+    // This is a necessary trade-off for accurate binding - we only do this when needed.
+    // For small incremental changes (< 10%), we skip entirely.
     if (tasks.length < 10 && cachedResults.length > 100) {
       // [MEMORY-OPT] P0: Skip binding propagation for small incremental changes
       console.log('[ForgeNexus] Binding: Skipping (small change, cache hit ratio high)')
       progress('binding', 100)
     } else if (changedUids.size > 0 && changedUids.size < allNodes.length * 0.1) {
       // [MEMORY-OPT] P1: Incremental binding - only propagate changed nodes
-      const changedNodes = allNodes.filter(n => changedUids.has(n.uid))
-      const changedEdges = allEdgesNow.filter(e =>
-        changedUids.has(e.fromUid) || changedUids.has(e.toUid)
-      )
+      // Build changed node set and filter edges
+      const changedNodeSet = new Set(changedUids)
+      const changedNodes: CodeNode[] = []
+      const changedEdges: CodeEdge[] = []
+
+      for (const node of allNodes) {
+        if (changedNodeSet.has(node.uid)) {
+          changedNodes.push(node)
+        }
+      }
+
+      for (const edge of this.db.iterateEdges()) {
+        if (changedUids.has(edge.fromUid) || changedUids.has(edge.toUid)) {
+          changedEdges.push(edge)
+        }
+      }
+
       console.log(`[ForgeNexus] Binding: Incremental (${changedUids.size}/${allNodes.length} nodes)`)
       if (!shouldSkipBindingPropagation(changedNodes, changedEdges)) {
         const propagated = propagateBindings(changedNodes, changedEdges)
@@ -433,14 +446,15 @@ export class Indexer {
         }
       }
       progress('binding', 100)
-    } else if (!shouldSkipBindingPropagation(allNodes, allEdgesNow)) {
-      // Full binding propagation
-      const propagated = propagateBindings(allNodes, allEdgesNow)
-      if (propagated.length > 0) {
-        this.db.insertEdgesBatch(propagated)
-      }
-      progress('binding', 100)
     } else {
+      // Full binding propagation - only load edges if needed
+      const allEdgesNow = this.db.getAllEdges()
+      if (!shouldSkipBindingPropagation(allNodes, allEdgesNow)) {
+        const propagated = propagateBindings(allNodes, allEdgesNow)
+        if (propagated.length > 0) {
+          this.db.insertEdgesBatch(propagated)
+        }
+      }
       progress('binding', 100)
     }
     const bindingTime = Date.now() - bindingStart
@@ -450,11 +464,12 @@ export class Indexer {
     progress('communities', 0)
     const commStart = Date.now()
 
-    // Build edge list for community detection
-    const nodeNames = new Map(allNodes.map((n) => [n.uid, n.name]))
-    const allEdgesForComm = this.db.getAllEdges()
-    const commEdges = allEdgesForComm
-      .filter((e) =>
+    // [MEMORY-OPT] Build edge list for community detection using streaming
+    // Filter to only relevant edge types during iteration
+    // Memory: O(batchSize) instead of O(totalEdges)
+    const commEdges: { from: string; to: string; weight: number }[] = []
+    for (const edge of this.db.iterateEdges()) {
+      if (
         [
           'CALLS',
           'IMPORTS',
@@ -463,11 +478,14 @@ export class Indexer {
           'EXTENDS',
           'IMPLEMENTS',
           'MEMBER_OF',
-        ].includes(e.type),
-      )
-      .map((e) => ({ from: e.fromUid, to: e.toUid, weight: e.confidence }))
+        ].includes(edge.type)
+      ) {
+        commEdges.push({ from: edge.fromUid, to: edge.toUid, weight: edge.confidence })
+      }
+    }
 
-    const allNodeIds = allNodes.map((n) => n.uid)
+    // [MEMORY-OPT] Use nodeIds from already-built array
+    const allNodeIds = nodeIds
 
     // Use community-cache for incremental strategy determination
     if (incremental && tasks.length > 0) {

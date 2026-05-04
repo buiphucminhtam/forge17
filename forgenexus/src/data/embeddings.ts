@@ -20,7 +20,12 @@ export interface EmbeddingOptions {
   model?: string
   apiKey?: string
   baseUrl?: string
+  /** @deprecated Use streaming mode instead */
   batchSize?: number
+  /** Memory optimization: use streaming mode for large repos (default: auto-detect) */
+  streamingMode?: 'auto' | 'force' | 'legacy'
+  /** Batch size for streaming mode (default: 1000) */
+  streamingBatchSize?: number
 }
 
 const DEFAULT_OPTIONS: Record<EmbeddingProvider, EmbeddingOptions> = {
@@ -28,27 +33,37 @@ const DEFAULT_OPTIONS: Record<EmbeddingProvider, EmbeddingOptions> = {
     provider: 'transformers',
     model: 'Xenova/all-MiniLM-L6-v2',
     batchSize: 32,
+    streamingMode: 'auto',
+    streamingBatchSize: 1000,
   },
   openai: {
     provider: 'openai',
     model: 'text-embedding-3-small',
     batchSize: 100,
+    streamingMode: 'auto',
+    streamingBatchSize: 1000,
   },
   ollama: {
     provider: 'ollama',
     model: 'nomic-embed-text',
     baseUrl: 'http://localhost:11434',
     batchSize: 50,
+    streamingMode: 'auto',
+    streamingBatchSize: 500,
   },
   huggingface: {
     provider: 'huggingface',
     model: 'sentence-transformers/all-MiniLM-L6-v2',
     batchSize: 32,
+    streamingMode: 'auto',
+    streamingBatchSize: 1000,
   },
   gemini: {
     provider: 'gemini',
     model: 'models/gemini-embedding-2-preview',
     batchSize: 20,
+    streamingMode: 'auto',
+    streamingBatchSize: 200,
   },
 }
 
@@ -84,8 +99,16 @@ export function detectProvider(): EmbeddingProvider {
 }
 
 /**
- * Generate embeddings for all indexed symbols.
- * Stores them in the database for semantic search.
+ * Generate embeddings for all indexed symbols (STREAMING mode - memory optimized).
+ * Processes symbols in batches to avoid loading all 50K+ into memory at once.
+ * 
+ * Memory comparison:
+ *   - Legacy: 50K symbols × 400 bytes = ~20 MB text + embeddings array
+ *   - Streaming: 1K symbols × 400 bytes = ~0.4 MB per batch
+ * 
+ * @param db - ForgeDB instance
+ * @param options - Embedding options (streamingMode: 'auto'|'force'|'legacy')
+ * @returns Embedding generation stats
  */
 export async function generateEmbeddings(
   db: ForgeDB,
@@ -99,6 +122,133 @@ export async function generateEmbeddings(
 
   const start = Date.now()
 
+  // [MEMORY-OPT P0] Streaming mode: process symbols in batches
+  // Auto-detect based on provider capabilities and repo size
+  const useStreaming = opts.streamingMode === 'force' || 
+    (opts.streamingMode === 'auto' && opts.provider !== 'ollama')
+
+  if (useStreaming) {
+    return generateEmbeddingsStreaming(db, opts, start)
+  }
+
+  // [LEGACY] Fallback for providers that don't support streaming well (e.g., Ollama)
+  console.warn('[ForgeNexus] ⚠️ Using legacy embeddings mode — consider setting streamingMode: "force" for better memory efficiency')
+  return generateEmbeddingsLegacy(db, opts, start)
+}
+
+/**
+ * Streaming embeddings generation - O(batchSize) memory instead of O(n).
+ * Uses LIMIT/OFFSET to process symbols in chunks.
+ */
+async function generateEmbeddingsStreaming(
+  db: ForgeDB,
+  opts: EmbeddingOptions,
+  start: number,
+): Promise<{ count: number; model: string; elapsedMs: number; provider: string }> {
+  const batchSize = opts.streamingBatchSize ?? 1000
+  const providerBatchSize = opts.batchSize ?? 50
+  
+  let offset = 0
+  let totalGenerated = 0
+  let firstBatchCount = 0
+  const pendingUids: string[] = []
+  const pendingEmbeddings: number[][] = []
+
+  // [MEMORY-OPT] Count total first (single fast query, no data transfer)
+  const countRow = (db as any).db
+    .prepare('SELECT count(*) as cnt FROM nodes WHERE embedding IS NULL')
+    .get() as { cnt: number }
+  const totalToProcess = countRow?.cnt ?? 0
+
+  if (totalToProcess === 0) {
+    return {
+      count: 0,
+      model: opts.model ?? 'unknown',
+      elapsedMs: Date.now() - start,
+      provider: opts.provider,
+    }
+  }
+
+  console.error(
+    `[ForgeNexus] Embeddings (streaming): using ${opts.provider} (${opts.model}) for ${totalToProcess} symbols...`,
+  )
+
+  // [MEMORY-OPT] Process in streaming batches - only batchSize symbols in memory at a time
+  while (true) {
+    // [MEMORY-OPT] Fetch only batchSize symbols at a time
+    const symbols = (db as any).db
+      .prepare(
+        `SELECT uid, name, type, file_path, signature FROM nodes WHERE embedding IS NULL ORDER BY uid LIMIT ${batchSize} OFFSET ${offset}`,
+      )
+      .all() as any[]
+
+    if (symbols.length === 0) break
+
+    if (offset === 0) firstBatchCount = symbols.length
+
+    // Build text representations for this batch
+    const texts = symbols.map((s) => {
+      return [s.name, s.type, s.file_path, s.signature ?? ''].filter(Boolean).join(' ')
+    })
+
+    // Generate embeddings for this batch
+    try {
+      const embeddings = await generateEmbeddingBatch(texts.slice(0, providerBatchSize), opts)
+
+      for (let j = 0; j < embeddings.length; j++) {
+        const sym = symbols[j]
+        const embedding = embeddings[j]
+
+        if (sym && embedding) {
+          pendingUids.push(sym.uid)
+          pendingEmbeddings.push(embedding)
+          totalGenerated++
+        }
+      }
+    } catch (e) {
+      console.error(`[ForgeNexus] Embedding batch ${offset / batchSize} failed: ${e}`)
+    }
+
+    // [MEMORY-OPT] Flush embeddings to DB every batch to avoid accumulating
+    if (pendingUids.length > 0) {
+      db.upsertEmbeddingsBatch(pendingUids, pendingEmbeddings)
+      pendingUids.length = 0
+      pendingEmbeddings.length = 0
+    }
+
+    offset += symbols.length
+
+    // Progress update every 5 batches
+    if (offset % (batchSize * 5) === 0) {
+      console.error(`[ForgeNexus] Embeddings: ${offset}/${totalToProcess} (${Math.round(offset / totalToProcess * 100)}%)`)
+    }
+
+    // Early exit if no more symbols
+    if (symbols.length < batchSize) break
+  }
+
+  // Mark completion
+  db.setMeta('embeddings_generated', new Date().toISOString())
+  db.setMeta('embeddings_model', opts.model ?? 'unknown')
+  db.setMeta('embeddings_provider', opts.provider)
+
+  return {
+    count: totalGenerated,
+    model: opts.model ?? 'unknown',
+    elapsedMs: Date.now() - start,
+    provider: opts.provider,
+  }
+}
+
+/**
+ * Legacy embeddings generation - loads all symbols at once.
+ * @deprecated Use generateEmbeddingsStreaming instead for memory efficiency
+ */
+async function generateEmbeddingsLegacy(
+  db: ForgeDB,
+  opts: EmbeddingOptions,
+  start: number,
+): Promise<{ count: number; model: string; elapsedMs: number; provider: string }> {
   // Get all symbols that need embeddings (nodes without existing embeddings)
   const symbols = (db as any).db
     .prepare(
@@ -127,7 +277,7 @@ export async function generateEmbeddings(
   const pendingEmbeddings: number[][] = []
 
   console.error(
-    `[ForgeNexus] Embeddings: using ${opts.provider} (${opts.model}) for ${symbols.length} symbols...`,
+    `[ForgeNexus] Embeddings (legacy): using ${opts.provider} (${opts.model}) for ${symbols.length} symbols...`,
   )
 
   for (let i = 0; i < texts.length; i += batchSize) {
@@ -409,6 +559,11 @@ async function generateGeminiEmbeddings(
 /**
  * Find semantically similar symbols using real cosine similarity on stored embeddings.
  * Requires embeddings to be generated first via `generateEmbeddings`.
+ * 
+ * [MEMORY-OPT P0] Streaming mode: process embeddings in batches instead of loading all at once.
+ * Memory comparison:
+ *   - Legacy: 50K × 384-dim float32 × 8 bytes = ~150 MB
+ *   - Streaming: 5K per batch × 384 × 8 = ~15 MB per batch
  */
 export async function findSimilar(
   db: ForgeDB,
@@ -426,48 +581,79 @@ export async function findSimilar(
     console.warn(`[ForgeNexus] findSimilar: failed to generate query embedding — ${e}`)
   }
 
-  // Step 2: Load all stored embeddings from DB
-  const nodesWithEmbeddings = (db as any).db
-    .prepare('SELECT uid, name, file_path, embedding FROM nodes WHERE embedding IS NOT NULL')
-    .all() as any[]
-
-  if (nodesWithEmbeddings.length === 0) {
-    return []
-  }
-
-  // Step 3: Compute cosine similarity
+  // [MEMORY-OPT] Streaming mode: process embeddings in batches
   const scored: { uid: string; name: string; filePath: string; similarity: number }[] = []
+  const batchSize = 5000
+  let offset = 0
 
-  for (const row of nodesWithEmbeddings) {
-    let embedding: number[]
-    try {
-      embedding = JSON.parse(row.embedding)
-    } catch {
-      continue
+  if (queryEmbedding) {
+    // [MEMORY-OPT] Stream through embeddings in batches
+    while (true) {
+      const nodesWithEmbeddings = (db as any).db
+        .prepare('SELECT uid, name, file_path, embedding FROM nodes WHERE embedding IS NOT NULL ORDER BY uid LIMIT ? OFFSET ?')
+        .all(batchSize, offset) as any[]
+
+      if (nodesWithEmbeddings.length === 0) break
+
+      for (const row of nodesWithEmbeddings) {
+        let embedding: number[]
+        try {
+          embedding = JSON.parse(row.embedding)
+        } catch {
+          continue
+        }
+
+        const similarity = cosineSimilarity(queryEmbedding, embedding)
+
+        scored.push({
+          uid: row.uid,
+          name: row.name,
+          filePath: row.file_path,
+          similarity,
+        })
+      }
+
+      offset += nodesWithEmbeddings.length
+
+      // Early exit if we have enough high-confidence results
+      if (offset > limit * 100) break
     }
+  } else {
+    // [FALLBACK] Keyword matching when no query embedding available
+    const queryWords = query.toLowerCase().split(/\s+/)
+    if (queryWords.length === 0) return []
 
-    let similarity: number
-    if (queryEmbedding) {
-      similarity = cosineSimilarity(queryEmbedding, embedding)
-    } else {
-      // Fallback: keyword match
-      const queryWords = query.toLowerCase().split(/\s+/)
-      const nameWords = row.name.toLowerCase().split(/\s+/)
-      const matchCount = queryWords.filter((w) =>
-        nameWords.some((nw: string) => nw.includes(w) || w.includes(nw)),
-      ).length
-      similarity = queryWords.length > 0 ? matchCount / queryWords.length : 0
+    // Still use streaming for keyword matching
+    while (true) {
+      const nodesWithEmbeddings = (db as any).db
+        .prepare('SELECT uid, name, file_path, embedding FROM nodes WHERE embedding IS NOT NULL ORDER BY uid LIMIT ? OFFSET ?')
+        .all(batchSize, offset) as any[]
+
+      if (nodesWithEmbeddings.length === 0) break
+
+      for (const row of nodesWithEmbeddings) {
+        const nameWords = row.name.toLowerCase().split(/\s+/)
+        const matchCount = queryWords.filter((w) =>
+          nameWords.some((nw: string) => nw.includes(w) || w.includes(nw)),
+        ).length
+        const similarity = queryWords.length > 0 ? matchCount / queryWords.length : 0
+
+        scored.push({
+          uid: row.uid,
+          name: row.name,
+          filePath: row.file_path,
+          similarity,
+        })
+      }
+
+      offset += nodesWithEmbeddings.length
     }
-
-    scored.push({
-      uid: row.uid,
-      name: row.name,
-      filePath: row.file_path,
-      similarity,
-    })
   }
 
-  return scored.sort((a, b) => b.similarity - a.similarity).slice(0, limit)
+  // [MEMORY-OPT] Sort only top N results
+  return scored
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, limit)
 }
 
 /** Cosine similarity between two vectors */

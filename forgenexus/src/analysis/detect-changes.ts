@@ -87,6 +87,10 @@ export function getChangedFiles(
 
 /**
  * Map a raw git diff to changed symbols in the knowledge graph.
+ * 
+ * [MEMORY-OPT] Uses batch queries instead of N+1 pattern:
+ *   - Batch: getNodesByFiles() → 1 query for all files
+ *   - Was: N queries for N files
  */
 export function detectChanges(
   db: ForgeDB,
@@ -97,25 +101,45 @@ export function detectChanges(
   const changedSymbols: ChangedSymbol[] = []
   const deletedFiles: string[] = []
 
+  // [MEMORY-OPT] Separate deleted vs modified files
+  const deletedFilePaths: string[] = []
+  const activeFilePaths: string[] = []
+
   for (const { path, status } of changedFiles) {
     if (status === 'deleted') {
-      deletedFiles.push(path)
-      const symbols = db.getNodesByFile(path)
-      for (const symbol of symbols) {
-        changedSymbols.push({
-          uid: symbol.uid,
-          name: symbol.name,
-          filePath: symbol.filePath,
-          type: symbol.type,
-          changeType: 'deleted',
-        })
-      }
-      continue
+      deletedFilePaths.push(path)
+    } else if (existsSync(path)) {
+      activeFilePaths.push(path)
+    }
+  }
+
+  // [MEMORY-OPT] Batch query: get all deleted nodes in 1 query
+  if (deletedFilePaths.length > 0) {
+    const deletedNodes = db.getNodesByFiles(deletedFilePaths)
+    for (const symbol of deletedNodes) {
+      changedSymbols.push({
+        uid: symbol.uid,
+        name: symbol.name,
+        filePath: symbol.filePath,
+        type: symbol.type,
+        changeType: 'deleted',
+      })
+    }
+  }
+
+  // [MEMORY-OPT] Batch query: get all active file nodes in 1 query
+  if (activeFilePaths.length > 0) {
+    const activeNodes = db.getNodesByFiles(activeFilePaths)
+    
+    // Build file status map
+    const fileStatusMap = new Map<string, 'added' | 'modified'>()
+    for (const { path, status } of changedFiles) {
+      if (status === 'added') fileStatusMap.set(path, 'added')
+      else if (status === 'modified') fileStatusMap.set(path, 'modified')
     }
 
-    if (!existsSync(path)) continue
-    const symbols = db.getNodesByFile(path)
-    for (const symbol of symbols) {
+    for (const symbol of activeNodes) {
+      const status = fileStatusMap.get(symbol.filePath) ?? 'modified'
       changedSymbols.push({
         uid: symbol.uid,
         name: symbol.name,
@@ -126,15 +150,22 @@ export function detectChanges(
     }
   }
 
+  // [MEMORY-OPT] Batch query: get incoming edges for all changed symbols in 1 query
   const affectedProcesses = new Set<string>()
   const affectedModules = new Set<string>()
 
-  for (const symbol of changedSymbols) {
-    const incoming = db.getIncomingEdges(symbol.uid)
-    for (const edge of incoming) {
-      const node = db.getNode(edge.fromUid)
-      if (node?.process) affectedProcesses.add(node.process)
-      if (node?.community) affectedModules.add(node.community)
+  if (changedSymbols.length > 0) {
+    const changedUids = changedSymbols.map(s => s.uid)
+    const incomingEdges = db.getIncomingEdgesBatch(changedUids)
+    
+    // [MEMORY-OPT] Batch query: get all affected nodes in 1 query
+    const callerUids = [...new Set(incomingEdges.map(e => e.fromUid))]
+    const callerNodes = db.getNodesByUids(callerUids)
+
+    for (const edge of incomingEdges) {
+      const caller = callerNodes.get(edge.fromUid)
+      if (caller?.process) affectedProcesses.add(caller.process)
+      if (caller?.community) affectedModules.add(caller.community)
     }
   }
 
@@ -170,6 +201,8 @@ export function detectChanges(
  * 2. Identifying breaking changes vs additive changes
  * 3. Classifying risk by affected callers and API surface
  * 4. Recommending reviewers based on affected modules
+ * 
+ * [MEMORY-OPT] Uses batch queries for changed symbols.
  */
 export function analyzePRReview(db: ForgeDB, baseRef: string, headRef = 'HEAD'): PRReviewResult {
   const diffOutput = execSync(`git diff --name-status ${baseRef} ${headRef}`, {
@@ -189,18 +222,38 @@ export function analyzePRReview(db: ForgeDB, baseRef: string, headRef = 'HEAD'):
   const changedSymbols: ChangedSymbol[] = []
   const deletedFiles: string[] = []
 
+  // [MEMORY-OPT] Separate files by status
+  const deletedFilePaths: string[] = []
+  const activeFilePaths: string[] = []
+
   for (const { path, status } of changedFiles) {
     if (status === 'D') {
-      deletedFiles.push(path)
-      const symbols = db.getNodesByFile(path)
-      for (const sym of symbols) {
-        changedSymbols.push({ ...sym, changeType: 'deleted' })
-      }
-      continue
+      deletedFilePaths.push(path)
+    } else if (existsSync(path)) {
+      activeFilePaths.push(path)
     }
-    if (!existsSync(path)) continue
-    const symbols = db.getNodesByFile(path)
-    for (const sym of symbols) {
+  }
+
+  // [MEMORY-OPT] Batch query: get all deleted nodes in 1 query
+  if (deletedFilePaths.length > 0) {
+    const deletedNodes = db.getNodesByFiles(deletedFilePaths)
+    for (const sym of deletedNodes) {
+      changedSymbols.push({ ...sym, changeType: 'deleted' })
+    }
+  }
+
+  // [MEMORY-OPT] Batch query: get all active file nodes in 1 query
+  if (activeFilePaths.length > 0) {
+    const activeNodes = db.getNodesByFiles(activeFilePaths)
+    
+    // Build file status map
+    const fileStatusMap = new Map<string, string>()
+    for (const { path, status } of changedFiles) {
+      fileStatusMap.set(path, status)
+    }
+
+    for (const sym of activeNodes) {
+      const status = fileStatusMap.get(sym.filePath) ?? 'M'
       changedSymbols.push({ ...sym, changeType: status === 'A' ? 'added' : 'modified' })
     }
   }
@@ -219,8 +272,6 @@ export function analyzePRReview(db: ForgeDB, baseRef: string, headRef = 'HEAD'):
       sym.type === 'Interface' ||
       sym.type === 'Class'
     ) {
-      // Check if signature changed by looking for return type changes
-      // In practice this would require content diff analysis
       migrationNeeded.push(`${sym.type} ${sym.name}`)
     } else if (sym.changeType === 'added') {
       pureAdditions.push(`${sym.type} ${sym.name}`)
@@ -235,44 +286,68 @@ export function analyzePRReview(db: ForgeDB, baseRef: string, headRef = 'HEAD'):
   const allAffectedAPIs = new Set<string>()
   const allAffectedTests = new Set<string>()
 
+  // [MEMORY-OPT] Batch: get all affected API functions once
+  const apiFileSet = new Set<string>()
   for (const sym of changedSymbols) {
-    // Only analyze non-deleted symbols for blast radius
-    if (sym.changeType === 'deleted') continue
-
-    const impact = analyzeImpact(db, sym.uid, 3)
-    const depth = impact.byDepth.d1.length
-
-    blastRadius.total++
-    if (depth > 10) blastRadius.critical++
-    else if (depth > 5) blastRadius.high++
-    else if (depth > 0) blastRadius.medium++
-    else blastRadius.low++
-
-    for (const module of impact.affectedModules) allAffectedModules.add(module)
-    for (const proc of impact.affectedProcesses) allAffectedProcesses.add(proc)
-
-    // Track affected API endpoints
-    const apiFunctions = db
-      .getNodesByFile(sym.filePath)
-      .filter((n) => n.type === 'Function' || n.type === 'Method')
-    for (const fn of apiFunctions) {
-      allAffectedAPIs.add(`${fn.name} (${fn.filePath})`)
+    apiFileSet.add(sym.filePath)
+  }
+  const apiNodes = db.getNodesByFiles([...apiFileSet])
+  const apiFunctions = new Map<string, typeof apiNodes>()
+  for (const fn of apiNodes) {
+    if (fn.type === 'Function' || fn.type === 'Method') {
+      if (!apiFunctions.has(fn.filePath)) {
+        apiFunctions.set(fn.filePath, [])
+      }
+      apiFunctions.get(fn.filePath)!.push(fn)
     }
+  }
 
-    // Track test files
-    if (sym.filePath.includes('test') || sym.filePath.includes('spec')) {
-      allAffectedTests.add(sym.filePath)
-    }
+  // [MEMORY-OPT] Batch: track affected modules and processes
+  if (changedSymbols.length > 0) {
+    const changedUids = changedSymbols.map(s => s.uid)
+    const incomingEdges = db.getIncomingEdgesBatch(changedUids)
+    
+    // Get all unique caller UIDs
+    const callerUids = [...new Set(incomingEdges.map(e => e.fromUid))]
+    const callerNodes = db.getNodesByUids(callerUids)
 
-    // Top impacted symbols (sorted by depth-1 callers)
-    if (impact.byDepth.d1.length > 0) {
-      topImpact.push({
-        uid: sym.uid,
-        name: sym.name,
-        filePath: sym.filePath,
-        callers: impact.byDepth.d1.length,
-        risk: impact.risk,
-      })
+    for (const sym of changedSymbols) {
+      // Only analyze non-deleted symbols for blast radius
+      if (sym.changeType === 'deleted') continue
+
+      const impact = analyzeImpact(db, sym.uid, 3)
+      const depth = impact.byDepth.d1.length
+
+      blastRadius.total++
+      if (depth > 10) blastRadius.critical++
+      else if (depth > 5) blastRadius.high++
+      else if (depth > 0) blastRadius.medium++
+      else blastRadius.low++
+
+      for (const module of impact.affectedModules) allAffectedModules.add(module)
+      for (const proc of impact.affectedProcesses) allAffectedProcesses.add(proc)
+
+      // Track affected API endpoints
+      const fileFunctions = apiFunctions.get(sym.filePath) ?? []
+      for (const fn of fileFunctions) {
+        allAffectedAPIs.add(`${fn.name} (${fn.filePath})`)
+      }
+
+      // Track test files
+      if (sym.filePath.includes('test') || sym.filePath.includes('spec')) {
+        allAffectedTests.add(sym.filePath)
+      }
+
+      // Top impacted symbols (sorted by depth-1 callers)
+      if (impact.byDepth.d1.length > 0) {
+        topImpact.push({
+          uid: sym.uid,
+          name: sym.name,
+          filePath: sym.filePath,
+          callers: impact.byDepth.d1.length,
+          risk: impact.risk,
+        })
+      }
     }
   }
 
@@ -296,6 +371,8 @@ export function analyzePRReview(db: ForgeDB, baseRef: string, headRef = 'HEAD'):
   // Recommended reviewers based on affected modules
   const recommendedReviewers: string[] = []
   const reviewerCandidates = new Map<string, number>()
+  
+  // [MEMORY-OPT] Batch: get nodes for all affected modules in 1 query per module
   for (const module of allAffectedModules) {
     const nodes = db.getNodesByCommunity(module)
     for (const node of nodes.slice(0, 3)) {

@@ -2003,12 +2003,55 @@ export interface QueryMatch {
   column: number
 }
 
+/**
+ * [MEMORY-OPT] LRU Cache wrapper with max size limit.
+ * Automatically evicts oldest entry when maxSize is exceeded.
+ */
+class LRUCache<K, V> {
+  private cache = new Map<K, V>()
+  
+  constructor(private maxSize: number) {}
+  
+  get(key: K): V | undefined {
+    const value = this.cache.get(key)
+    if (value !== undefined) {
+      // Move to end (most recently used)
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+  
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    } else if (this.cache.size >= this.maxSize) {
+      // Evict oldest (first) entry
+      const oldestKey = this.cache.keys().next().value
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey)
+      }
+    }
+    this.cache.set(key, value)
+  }
+  
+  clear(): void {
+    this.cache.clear()
+  }
+  
+  get size(): number {
+    return this.cache.size
+  }
+}
+
 export interface QueryResult {
   matches: QueryMatch[][]
   query: Parser.Query
 }
 
-const QUERY_EXECUTION_CACHE = new Map<string, QueryResult>()
+// [MEMORY-OPT] LRU cache with max 1000 entries (was unbounded)
+const MAX_QUERY_CACHE_SIZE = 1000
+const QUERY_EXECUTION_CACHE = new LRUCache<string, QueryResult>(MAX_QUERY_CACHE_SIZE)
 
 /**
  * Execute a tree-sitter query and return matches with position info.
@@ -2100,9 +2143,10 @@ export function clearQueryCache(): void {
 /**
  * Get cache statistics.
  */
-export function getQueryCacheStats(): { compiled: number; execution: number } {
+export function getQueryCacheStats(): { compiled: number; execution: number; maxSize: number } {
   return {
     compiled: 0,
     execution: QUERY_EXECUTION_CACHE.size,
+    maxSize: MAX_QUERY_CACHE_SIZE,
   }
 }

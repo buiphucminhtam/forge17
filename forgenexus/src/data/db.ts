@@ -556,6 +556,17 @@ export class ForgeDB {
     ).map(rowToNode)
   }
 
+  /**
+   * @deprecated [MEMORY-OPT] Use iterateNodes() generator instead for O(1) memory.
+   * This method loads ALL nodes into memory at once.
+   * Memory impact: O(n) where n = total nodes (can be 100+ MB for large repos).
+   * 
+   * Generator alternative:
+   *   for (const node of db.iterateNodes(1000)) { ... }
+   * 
+   * For building lookup maps incrementally:
+   *   const nameToUid = buildNameUidMapFromGenerator(this.db)
+   */
   getAllNodes(): CodeNode[] {
     // Filter out edge records (stored as CodeNode rows with rel_type IS NOT NULL)
     return this.query(
@@ -615,6 +626,50 @@ export class ForgeDB {
     return this.query(sql).map(rowToEdge)
   }
 
+  /**
+   * [MEMORY-OPT] Batch query: get nodes by file paths in a single query.
+   * Instead of N queries for N files, this does 1 query.
+   * Memory: O(totalNodes) but only one round-trip to DB.
+   */
+  getNodesByFiles(filePaths: string[]): CodeNode[] {
+    if (filePaths.length === 0) return []
+    const paths = filePaths.map((p) => `"${esc(p)}"`).join(', ')
+    return this.query(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.filePath IN [${paths}] RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process`,
+    ).map(rowToNode)
+  }
+
+  /**
+   * [MEMORY-OPT] Batch query: get incoming edges for multiple UIDs in a single query.
+   * Instead of N queries for N symbols, this does 1 query.
+   */
+  getIncomingEdgesBatch(uids: string[], type?: EdgeType): CodeEdge[] {
+    if (uids.length === 0) return []
+    const uidList = uids.map((u) => `"${esc(u)}"`).join(', ')
+    const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
+    return this.query(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL AND n.rel_to IN [${uidList}]${typeFilter} RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to, n.rel_type AS rel_type, n.rel_confidence AS rel_confidence, n.rel_reason AS rel_reason, n.rel_step AS rel_step`,
+    ).map(rowToEdge)
+  }
+
+  /**
+   * [MEMORY-OPT] Batch query: get nodes by UIDs in a single query.
+   * Instead of N queries for N symbols, this does 1 query.
+   */
+  getNodesByUids(uids: string[]): Map<string, CodeNode> {
+    if (uids.length === 0) return new Map()
+    const uidList = uids.map((u) => `"${esc(u)}"`).join(', ')
+    const rows = this.query(
+      `MATCH (n:CodeNode) WHERE n.rel_type IS NULL AND n.uid IN [${uidList}] RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath, n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum, n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType, n.language AS language, n.signature AS signature, n.community AS community, n.process AS process`,
+    )
+    const map = new Map<string, CodeNode>()
+    for (const row of rows) {
+      const node = rowToNode(row)
+      map.set(node.uid, node)
+    }
+    return map
+  }
+
   getIncomingEdges(uid: string, type?: EdgeType): CodeEdge[] {
     const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
     return this.query(
@@ -629,6 +684,14 @@ export class ForgeDB {
     ).map(rowToEdge)
   }
 
+  /**
+   * @deprecated [MEMORY-OPT] Use iterateEdges() generator instead for O(1) memory.
+   * This method loads ALL edges into memory at once.
+   * Memory impact: O(e) where e = total edges (can be 100+ MB for large graphs).
+   * 
+   * Generator alternative:
+   *   for (const edge of db.iterateEdges(1000)) { ... }
+   */
   getAllEdges(type?: EdgeType): CodeEdge[] {
     const typeFilter = type ? ` AND n.rel_type = "${esc(type)}"` : ''
     return this.query(

@@ -1,23 +1,19 @@
 /**
  * Persistent worker thread for parallel file parsing.
  *
- * Performance optimizations (v2):
+ * Performance optimizations (v3 - Memory Optimized):
  *   - Persistent: worker stays alive across all batches (no teardown between chunks)
  *   - Language pre-loading: loads all needed languages once on init
  *   - Parser reuse: one Parser per language, reused across all files in session
  *   - Sub-batch dispatch: processes batches of ~25 files before messaging back
  *   - Graceful shutdown: handles 'close' messages cleanly
+ *   - LRU cache eviction: prevents unbounded memory growth
+ *   - Flush support: clear caches on demand
  *
- * Message protocol (v2):
- *   Main → Worker:
- *     { type: 'init', workerId }     — initialize worker, pre-load languages
- *     { type: 'batch', tasks, batchId } — parse a batch of files
- *     { type: 'close' }              — shutdown gracefully
- *
- *   Worker → Main:
- *     { type: 'ready', workerId }    — worker initialized, ready to parse
- *     { type: 'batch_result', batchId, results } — batch completed
- *     { type: 'error', error }       — error during batch
+ * [MEMORY-OPT] Cache limits:
+ *   - MAX_LANG_CACHE: 20 languages (prevents unbounded growth)
+ *   - MAX_PARSER_CACHE: 100 parsers per language
+ *   - Automatic eviction when limits exceeded
  */
 
 import { createRequire } from 'module'
@@ -43,17 +39,68 @@ interface ParseResult {
 }
 
 interface PoolMessage {
-  type: 'init' | 'batch' | 'close'
+  type: 'init' | 'batch' | 'close' | 'flush'
   workerId?: number
   tasks?: ParseTask[]
   batchId?: number
 }
 
+// ─── Memory-Optimized LRU Cache ───────────────────────────────────────────────
+
+/**
+ * [MEMORY-OPT] LRU Map with max size limit.
+ * Automatically evicts oldest entry when maxSize is exceeded.
+ */
+class LRUMaxCache<K, V> {
+  private cache = new Map<K, V>()
+  
+  constructor(private maxSize: number) {}
+  
+  get(key: K): V | undefined {
+    const value = this.cache.get(key)
+    if (value !== undefined) {
+      // Move to end (most recently used)
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+  
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    } else if (this.cache.size >= this.maxSize) {
+      // Evict oldest (first) entry
+      const oldestKey = this.cache.keys().next().value
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey)
+      }
+    }
+    this.cache.set(key, value)
+  }
+  
+  has(key: K): boolean {
+    return this.cache.has(key)
+  }
+  
+  clear(): void {
+    this.cache.clear()
+  }
+  
+  get size(): number {
+    return this.cache.size
+  }
+}
+
 // ─── Worker State ───────────────────────────────────────────────────────────────
 
-// Persistent state: loaded once, reused forever
-const langCache = new Map<string, any>()
-const parserCache = new Map<string, Parser>()   // lang → dedicated parser
+// [MEMORY-OPT] Memory limits
+const MAX_LANG_CACHE = 20      // Max languages to keep in memory
+const MAX_PARSER_CACHE = 100   // Max parsers per language
+
+// [MEMORY-OPT] LRU caches with eviction
+const langCache = new LRUMaxCache<string, any>(MAX_LANG_CACHE)
+const parserCache = new LRUMaxCache<string, Parser>(MAX_PARSER_CACHE)
 
 if (!parentPort) {
   throw new Error('parse-worker.ts must be run as a worker thread')
@@ -90,6 +137,7 @@ async function ensureLanguage(lang: string): Promise<any> {
     }
 
     if (langObj) {
+      // [MEMORY-OPT] LRU cache handles eviction automatically
       langCache.set(lang, langObj)
       const parser = new Parser()
       parser.setLanguage(langObj)
@@ -170,11 +218,9 @@ function parseFile(task: ParseTask): ParseResult {
     return { filePath: task.filePath, nodes, edges }
   }
 
-  // Get or create parser for this language
-  let parser: Parser
-  if (parserCache.has(task.language)) {
-    parser = parserCache.get(task.language)!
-  } else {
+  // [MEMORY-OPT] Get parser from LRU cache
+  let parser = parserCache.get(task.language)
+  if (!parser) {
     parser = new Parser()
     parser.setLanguage(langCache.get(task.language)!)
     parserCache.set(task.language, parser)
@@ -404,6 +450,11 @@ parentPort.on('message', async (msg: PoolMessage) => {
     // We load on demand as we see languages
     // initialized = true
     parentPort!.postMessage({ type: 'ready', workerId: myWorkerId })
+  } else if (msg.type === 'flush') {
+    // [MEMORY-OPT] Flush all caches to free memory
+    langCache.clear()
+    parserCache.clear()
+    parentPort!.postMessage({ type: 'flushed', workerId: myWorkerId })
   } else if (msg.type === 'batch') {
     const tasks: ParseTask[] = msg.tasks ?? []
     const batchId = msg.batchId ?? -1
@@ -430,6 +481,9 @@ parentPort.on('message', async (msg: PoolMessage) => {
       parentPort!.postMessage({ type: 'error', error: String(err), batchId })
     }
   } else if (msg.type === 'close') {
+    // [MEMORY-OPT] Clear caches before shutdown
+    langCache.clear()
+    parserCache.clear()
     parentPort!.postMessage({ type: 'closed', workerId: myWorkerId })
     process.exit(0)
   }
