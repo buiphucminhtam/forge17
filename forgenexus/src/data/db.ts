@@ -563,6 +563,46 @@ export class ForgeDB {
     ).map(rowToNode)
   }
 
+  // [MEMORY-OPT] Generator-based iteration for large graphs — O(1) memory instead of O(n)
+  // Usage: for (const node of db.iterateNodes(1000)) { ... }
+  *iterateNodes(batchSize = 1000): Generator<CodeNode, void, unknown> {
+    let offset = 0
+    while (true) {
+      const rows = this.query(
+        `MATCH (n:CodeNode) WHERE n.rel_type IS NULL
+         RETURN n.uid AS uid, n.type AS type, n.name AS name, n.filePath AS filePath,
+                n.line AS line, n.endLine AS endLine, n.columnNum AS columnNum,
+                n.returnType AS returnType, n.paramCount AS paramCount, n.declaredType AS declaredType,
+                n.language AS language, n.signature AS signature, n.community AS community, n.process AS process
+         LIMIT ${batchSize} OFFSET ${offset}`,
+      )
+      if (rows.length === 0) break
+      for (const row of rows) {
+        yield rowToNode(row)
+      }
+      offset += batchSize
+    }
+  }
+
+  // [MEMORY-OPT] Generator-based edge iteration for large graphs
+  *iterateEdges(batchSize = 1000): Generator<CodeEdge, void, unknown> {
+    let offset = 0
+    while (true) {
+      const rows = this.query(
+        `MATCH (n:CodeNode) WHERE n.rel_type IS NOT NULL
+         RETURN n.uid AS uid, n.rel_from AS rel_from, n.rel_to AS rel_to,
+                n.rel_type AS rel_type, n.rel_confidence AS rel_confidence,
+                n.rel_reason AS rel_reason, n.rel_step AS rel_step
+         LIMIT ${batchSize} OFFSET ${offset}`,
+      )
+      if (rows.length === 0) break
+      for (const row of rows) {
+        yield rowToEdge(row)
+      }
+      offset += batchSize
+    }
+  }
+
   getAllFilePaths(): string[] {
     return this.query(`MATCH (n:CodeNode) WHERE n.rel_type IS NULL RETURN DISTINCT n.filePath AS filePath`).map(
       (r) => r.filePath as string,

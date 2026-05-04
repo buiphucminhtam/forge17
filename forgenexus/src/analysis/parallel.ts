@@ -293,6 +293,24 @@ function aggregateResults(results: ParseResult[]): { nodes: CodeNode[]; edges: C
   return { nodes: allNodes, edges: allEdges }
 }
 
+/**
+ * [MEMORY-OPT] Stream results incrementally instead of accumulating all in memory.
+ * Each chunk is yielded as soon as it's processed.
+ */
+export async function* streamParseResults(
+  results: AsyncIterable<ParseResult[]> | ParseResult[][],
+): AsyncGenerator<{ nodes: CodeNode[]; edges: CodeEdge[] }> {
+  for await (const chunk of results as any) {
+    const nodes: CodeNode[] = []
+    const edges: CodeEdge[] = []
+    for (const r of chunk) {
+      nodes.push(...r.nodes)
+      edges.push(...r.edges)
+    }
+    yield { nodes, edges }
+  }
+}
+
 // ─── Byte Budget Chunking ────────────────────────────────────────────────────
 
 function chunkByByteBudget(tasks: ParseTask[], byteBudget: number): ParseTask[][] {

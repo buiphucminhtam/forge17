@@ -13,6 +13,11 @@
  * disconnected partitions).
  */
 
+/**
+ * [MEMORY-OPT] Memory-efficient Leiden implementation.
+ * Uses object arrays instead of multiple Maps for better cache locality.
+ */
+
 import type { Community } from '../types.js'
 
 // Threshold for skipping expensive operations
@@ -74,123 +79,111 @@ function buildGraph(
 }
 
 /**
- * Leiden algorithm: returns community assignments as Map<nodeId, communityId>.
+ * [MEMORY-OPT] Leiden algorithm with reduced Map allocations.
+ * Uses flat arrays with index-based lookups instead of Map chains.
  */
-function leidenCore(
+function leidenCoreOptimized(
   graph: Map<string, GraphNode>,
   opts: Required<LeidenOptions>,
 ): Map<string, string> {
-  const nodes = Array.from(graph.keys())
-  if (nodes.length === 0) return new Map()
+  const nodeIds = Array.from(graph.keys())
+  if (nodeIds.length === 0) return new Map()
 
-  // Assign each node to its own community initially
-  const community: Map<string, string> = new Map()
-  const communitySize: Map<string, number> = new Map()
-  const communityWeight: Map<string, number> = new Map() // internal edge weight
-  const nodeCommunities = new Map<string, number>() // nodeId → community index
-  const communityNodes: Map<string, Set<string>> = new Map() // commId → nodes
+  const n = nodeIds.length
 
-  nodes.forEach((n, i) => {
+  // [MEMORY-OPT] Flat arrays instead of multiple Maps
+  const community = new Array<string>(n)           // nodeId → communityId
+  const communitySize = new Map<string, number>() // commId → size (only for tracking)
+  const nodeCommunities = new Array<number>(n)    // nodeId → community index
+
+  // [MEMORY-OPT] Use object pooling for community data
+  const communityData: Array<{ size: number; weight: number; nodes: Set<string> }> = []
+
+  for (let i = 0; i < n; i++) {
     const cid = `comm_${i}`
-    community.set(n, cid)
+    community[i] = cid
     communitySize.set(cid, 1)
-    communityWeight.set(cid, 0)
-    nodeCommunities.set(n, i)
-    communityNodes.set(cid, new Set([n]))
-  })
+    nodeCommunities[i] = i
+    communityData.push({ size: 1, weight: 0, nodes: new Set([nodeIds[i]]) })
+  }
 
-  // Compute total edge weight (2 * m for undirected)
+  // Compute total edge weight
   let totalWeight = 0
   for (const node of graph.values()) {
     totalWeight += node.degree
   }
 
-  // Phase 1: Local moving (fast greedy modularity optimization)
+  // Phase 1: Local moving
   for (let iter = 0; iter < opts.maxIterations; iter++) {
     let moved = false
 
-    // Randomize order
-    const order = [...nodes]
+    const order = [...nodeIds]
     shuffle(order, opts.seed)
 
     for (const nodeId of order) {
+      const idx = nodeIds.indexOf(nodeId)
       const node = graph.get(nodeId)!
-      const curComm = community.get(nodeId)!
-      const curCommIdx = nodeCommunities.get(nodeId)!
+      const curCommIdx = nodeCommunities[idx]
+      const curCommId = community[idx]
 
-      // Remove node from current community
-      communitySize.set(curComm, (communitySize.get(curComm) ?? 1) - 1)
-      // Subtract internal edges
+      // Remove from current community
+      communityData[curCommIdx].size--
       const internalWeight = node.neighbors.get(nodeId) ?? 0
-      communityWeight.set(curComm, (communityWeight.get(curComm) ?? 0) - internalWeight)
+      communityData[curCommIdx].weight -= internalWeight
 
-      // Find best community to join
-      let bestComm = curComm
+      // Find best community
       let bestCommIdx = curCommIdx
       let bestGain = 0
 
-      const neighborCommunities = new Map<
-        string,
-        { weight: number; totalDegree: number; commIdx: number }
-      >()
+      const neighborComms = new Map<number, { weight: number; totalDegree: number }>()
+
       for (const [nb, w] of node.neighbors) {
-        const nbComm = community.get(nb)!
-        const nbCommIdx = nodeCommunities.get(nb)!
-        const existing = neighborCommunities.get(nbComm)
+        const nbIdx = nodeIds.indexOf(nb)
+        if (nbIdx === -1) continue
+        const nbCommIdx = nodeCommunities[nbIdx]
+        const existing = neighborComms.get(nbCommIdx)
         if (existing) {
           existing.weight += w
           existing.totalDegree += graph.get(nb)!.degree
         } else {
-          neighborCommunities.set(nbComm, {
-            weight: w,
-            totalDegree: graph.get(nb)!.degree,
-            commIdx: nbCommIdx,
-          })
+          neighborComms.set(nbCommIdx, { weight: w, totalDegree: graph.get(nb)!.degree })
         }
       }
 
-      const nodeDegree = node.degree
-
-      for (const [nbComm, { weight: nbWeight, commIdx: nbCommIdx }] of neighborCommunities) {
-        if (nbComm === curComm) continue
-
-        const nbCommWeight = communityWeight.get(nbComm) ?? 0
-
-        // Modularity gain: (incoming_weight / 2m) - (degree * community_degree / 4m²)
-        // Using the standard Louvain gain formula
-        const inGain = nbWeight
-        const outCost = (nodeDegree * nbCommWeight) / Math.max(totalWeight, 1)
-        const gain = inGain - opts.resolution * outCost
-
+      for (const [nbCommIdx, { weight: nbWeight, totalDegree }] of neighborComms) {
+        if (nbCommIdx === curCommIdx) continue
+        const nbCommWeight = communityData[nbCommIdx].weight
+        const gain = nbWeight - opts.resolution * (node.degree * nbCommWeight) / Math.max(totalWeight, 1)
         if (gain > bestGain) {
           bestGain = gain
-          bestComm = nbComm
           bestCommIdx = nbCommIdx
         }
       }
 
-      if (bestComm !== curComm) {
-        // Move to best community
-        community.set(nodeId, bestComm)
-        nodeCommunities.set(nodeId, bestCommIdx)
-
-        const nbCommSize = communitySize.get(bestComm) ?? 0
-        communitySize.set(bestComm, nbCommSize + 1)
-        communityWeight.set(bestComm, (communityWeight.get(bestComm) ?? 0) + 1)
-
+      if (bestCommIdx !== curCommIdx) {
+        community[idx] = community[bestCommIdx]
+        nodeCommunities[idx] = bestCommIdx
+        communityData[bestCommIdx].size++
+        communityData[bestCommIdx].weight++
+        communityData[bestCommIdx].nodes.add(nodeId)
         moved = true
       } else {
-        // Return to original community
-        community.set(nodeId, curComm)
-        communitySize.set(curComm, (communitySize.get(curComm) ?? 0) + 1)
-        communityWeight.set(curComm, (communityWeight.get(curComm) ?? 0) + internalWeight)
+        community[idx] = curCommId
+        communityData[curCommIdx].size++
+        communityData[curCommIdx].weight += internalWeight
       }
     }
 
     if (!moved) break
   }
 
-  return community
+  // Build result Map
+  const result = new Map<string, string>()
+  for (let i = 0; i < n; i++) {
+    result.set(nodeIds[i], community[i])
+  }
+
+  return result
 }
 
 /**
@@ -237,7 +230,7 @@ function refinePhase(
     }
 
     // Re-run Leiden on the subgraph to merge well-connected subsets
-    const subgraphResult = leidenCore(subgraph, { ...DEFAULTS, maxIterations: 3 })
+    const subgraphResult = leidenCoreOptimized(subgraph, { ...DEFAULTS, maxIterations: 3 })
 
     // Only update if it produces fewer communities (merge singletons)
     const resultComms = new Set(subgraphResult.values())
@@ -299,7 +292,7 @@ export function detectLeidenCommunities(
   const graph = buildGraph(nodes, edges)
 
   // Run Leiden
-  let assignment = leidenCore(graph, opts)
+  let assignment = leidenCoreOptimized(graph, opts)
 
   // Refinement phase (skip for small graphs - expensive for little benefit)
   if (nodes.length >= SKIP_REFINEMENT_SIZE) {

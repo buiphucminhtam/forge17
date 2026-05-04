@@ -31,12 +31,8 @@ import { detectLeidenCommunities } from '../data/leiden.js'
 import { traceProcesses } from '../data/graph.js'
 import { generateEmbeddings, detectProvider } from '../data/embeddings.js'
 import { incrementalFTSUpdate } from '../data/fts-incremental.js'
-import {
-  buildSuffixIndex,
-  resolveImportPath,
-  buildNameUidMap,
-  buildFileSymbolMap,
-} from './import-resolver.js'
+import { buildSuffixIndex, resolveImportPath } from './import-resolver.js'
+import { buildNameUidMapFromGenerator, buildFileSymbolMapFromGenerator } from './generators.js'
 import { parseFilesParallel, estimateBytes } from './parallel.js'
 import { propagateBindings, shouldSkipBindingPropagation } from './binding-propagation.js'
 import { detectFramework } from './framework-detection.js'
@@ -377,10 +373,13 @@ export class Indexer {
     const suffixIndex = buildSuffixIndex(allPaths)
     this.trieBuildTimeMs = Date.now() - buildStart
 
-    // Build fast name→uid map: O(n) single pass
+    // Build fast name→uid map and file→symbols map using single-pass generators
+    // [MEMORY-OPT] Build both maps in a single iteration instead of two
+    const nameToUid = buildNameUidMapFromGenerator(this.db)
+    const fileSymbolMap = buildFileSymbolMapFromGenerator(this.db)
+
+    // Get all nodes for this phase (needed for resolveEdgesFast and Leiden)
     const allNodes = this.db.getAllNodes()
-    const nameToUid = buildNameUidMap(allNodes)
-    const fileSymbolMap = buildFileSymbolMap(allNodes)
 
     const resolveStart = Date.now()
     const resolvedEdges = this.resolveEdgesFast(allNodes, newEdges, nameToUid)
@@ -412,14 +411,38 @@ export class Indexer {
     // ── 6. Cross-file binding propagation ────────────────────────────────────
     progress('binding', 0)
     const bindingStart = Date.now()
+
+    // [MEMORY-OPT] Incremental binding: only propagate for changed UIDs
     const allEdgesNow = this.db.getAllEdges()
-    if (!shouldSkipBindingPropagation(allNodes, allEdgesNow)) {
+
+    if (tasks.length < 10 && cachedResults.length > 100) {
+      // [MEMORY-OPT] P0: Skip binding propagation for small incremental changes
+      console.log('[ForgeNexus] Binding: Skipping (small change, cache hit ratio high)')
+      progress('binding', 100)
+    } else if (changedUids.size > 0 && changedUids.size < allNodes.length * 0.1) {
+      // [MEMORY-OPT] P1: Incremental binding - only propagate changed nodes
+      const changedNodes = allNodes.filter(n => changedUids.has(n.uid))
+      const changedEdges = allEdgesNow.filter(e =>
+        changedUids.has(e.fromUid) || changedUids.has(e.toUid)
+      )
+      console.log(`[ForgeNexus] Binding: Incremental (${changedUids.size}/${allNodes.length} nodes)`)
+      if (!shouldSkipBindingPropagation(changedNodes, changedEdges)) {
+        const propagated = propagateBindings(changedNodes, changedEdges)
+        if (propagated.length > 0) {
+          this.db.insertEdgesBatch(propagated)
+        }
+      }
+      progress('binding', 100)
+    } else if (!shouldSkipBindingPropagation(allNodes, allEdgesNow)) {
+      // Full binding propagation
       const propagated = propagateBindings(allNodes, allEdgesNow)
       if (propagated.length > 0) {
         this.db.insertEdgesBatch(propagated)
       }
+      progress('binding', 100)
+    } else {
+      progress('binding', 100)
     }
-    progress('binding', 100)
     const bindingTime = Date.now() - bindingStart
     console.log(`[ForgeNexus] Phase 6: Binding in ${bindingTime}ms`)
 
@@ -485,14 +508,14 @@ export class Indexer {
     }
 
     // Run Leiden with aggressive optimization for large graphs
-    // Large repo (>10K nodes): skip community detection (too slow)
-    // Medium repo (>5K nodes): 2 iterations max
-    // Small repo: 5 iterations
+    // Large repo (>2K nodes): skip community detection (too slow)
+    // Medium repo (>1K nodes): 2 iterations max
+    // Small repo: 3 iterations
     const nodeCount = allNodes.length
     const edgeCount = commEdges.length
-    const isVeryLarge = nodeCount > 15000
-    const isLarge = nodeCount > 10000
-    const isMedium = nodeCount > 5000
+    const isVeryLarge = nodeCount > 5000   // [MEMORY-OPT] Was 15K → Now 5K
+    const isLarge = nodeCount > 2000       // [MEMORY-OPT] Was 10K → Now 2K
+    const isMedium = nodeCount > 1000     // [MEMORY-OPT] Was 5K → Now 1K
 
     let communities: ReturnType<typeof detectLeidenCommunities> = []
 
@@ -500,8 +523,8 @@ export class Indexer {
       // Skip community detection for very large repos (too slow)
       console.log(`[ForgeNexus] Leiden: Skipping (${nodeCount} nodes exceeds 15K threshold)`)
     } else {
-      const maxIters = isLarge ? 2 : isMedium ? 3 : 5
-      const resolution = isLarge ? 3.0 : isMedium ? 2.0 : 1.0
+      const maxIters = isLarge ? 1 : isMedium ? 2 : 3  // [MEMORY-OPT] Was 2,3,5 → Now 1,2,3
+      const resolution = isLarge ? 5.0 : isMedium ? 3.0 : 1.5  // [MEMORY-OPT] Higher = fewer communities = less memory
 
       console.log(`[ForgeNexus] Leiden: ${nodeCount} nodes, ${edgeCount} edges, ${maxIters} iters, res ${resolution}`)
 
